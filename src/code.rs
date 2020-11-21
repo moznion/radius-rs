@@ -1,4 +1,9 @@
-#[derive(Debug)]
+use std::convert::TryFrom;
+
+use num_enum::TryFromPrimitive;
+
+#[derive(Debug, Clone, PartialEq, TryFromPrimitive)]
+#[repr(u8)]
 pub enum Code {
     AccessRequest = 1,
     AccessAccept = 2,
@@ -15,6 +20,7 @@ pub enum Code {
     CoAACK = 44,
     CoANAK = 45,
     Reserved = 255,
+    Invalid = 0,
 }
 
 impl Code {
@@ -35,6 +41,14 @@ impl Code {
             Code::CoAACK => "CoA-ACK",
             Code::CoANAK => "CoA-NAK",
             Code::Reserved => "Reserved",
+            Code::Invalid => "Invalid",
+        }
+    }
+
+    pub fn from(value: u8) -> Self {
+        match Code::try_from(value) {
+            Ok(code) => code,
+            Err(_) => Code::Invalid
         }
     }
 }

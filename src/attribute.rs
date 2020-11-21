@@ -4,6 +4,7 @@ use std::string::FromUtf8Error;
 
 use chrono::{DateTime, Utc, TimeZone};
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct Attribute(pub(crate) Vec<u8>);
 
 impl Attribute {
