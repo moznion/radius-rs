@@ -1,5 +1,4 @@
 use std::convert::TryInto;
-use std::io::Write;
 
 use rand::Rng;
 
@@ -28,6 +27,10 @@ impl Packet {
             secret: secret.to_owned(),
             attributes: Attributes(vec![]),
         }
+    }
+
+    pub(crate) fn get_identifier(&self) -> u8 {
+        self.identifier
     }
 
     pub fn parse(bs: &Vec<u8>, secret: &Vec<u8>) -> Result<Self, String> {
@@ -129,7 +132,7 @@ impl Packet {
         ].concat()).to_vec().eq(&response[4..20].to_vec())
     }
 
-    pub fn is_authentic_request(request: Vec<u8>, secret: Vec<u8>) -> bool {
+    pub fn is_authentic_request(request: &Vec<u8>, secret: &Vec<u8>) -> bool {
         if request.len() < 20 || secret.len() == 0 {
             return false;
         }

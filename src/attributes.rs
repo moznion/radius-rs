@@ -14,7 +14,7 @@ pub struct AVP {
 pub struct Attributes(pub(crate) Vec<AVP>);
 
 impl Attributes {
-    pub fn parse_attributes(bs: &Vec<u8>) -> Result<Attributes, String> {
+    pub(crate) fn parse_attributes(bs: &Vec<u8>) -> Result<Attributes, String> {
         let mut i = 0;
         let mut attrs = Vec::new();
 
