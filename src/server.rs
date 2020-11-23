@@ -10,6 +10,7 @@ use crate::packet::Packet;
 use crate::request::Request;
 use crate::request_handler::RequestHandler;
 use crate::secret_provider::SecretProvider;
+use crate::server_shutdown_trigger::ServerShutdownTrigger;
 
 pub struct Server<T: RequestHandler, U: SecretProvider> {
     address: String,
@@ -17,6 +18,7 @@ pub struct Server<T: RequestHandler, U: SecretProvider> {
     skip_authenticity_validation: bool,
     request_handler_arc: Arc<T>,
     secret_provider_arc: Arc<U>,
+    shutdown_trigger: ServerShutdownTrigger,
 }
 
 impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
@@ -27,6 +29,7 @@ impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
             skip_authenticity_validation,
             request_handler_arc: Arc::new(request_handler),
             secret_provider_arc: Arc::new(secret_provider),
+            shutdown_trigger: ServerShutdownTrigger::new(),
         }
     }
 
@@ -70,8 +73,16 @@ impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
                         ).await;
                     });
                 }
+                Some(_) = self.shutdown_trigger => {
+                    info!("server is shutting down");
+                    return Ok(());
+                }
             }
         }
+    }
+
+    pub fn trigger_shutdown(&mut self) {
+        self.shutdown_trigger.trigger_shutdown();
     }
 
     async fn process_request(
