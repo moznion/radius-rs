@@ -48,7 +48,7 @@ impl Code {
     pub fn from(value: u8) -> Self {
         match Code::try_from(value) {
             Ok(code) => code,
-            Err(_) => Code::Invalid
+            Err(_) => Code::Invalid,
         }
     }
 }

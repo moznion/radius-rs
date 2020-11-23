@@ -44,10 +44,7 @@ impl Attributes {
     }
 
     pub fn add(&mut self, typ: Type, attribute: Attribute) {
-        self.0.push(AVP {
-            typ,
-            attribute,
-        })
+        self.0.push(AVP { typ, attribute })
     }
 
     pub fn attributes_encoded_len(&self) -> Result<u16, String> {

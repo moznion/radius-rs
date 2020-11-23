@@ -3,7 +3,10 @@ use std::net::SocketAddr;
 use thiserror::Error;
 use tokio::net::UdpSocket;
 
-use crate::client::ClientError::{FailedConnection, FailedParsingUDPResponse, FailedRadiusPacketEncoding, FailedReceivingResponse, FailedSendingPacket, FailedUdpSocketBinding};
+use crate::client::ClientError::{
+    FailedConnection, FailedParsingUDPResponse, FailedRadiusPacketEncoding,
+    FailedReceivingResponse, FailedSendingPacket, FailedUdpSocketBinding,
+};
 use crate::packet::Packet;
 
 #[derive(Error, Debug)]
@@ -27,14 +30,19 @@ pub struct Client {}
 impl Client {
     const MAX_DATAGRAM_SIZE: usize = 65507;
 
-    pub async fn send_packet(remote_addr: &SocketAddr, request_packet: &Packet) -> Result<Packet, ClientError> {
+    pub async fn send_packet(
+        remote_addr: &SocketAddr,
+        request_packet: &Packet,
+    ) -> Result<Packet, ClientError> {
         // TODO retransmission
 
         let local_addr: SocketAddr = if remote_addr.is_ipv4() {
             "0.0.0.0:0"
         } else {
             "[::]:0"
-        }.parse().unwrap();
+        }
+        .parse()
+        .unwrap();
 
         let conn = match UdpSocket::bind(local_addr).await {
             Ok(conn) => conn,
@@ -42,28 +50,33 @@ impl Client {
         };
         match conn.connect(remote_addr).await {
             Ok(_) => {}
-            Err(e) => return Err(FailedConnection(remote_addr.to_string(), e.to_string()))
+            Err(e) => return Err(FailedConnection(remote_addr.to_string(), e.to_string())),
         };
 
         let request_data = match request_packet.encode() {
             Ok(encoded) => encoded,
-            Err(e) => return Err(FailedRadiusPacketEncoding(e))
+            Err(e) => return Err(FailedRadiusPacketEncoding(e)),
         };
 
         match conn.send(request_data.as_slice()).await {
             Ok(_) => {}
-            Err(e) => return Err(FailedSendingPacket(remote_addr.to_string(), e.to_string()))
+            Err(e) => return Err(FailedSendingPacket(remote_addr.to_string(), e.to_string())),
         };
 
         let mut buf = vec![0; Self::MAX_DATAGRAM_SIZE];
         let len = match conn.recv(&mut buf).await {
             Ok(len) => len,
-            Err(e) => return Err(FailedReceivingResponse(remote_addr.to_string(), e.to_string()))
+            Err(e) => {
+                return Err(FailedReceivingResponse(
+                    remote_addr.to_string(),
+                    e.to_string(),
+                ))
+            }
         };
 
         match Packet::parse(&buf[..len].to_vec(), request_packet.get_secret()) {
             Ok(response_packet) => Ok(response_packet),
-            Err(e) => Err(FailedParsingUDPResponse(e))
+            Err(e) => Err(FailedParsingUDPResponse(e)),
         }
     }
 }

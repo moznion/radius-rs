@@ -64,7 +64,10 @@ impl Server {
             let local_addr = match conn.local_addr() {
                 Ok(addr) => addr,
                 Err(e) => {
-                    error!("failed to get a local address from from a connection; {}", e);
+                    error!(
+                        "failed to get a local address from from a connection; {}",
+                        e
+                    );
                     continue;
                 }
             };
@@ -81,7 +84,8 @@ impl Server {
                     request_handler,
                     secret_provider,
                     skip_authenticity_validation,
-                ).await;
+                )
+                .await;
             });
         }
     }
@@ -99,7 +103,10 @@ impl Server {
         let secret: Vec<u8> = match secret_provider.fetch_secret(remote_addr) {
             Ok(secret) => secret,
             Err(e) => {
-                error!("failed to fetch secret binary vector from the secret provider; {}", e);
+                error!(
+                    "failed to fetch secret binary vector from the secret provider; {}",
+                    e
+                );
                 return;
             }
         };
@@ -116,7 +123,10 @@ impl Server {
         let packet = match Packet::parse(request_data, &secret) {
             Ok(packet) => packet,
             Err(e) => {
-                error!("failed to parse given request data to pack into the RADIUS packet; {}", e);
+                error!(
+                    "failed to parse given request data to pack into the RADIUS packet; {}",
+                    e
+                );
                 debug!("failed request data => {:?}", request_data);
                 // TODO error handler?
                 return;
@@ -137,7 +147,10 @@ impl Server {
             undergoing_requests.insert(key);
         }
 
-        request_handler.handle_radius_request(conn.borrow(), &Request::new(local_addr, remote_addr, packet));
+        request_handler.handle_radius_request(
+            conn.borrow(),
+            &Request::new(local_addr, remote_addr, packet),
+        );
 
         let mut undergoing_requests = undergoing_requests_lock.write().unwrap();
         undergoing_requests.remove(&key_for_remove);
@@ -149,4 +162,3 @@ struct RequestKey {
     ip: String,
     identifier: u8,
 }
-

@@ -5,7 +5,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum SecretProviderError {
     #[error("failed to fetch a secret value => `{0}`")]
-    FailedFetching(String)
+    FailedFetching(String),
 }
 
 pub trait SecretProvider: 'static + Sync + Send {

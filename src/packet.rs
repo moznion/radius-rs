@@ -33,7 +33,8 @@ impl Packet {
         self.identifier
     }
 
-    pub fn get_secret(&self) -> &Vec<u8> { // TODO
+    pub fn get_secret(&self) -> &Vec<u8> {
+        // TODO
         &self.secret
     }
 
@@ -82,14 +83,23 @@ impl Packet {
 
         match self.code {
             Code::AccessRequest | Code::StatusServer => Ok(bs),
-            Code::AccessAccept | Code::AccessReject | Code::AccountingRequest | Code::AccessChallenge | Code::DisconnectRequest | Code::DisconnectACK | Code::DisconnectNAK | Code::CoARequest | Code::CoAACK | Code::CoANAK => {
+            Code::AccessAccept
+            | Code::AccessReject
+            | Code::AccountingRequest
+            | Code::AccessChallenge
+            | Code::DisconnectRequest
+            | Code::DisconnectACK
+            | Code::DisconnectNAK
+            | Code::CoARequest
+            | Code::CoAACK
+            | Code::CoANAK => {
                 // TODO length checking
                 let mut buf: Vec<u8> = bs[..4].to_vec();
                 match self.code {
                     Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => {
                         buf.extend(vec![
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
                         ]);
                     }
                     _ => {
@@ -100,14 +110,14 @@ impl Packet {
                 buf.extend(&self.secret);
                 Ok(md5::compute(buf).to_vec())
             }
-            _ => Err("unknown packet code".to_owned())
+            _ => Err("unknown packet code".to_owned()),
         }
     }
 
     pub fn marshal_binary(&self) -> Result<Vec<u8>, String> {
         let attributes_len = match self.attributes.attributes_encoded_len() {
             Ok(attributes_len) => attributes_len,
-            Err(e) => return Err(e)
+            Err(e) => return Err(e),
         };
 
         let size = 20 + attributes_len;
@@ -128,12 +138,17 @@ impl Packet {
             return false;
         }
 
-        md5::compute([
-            &response[..4],
-            &request[4..20],
-            &response[20..], // TODO length
-            &secret,
-        ].concat()).to_vec().eq(&response[4..20].to_vec())
+        md5::compute(
+            [
+                &response[..4],
+                &request[4..20],
+                &response[20..], // TODO length
+                &secret,
+            ]
+            .concat(),
+        )
+        .to_vec()
+        .eq(&response[4..20].to_vec())
     }
 
     pub fn is_authentic_request(request: &[u8], secret: &[u8]) -> bool {
@@ -144,17 +159,22 @@ impl Packet {
         match Code::from(request[0]) {
             Code::AccessRequest | Code::StatusServer => true,
             Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => {
-                md5::compute([
-                    &request[..4],
-                    &[
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                    ],
-                    &request[20..], // TODO length
-                    &secret,
-                ].concat()).to_vec().eq(&request[4..20].to_vec())
+                md5::compute(
+                    [
+                        &request[..4],
+                        &[
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                        ],
+                        &request[20..], // TODO length
+                        &secret,
+                    ]
+                    .concat(),
+                )
+                .to_vec()
+                .eq(&request[4..20].to_vec())
             }
-            _ => false
+            _ => false,
         }
     }
 }
@@ -170,10 +190,10 @@ mod tests {
 
         let secret: Vec<u8> = "xyzzy5461".as_bytes().to_vec();
         let request: Vec<u8> = vec![
-            0x01, 0x00, 0x00, 0x38, 0x0f, 0x40, 0x3f, 0x94, 0x73, 0x97, 0x80, 0x57, 0xbd, 0x83, 0xd5, 0xcb,
-            0x98, 0xf4, 0x22, 0x7a, 0x01, 0x06, 0x6e, 0x65, 0x6d, 0x6f, 0x02, 0x12, 0x0d, 0xbe, 0x70, 0x8d,
-            0x93, 0xd4, 0x13, 0xce, 0x31, 0x96, 0xe4, 0x3f, 0x78, 0x2a, 0x0a, 0xee, 0x04, 0x06, 0xc0, 0xa8,
-            0x01, 0x10, 0x05, 0x06, 0x00, 0x00, 0x00, 0x03,
+            0x01, 0x00, 0x00, 0x38, 0x0f, 0x40, 0x3f, 0x94, 0x73, 0x97, 0x80, 0x57, 0xbd, 0x83,
+            0xd5, 0xcb, 0x98, 0xf4, 0x22, 0x7a, 0x01, 0x06, 0x6e, 0x65, 0x6d, 0x6f, 0x02, 0x12,
+            0x0d, 0xbe, 0x70, 0x8d, 0x93, 0xd4, 0x13, 0xce, 0x31, 0x96, 0xe4, 0x3f, 0x78, 0x2a,
+            0x0a, 0xee, 0x04, 0x06, 0xc0, 0xa8, 0x01, 0x10, 0x05, 0x06, 0x00, 0x00, 0x00, 0x03,
         ];
 
         let packet = Packet::parse(&request, &secret)?;
