@@ -17,7 +17,7 @@ pub struct Packet {
 }
 
 impl Packet {
-    pub fn new(code: &Code, secret: &Vec<u8>) -> Self {
+    pub fn new(code: Code, secret: &Vec<u8>) -> Self {
         let mut rng = rand::thread_rng();
         let authenticator = (0..16).map(|_| rng.gen()).collect::<Vec<u8>>();
         Packet {
