@@ -11,22 +11,22 @@ use crate::request::Request;
 use crate::request_handler::RequestHandler;
 use crate::secret_provider::SecretProvider;
 
-pub struct Server<T: 'static + RequestHandler, U: 'static + SecretProvider> {
+pub struct Server<T: RequestHandler, U: SecretProvider> {
     address: String,
     buf_size: u8,
     skip_authenticity_validation: bool,
-    request_handler: &'static T,
-    secret_provider: &'static U,
+    request_handler_arc: Arc<T>,
+    secret_provider_arc: Arc<U>,
 }
 
 impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
-    pub fn new(host: &str, port: u16, buf_size: u8, skip_authenticity_validation: bool, request_handler: &'static T, secret_provider: &'static U) -> Self {
+    pub fn new(host: &str, port: u16, buf_size: u8, skip_authenticity_validation: bool, request_handler: T, secret_provider: U) -> Self {
         Self {
             address: format!("{}:{}", host, port),
             buf_size,
             skip_authenticity_validation,
-            request_handler,
-            secret_provider,
+            request_handler_arc: Arc::new(request_handler),
+            secret_provider_arc: Arc::new(secret_provider),
         }
     }
 
@@ -38,6 +38,8 @@ impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
 
         loop {
             let conn = conn_arc.clone();
+            let request_handler = self.request_handler_arc.clone();
+            let secret_provider = self.secret_provider_arc.clone();
 
             tokio::select! {
                 received = conn.recv_from(&mut buf) => {
@@ -62,8 +64,8 @@ impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
                             local_addr,
                             remote_addr,
                             undergoing_requests_lock,
-                            self.request_handler,
-                            self.secret_provider,
+                            request_handler,
+                            secret_provider,
                             self.skip_authenticity_validation,
                         ).await;
                     });
@@ -78,8 +80,8 @@ impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
         local_addr: SocketAddr,
         remote_addr: SocketAddr,
         undergoing_requests_lock: Arc<RwLock<HashSet<RequestKey>>>,
-        request_handler: &T,
-        secret_provider: &U,
+        request_handler: Arc<T>,
+        secret_provider: Arc<U>,
         skip_authenticity_validation: bool,
     ) {
         let secret: Vec<u8> = match secret_provider.fetch_secret(remote_addr) {
