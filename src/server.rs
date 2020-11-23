@@ -14,7 +14,6 @@ use crate::server_shutdown_trigger::ServerShutdownTrigger;
 
 pub struct Server<T: RequestHandler, U: SecretProvider> {
     address: String,
-    buf_size: u8,
     skip_authenticity_validation: bool,
     request_handler_arc: Arc<T>,
     secret_provider_arc: Arc<U>,
@@ -22,10 +21,9 @@ pub struct Server<T: RequestHandler, U: SecretProvider> {
 }
 
 impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
-    pub fn new(host: &str, port: u16, buf_size: u8, skip_authenticity_validation: bool, request_handler: T, secret_provider: U) -> Self {
+    pub fn new(host: &str, port: u16, skip_authenticity_validation: bool, request_handler: T, secret_provider: U) -> Self {
         Self {
             address: format!("{}:{}", host, port),
-            buf_size,
             skip_authenticity_validation,
             request_handler_arc: Arc::new(request_handler),
             secret_provider_arc: Arc::new(secret_provider),
@@ -34,7 +32,7 @@ impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
     }
 
     pub async fn run(&'static self) -> Result<(), io::Error> {
-        let mut buf = vec![0, self.buf_size];
+        let mut buf = Vec::new();
 
         let conn_arc = Arc::new(UdpSocket::bind(&self.address).await?);
         let undergoing_requests_lock_arc = Arc::new(RwLock::new(HashSet::new()));
