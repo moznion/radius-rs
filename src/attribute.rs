@@ -33,7 +33,7 @@ impl Attribute {
             return Err("the length of plain_text has to be within 128, but the given value is longer".to_owned());
         }
 
-        if secret.len() <= 0 {
+        if secret.len() == 0 {
             return Err("secret hasn't be empty, but the given value is empty".to_owned());
         }
 
@@ -127,7 +127,7 @@ impl Attribute {
             return Err(format!("invalid attribute length {}", self.0.len()));
         }
 
-        if secret.len() <= 0 {
+        if secret.len() == 0 {
             return Err("secret hasn't be empty, but the given value is empty".to_owned());
         }
 

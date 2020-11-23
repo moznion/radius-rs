@@ -103,7 +103,7 @@ impl Server {
                 return;
             }
         };
-        if secret.len() <= 0 {
+        if secret.len() == 0 {
             error!("empty secret returned from secret source; empty secret is prohibited");
             return;
         }
