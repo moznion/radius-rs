@@ -39,31 +39,36 @@ impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
         loop {
             let conn = conn_arc.clone();
 
-            let (size, remote_addr) = conn.recv_from(&mut buf).await?;
-            let request_data = buf[..size].to_vec();
+            tokio::select! {
+                received = conn.recv_from(&mut buf) => {
+                    let (size, remote_addr) = received?;
 
-            let local_addr = match conn.local_addr() {
-                Ok(addr) => addr,
-                Err(e) => {
-                    error!("failed to get a local address from from a connection; {}", e);
-                    continue;
+                    let request_data = buf[..size].to_vec();
+
+                    let local_addr = match conn.local_addr() {
+                        Ok(addr) => addr,
+                        Err(e) => {
+                            error!("failed to get a local address from from a connection; {}", e);
+                            continue;
+                        }
+                    };
+
+                    let undergoing_requests_lock = undergoing_requests_lock_arc.clone();
+
+                    tokio::spawn(async move {
+                        Self::process_request(
+                            conn,
+                            &request_data,
+                            local_addr,
+                            remote_addr,
+                            undergoing_requests_lock,
+                            self.request_handler,
+                            self.secret_provider,
+                            self.skip_authenticity_validation,
+                        ).await;
+                    });
                 }
-            };
-
-            let undergoing_requests_lock = undergoing_requests_lock_arc.clone();
-
-            tokio::spawn(async move {
-                Self::process_request(
-                    conn,
-                    &request_data,
-                    local_addr,
-                    remote_addr,
-                    undergoing_requests_lock,
-                    self.request_handler,
-                    self.secret_provider,
-                    self.skip_authenticity_validation,
-                ).await;
-            });
+            }
         }
     }
 
