@@ -81,6 +81,6 @@ impl Attributes {
             encoded = encoded[size..].to_owned();
         }
 
-        return encoded;
+        encoded
     }
 }

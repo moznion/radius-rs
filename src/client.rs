@@ -47,7 +47,7 @@ impl Client {
 
         let request_data = match request_packet.encode() {
             Ok(encoded) => encoded,
-            Err(e) => return Err(FailedRadiusPacketEncoding(e.to_string()))
+            Err(e) => return Err(FailedRadiusPacketEncoding(e))
         };
 
         match conn.send(request_data.as_slice()).await {
@@ -63,7 +63,7 @@ impl Client {
 
         match Packet::parse(&buf[..len].to_vec(), request_packet.get_secret()) {
             Ok(response_packet) => Ok(response_packet),
-            Err(e) => Err(FailedParsingUDPResponse(e.to_string()))
+            Err(e) => Err(FailedParsingUDPResponse(e))
         }
     }
 }

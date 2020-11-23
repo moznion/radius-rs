@@ -8,11 +8,11 @@ use chrono::{DateTime, Utc, TimeZone};
 pub struct Attribute(pub(crate) Vec<u8>);
 
 impl Attribute {
-    pub fn from_integer32(v: &u32) -> Self {
-        Attribute(u32::to_be_bytes(*v).to_vec())
+    pub fn from_integer32(v: u32) -> Self {
+        Attribute(u32::to_be_bytes(v).to_vec())
     }
 
-    pub fn from_string(v: &String) -> Self {
+    pub fn from_string(v: &str) -> Self {
         Attribute(v.as_bytes().to_vec())
     }
 
@@ -33,7 +33,7 @@ impl Attribute {
             return Err("the length of plain_text has to be within 128, but the given value is longer".to_owned());
         }
 
-        if secret.len() == 0 {
+        if secret.is_empty() {
             return Err("secret hasn't be empty, but the given value is empty".to_owned());
         }
 
@@ -127,7 +127,7 @@ impl Attribute {
             return Err(format!("invalid attribute length {}", self.0.len()));
         }
 
-        if secret.len() == 0 {
+        if secret.is_empty() {
             return Err("secret hasn't be empty, but the given value is empty".to_owned());
         }
 

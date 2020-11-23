@@ -64,9 +64,9 @@ impl Packet {
         })
     }
 
-    pub fn response(&self, code: &Code) -> Self {
+    pub fn response(&self, code: Code) -> Self {
         Packet {
-            code: code.clone(),
+            code,
             identifier: self.identifier,
             authenticator: self.authenticator.clone(),
             secret: self.secret.clone(),
@@ -77,7 +77,7 @@ impl Packet {
     pub fn encode(&self) -> Result<Vec<u8>, String> {
         let bs = match self.marshal_binary() {
             Ok(bs) => bs,
-            Err(e) => return Err(e.to_string()),
+            Err(e) => return Err(e),
         };
 
         match self.code {
@@ -107,7 +107,7 @@ impl Packet {
     pub fn marshal_binary(&self) -> Result<Vec<u8>, String> {
         let attributes_len = match self.attributes.attributes_encoded_len() {
             Ok(attributes_len) => attributes_len,
-            Err(e) => return Err(e.to_string())
+            Err(e) => return Err(e)
         };
 
         let size = 20 + attributes_len;
@@ -116,7 +116,7 @@ impl Packet {
         }
 
         let mut bs: Vec<u8> = Vec::new();
-        bs.push(self.code.clone() as u8);
+        bs.push(self.code as u8);
         bs.push(self.identifier);
         bs.extend(u16::to_be_bytes(size).to_vec());
         bs.extend(self.authenticator.to_vec());
@@ -124,7 +124,7 @@ impl Packet {
     }
 
     pub fn is_authentic_response(response: Vec<u8>, request: Vec<u8>, secret: Vec<u8>) -> bool {
-        if response.len() < 20 || request.len() < 20 || secret.len() == 0 {
+        if response.len() < 20 || request.len() < 20 || secret.is_empty() {
             return false;
         }
 
@@ -137,7 +137,7 @@ impl Packet {
     }
 
     pub fn is_authentic_request(request: &[u8], secret: &[u8]) -> bool {
-        if request.len() < 20 || secret.len() == 0 {
+        if request.len() < 20 || secret.is_empty() {
             return false;
         }
 
@@ -146,7 +146,7 @@ impl Packet {
             Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => {
                 md5::compute([
                     &request[..4],
-                    &vec![
+                    &[
                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                         0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                     ],

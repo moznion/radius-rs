@@ -88,7 +88,7 @@ impl Server {
 
     async fn process_request<T: RequestHandler, U: SecretProvider>(
         conn: Arc<UdpSocket>,
-        request_data: &Vec<u8>, // TODO
+        request_data: &[u8],
         local_addr: SocketAddr,
         remote_addr: SocketAddr,
         undergoing_requests_lock: Arc<RwLock<HashSet<RequestKey>>>,
@@ -103,7 +103,7 @@ impl Server {
                 return;
             }
         };
-        if secret.len() == 0 {
+        if secret.is_empty() {
             error!("empty secret returned from secret source; empty secret is prohibited");
             return;
         }
