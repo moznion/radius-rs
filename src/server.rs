@@ -118,6 +118,7 @@ impl Server {
             Err(e) => {
                 error!("failed to parse given request data to pack into the RADIUS packet; {}", e);
                 debug!("failed request data => {:?}", request_data);
+                // TODO error handler?
                 return;
             }
         };

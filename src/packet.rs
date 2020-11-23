@@ -29,8 +29,12 @@ impl Packet {
         }
     }
 
-    pub(crate) fn get_identifier(&self) -> u8 {
+    pub fn get_identifier(&self) -> u8 {
         self.identifier
+    }
+
+    pub fn get_secret(&self) -> &Vec<u8> {
+        &self.secret
     }
 
     pub fn parse(bs: &Vec<u8>, secret: &Vec<u8>) -> Result<Self, String> {
