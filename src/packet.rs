@@ -17,7 +17,7 @@ pub struct Packet {
 }
 
 impl Packet {
-    pub fn new(code: Code, secret: &Vec<u8>) -> Self {
+    pub fn new(code: Code, secret: &[u8]) -> Self {
         let mut rng = rand::thread_rng();
         let authenticator = (0..16).map(|_| rng.gen()).collect::<Vec<u8>>();
         Packet {
@@ -33,11 +33,11 @@ impl Packet {
         self.identifier
     }
 
-    pub fn get_secret(&self) -> &Vec<u8> {
+    pub fn get_secret(&self) -> &Vec<u8> { // TODO
         &self.secret
     }
 
-    pub fn parse(bs: &Vec<u8>, secret: &Vec<u8>) -> Result<Self, String> {
+    pub fn parse(bs: &[u8], secret: &[u8]) -> Result<Self, String> {
         if bs.len() < 20 {
             return Err("radius packet doesn't have enough length of bytes; that has to be at least 20 bytes".to_owned());
         }
@@ -136,7 +136,7 @@ impl Packet {
         ].concat()).to_vec().eq(&response[4..20].to_vec())
     }
 
-    pub fn is_authentic_request(request: &Vec<u8>, secret: &Vec<u8>) -> bool {
+    pub fn is_authentic_request(request: &[u8], secret: &[u8]) -> bool {
         if request.len() < 20 || secret.len() == 0 {
             return false;
         }

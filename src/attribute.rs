@@ -16,7 +16,7 @@ impl Attribute {
         Attribute(v.as_bytes().to_vec())
     }
 
-    pub fn from_bytes(v: &Vec<u8>) -> Self {
+    pub fn from_bytes(v: &[u8]) -> Self {
         Attribute(v.to_vec())
     }
 
@@ -28,7 +28,7 @@ impl Attribute {
         Attribute(v.octets().to_vec())
     }
 
-    pub fn from_user_password(plain_text: &Vec<u8>, secret: &Vec<u8>, request_authenticator: &Vec<u8>) -> Result<Self, String> {
+    pub fn from_user_password(plain_text: &[u8], secret: &[u8], request_authenticator: &[u8]) -> Result<Self, String> {
         if plain_text.len() > 128 {
             return Err("the length of plain_text has to be within 128, but the given value is longer".to_owned());
         }
@@ -122,7 +122,7 @@ impl Attribute {
         }
     }
 
-    pub fn to_user_password(&self, secret: &Vec<u8>, request_authenticator: &Vec<u8>) -> Result<Vec<u8>, String> {
+    pub fn to_user_password(&self, secret: &[u8], request_authenticator: &[u8]) -> Result<Vec<u8>, String> {
         if self.0.len() < 16 || self.0.len() > 128 {
             return Err(format!("invalid attribute length {}", self.0.len()));
         }
