@@ -1,5 +1,6 @@
 use std::borrow::Borrow;
 use std::collections::HashSet;
+use std::future::Future;
 use std::io;
 use std::net::SocketAddr;
 use std::sync::{Arc, RwLock};
@@ -10,80 +11,82 @@ use crate::packet::Packet;
 use crate::request::Request;
 use crate::request_handler::RequestHandler;
 use crate::secret_provider::SecretProvider;
-use crate::server_shutdown_trigger::ServerShutdownTrigger;
 
-pub struct Server<T: RequestHandler, U: SecretProvider> {
-    address: String,
-    skip_authenticity_validation: bool,
-    request_handler_arc: Arc<T>,
-    secret_provider_arc: Arc<U>,
-    shutdown_trigger: ServerShutdownTrigger,
-}
+pub struct Server {}
 
-impl<T: RequestHandler, U: SecretProvider> Server<T, U> {
-    pub fn new(host: &str, port: u16, skip_authenticity_validation: bool, request_handler: T, secret_provider: U) -> Self {
-        Self {
-            address: format!("{}:{}", host, port),
-            skip_authenticity_validation,
-            request_handler_arc: Arc::new(request_handler),
-            secret_provider_arc: Arc::new(secret_provider),
-            shutdown_trigger: ServerShutdownTrigger::new(),
-        }
-    }
-
-    pub async fn run(&'static self) -> Result<(), io::Error> {
-        let mut buf = Vec::new();
-
-        let conn_arc = Arc::new(UdpSocket::bind(&self.address).await?);
-        let undergoing_requests_lock_arc = Arc::new(RwLock::new(HashSet::new()));
-
-        loop {
-            let conn = conn_arc.clone();
-            let request_handler = self.request_handler_arc.clone();
-            let secret_provider = self.secret_provider_arc.clone();
-
-            tokio::select! {
-                received = conn.recv_from(&mut buf) => {
-                    let (size, remote_addr) = received?;
-
-                    let request_data = buf[..size].to_vec();
-
-                    let local_addr = match conn.local_addr() {
-                        Ok(addr) => addr,
-                        Err(e) => {
-                            error!("failed to get a local address from from a connection; {}", e);
-                            continue;
-                        }
-                    };
-
-                    let undergoing_requests_lock = undergoing_requests_lock_arc.clone();
-
-                    tokio::spawn(async move {
-                        Self::process_request(
-                            conn,
-                            &request_data,
-                            local_addr,
-                            remote_addr,
-                            undergoing_requests_lock,
-                            request_handler,
-                            secret_provider,
-                            self.skip_authenticity_validation,
-                        ).await;
-                    });
-                }
-                Some(_) = self.shutdown_trigger => {
-                    info!("server is shutting down");
-                    return Ok(());
-                }
+impl Server {
+    pub async fn run<T: RequestHandler, U: SecretProvider>(
+        host: &str,
+        port: u16,
+        buf_size: usize,
+        skip_authenticity_validation: bool,
+        request_handler: T,
+        secret_provider: U,
+        shutdown_trigger: impl Future,
+    ) -> Result<(), io::Error> {
+        tokio::select! {
+            res = Self::run_loop(host, port, buf_size, skip_authenticity_validation, request_handler, secret_provider) => {
+                res
+            }
+            _ = shutdown_trigger => {
+                info!("server is shutting down");
+                Ok(())
             }
         }
     }
 
-    pub fn trigger_shutdown(&mut self) {
-        self.shutdown_trigger.trigger_shutdown();
+    async fn run_loop<T: RequestHandler, U: SecretProvider>(
+        host: &str,
+        port: u16,
+        buf_size: usize,
+        skip_authenticity_validation: bool,
+        request_handler: T,
+        secret_provider: U,
+    ) -> Result<(), io::Error> {
+        let address = format!("{}:{}", host, port);
+        let conn = UdpSocket::bind(address).await?;
+
+        let conn_arc = Arc::new(conn);
+        let undergoing_requests_lock_arc = Arc::new(RwLock::new(HashSet::new()));
+        let request_handler_arc = Arc::new(request_handler);
+        let secret_provider_arc = Arc::new(secret_provider);
+
+        let mut buf = vec![Default::default(); buf_size];
+        loop {
+            let conn = conn_arc.clone();
+            let request_handler = request_handler_arc.clone();
+            let secret_provider = secret_provider_arc.clone();
+
+            let (size, remote_addr) = conn.recv_from(&mut buf).await?;
+
+            let request_data = buf[..size].to_vec();
+
+            let local_addr = match conn.local_addr() {
+                Ok(addr) => addr,
+                Err(e) => {
+                    error!("failed to get a local address from from a connection; {}", e);
+                    continue;
+                }
+            };
+
+            let undergoing_requests_lock = undergoing_requests_lock_arc.clone();
+
+            tokio::spawn(async move {
+                Self::process_request(
+                    conn,
+                    &request_data,
+                    local_addr,
+                    remote_addr,
+                    undergoing_requests_lock,
+                    request_handler,
+                    secret_provider,
+                    skip_authenticity_validation,
+                ).await;
+            });
+        }
     }
 
-    async fn process_request(
+    async fn process_request<T: RequestHandler, U: SecretProvider>(
         conn: Arc<UdpSocket>,
         request_data: &Vec<u8>,
         local_addr: SocketAddr,

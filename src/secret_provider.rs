@@ -8,6 +8,6 @@ pub enum SecretProviderError {
     FailedFetching(String)
 }
 
-pub trait SecretProvider: Sync + Send {
+pub trait SecretProvider: 'static + Sync + Send {
     fn fetch_secret(&self, remote_addr: SocketAddr) -> Result<Vec<u8>, SecretProviderError>;
 }

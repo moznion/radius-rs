@@ -9,4 +9,3 @@ pub mod server;
 pub mod secret_provider;
 pub mod request_handler;
 pub mod request;
-pub mod server_shutdown_trigger;
