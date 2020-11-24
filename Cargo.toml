@@ -16,4 +16,5 @@ tokio = { version = "0.3.4", features = ["full"] }
 log = "0.4.11"
 thiserror = "1.0"
 regex = "1"
-getopts = "0.2"
+getopts = "0.2" # TODO for dev
+Inflector = "0.11" # TODO for dev

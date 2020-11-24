@@ -1,12 +1,12 @@
 use crate::attribute::Attribute;
 
-pub type Type = u8;
+pub type AVPType = u8;
 
-pub const TYPE_INVALID: Type = 1;
+pub const TYPE_INVALID: AVPType = 255;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct AVP {
-    typ: Type,
+    typ: AVPType,
     attribute: Attribute,
 }
 
@@ -43,8 +43,38 @@ impl Attributes {
         Ok(Attributes(attrs))
     }
 
-    pub fn add(&mut self, typ: Type, attribute: Attribute) {
+    pub(crate) fn add(&mut self, typ: AVPType, attribute: Attribute) {
         self.0.push(AVP { typ, attribute })
+    }
+
+    pub(crate) fn del(&mut self, typ: AVPType) {
+        self.0 = self
+            .0
+            .iter()
+            .filter(|&avp| avp.typ != typ)
+            .cloned()
+            .collect();
+    }
+
+    pub(crate) fn lookup(&self, typ: AVPType) -> Option<&Attribute> {
+        self.0.iter().find_map(|avp| {
+            if avp.typ == typ {
+                return Some(&avp.attribute);
+            }
+            None
+        })
+    }
+
+    pub(crate) fn lookup_all(&self, typ: AVPType) -> Vec<&Attribute> {
+        self.0
+            .iter()
+            .filter_map(|avp| {
+                if avp.typ == typ {
+                    Some(&avp.attribute);
+                }
+                None
+            })
+            .collect()
     }
 
     pub fn attributes_encoded_len(&self) -> Result<u16, String> {
