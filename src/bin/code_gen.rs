@@ -123,13 +123,16 @@ fn generate_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
     match attr.value_type {
         RadiusAttributeValueType::STRING => {
             generate_common_attribute_code(w, attr);
-            generate_string_attribute_code(w, attr)
+            generate_string_attribute_code(w, attr);
         }
         RadiusAttributeValueType::USER_PASSWORD => {
             generate_common_attribute_code(w, attr);
-            generate_user_password_attribute_code(w, attr)
+            generate_user_password_attribute_code(w, attr);
         }
-        // RadiusAttributeValueType::OCTETS => generate_octets_attribute_code(w, attr),
+        RadiusAttributeValueType::OCTETS => {
+            generate_common_attribute_code(w, attr);
+            generate_octets_attribute_code(w, attr);
+        }
         // RadiusAttributeValueType::IPADDR => generate_ipaddr_attribute_code(w, attr),
         // RadiusAttributeValueType::INTEGER => generate_integer_attribute_code(w, attr),
         // RadiusAttributeValueType::VSA => generate_vsa_attribute_code(w, attr),
@@ -204,13 +207,36 @@ fn generate_user_password_attribute_code(w: &mut BufWriter<File>, attr: &RadiusA
     w.write_all(code.as_bytes()).unwrap();
 }
 
-fn generate_octets_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {}
+fn generate_octets_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
+    let attr_name = attr.name.clone();
 
-fn generate_ipaddr_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {}
+    let type_identifier = format!("{}_TYPE", attr_name.to_screaming_snake_case());
+    let type_calling = format!("Self::{}", type_identifier);
 
-fn generate_integer_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {}
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) {{
+    let attr = Attribute::from_bytes(value);
+    packet.add({type_calling}, &attr);
+}}
+",
+        method_identifier = attr_name.to_snake_case(),
+        type_calling = type_calling,
+    );
 
-fn generate_vsa_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {}
+    w.write_all(code.as_bytes()).unwrap();
+}
+
+fn generate_ipaddr_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
+    unimplemented!()
+}
+
+fn generate_integer_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
+    unimplemented!()
+}
+
+fn generate_vsa_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
+    unimplemented!()
+}
 
 type DictParsed = (Vec<RadiusAttribute>, HashMap<String, Vec<RadiusValue>>);
 

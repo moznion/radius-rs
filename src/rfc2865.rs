@@ -38,6 +38,21 @@ impl RFC2865 {
         Ok(())
     }
 
+    pub const CHAP_PASSWORD_TYPE: AVPType = 3;
+    pub fn delete_chap_password(packet: &mut Packet) {
+        packet.delete(Self::CHAP_PASSWORD_TYPE);
+    }
+    pub fn lookup_chap_password(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::CHAP_PASSWORD_TYPE)
+    }
+    pub fn lookup_all_chap_password(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::CHAP_PASSWORD_TYPE)
+    }
+    pub fn add_chap_password(packet: &mut Packet, value: &[u8]) {
+        let attr = Attribute::from_bytes(value);
+        packet.add(Self::CHAP_PASSWORD_TYPE, &attr);
+    }
+
     pub const FILTER_ID_TYPE: AVPType = 11;
     pub fn delete_filter_id(packet: &mut Packet) {
         packet.delete(Self::FILTER_ID_TYPE);
@@ -113,6 +128,36 @@ impl RFC2865 {
         packet.add(Self::FRAMED_ROUTE_TYPE, &attr);
     }
 
+    pub const STATE_TYPE: AVPType = 24;
+    pub fn delete_state(packet: &mut Packet) {
+        packet.delete(Self::STATE_TYPE);
+    }
+    pub fn lookup_state(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::STATE_TYPE)
+    }
+    pub fn lookup_all_state(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::STATE_TYPE)
+    }
+    pub fn add_state(packet: &mut Packet, value: &[u8]) {
+        let attr = Attribute::from_bytes(value);
+        packet.add(Self::STATE_TYPE, &attr);
+    }
+
+    pub const CLASS_TYPE: AVPType = 25;
+    pub fn delete_class(packet: &mut Packet) {
+        packet.delete(Self::CLASS_TYPE);
+    }
+    pub fn lookup_class(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::CLASS_TYPE)
+    }
+    pub fn lookup_all_class(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::CLASS_TYPE)
+    }
+    pub fn add_class(packet: &mut Packet, value: &[u8]) {
+        let attr = Attribute::from_bytes(value);
+        packet.add(Self::CLASS_TYPE, &attr);
+    }
+
     pub const CALLED_STATION_ID_TYPE: AVPType = 30;
     pub fn delete_called_station_id(packet: &mut Packet) {
         packet.delete(Self::CALLED_STATION_ID_TYPE);
@@ -158,6 +203,21 @@ impl RFC2865 {
         packet.add(Self::NAS_IDENTIFIER_TYPE, &attr);
     }
 
+    pub const PROXY_STATE_TYPE: AVPType = 33;
+    pub fn delete_proxy_state(packet: &mut Packet) {
+        packet.delete(Self::PROXY_STATE_TYPE);
+    }
+    pub fn lookup_proxy_state(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::PROXY_STATE_TYPE)
+    }
+    pub fn lookup_all_proxy_state(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::PROXY_STATE_TYPE)
+    }
+    pub fn add_proxy_state(packet: &mut Packet, value: &[u8]) {
+        let attr = Attribute::from_bytes(value);
+        packet.add(Self::PROXY_STATE_TYPE, &attr);
+    }
+
     pub const LOGIN_LAT_SERVICE_TYPE: AVPType = 34;
     pub fn delete_login_lat_service(packet: &mut Packet) {
         packet.delete(Self::LOGIN_LAT_SERVICE_TYPE);
@@ -188,6 +248,21 @@ impl RFC2865 {
         packet.add(Self::LOGIN_LAT_NODE_TYPE, &attr);
     }
 
+    pub const LOGIN_LAT_GROUP_TYPE: AVPType = 36;
+    pub fn delete_login_lat_group(packet: &mut Packet) {
+        packet.delete(Self::LOGIN_LAT_GROUP_TYPE);
+    }
+    pub fn lookup_login_lat_group(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::LOGIN_LAT_GROUP_TYPE)
+    }
+    pub fn lookup_all_login_lat_group(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::LOGIN_LAT_GROUP_TYPE)
+    }
+    pub fn add_login_lat_group(packet: &mut Packet, value: &[u8]) {
+        let attr = Attribute::from_bytes(value);
+        packet.add(Self::LOGIN_LAT_GROUP_TYPE, &attr);
+    }
+
     pub const FRAMED_APPLE_TALK_ZONE_TYPE: AVPType = 39;
     pub fn delete_framed_apple_talk_zone(packet: &mut Packet) {
         packet.delete(Self::FRAMED_APPLE_TALK_ZONE_TYPE);
@@ -201,6 +276,21 @@ impl RFC2865 {
     pub fn add_framed_apple_talk_zone(packet: &mut Packet, value: &str) {
         let attr = Attribute::from_string(value);
         packet.add(Self::FRAMED_APPLE_TALK_ZONE_TYPE, &attr);
+    }
+
+    pub const CHAP_CHALLENGE_TYPE: AVPType = 60;
+    pub fn delete_chap_challenge(packet: &mut Packet) {
+        packet.delete(Self::CHAP_CHALLENGE_TYPE);
+    }
+    pub fn lookup_chap_challenge(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::CHAP_CHALLENGE_TYPE)
+    }
+    pub fn lookup_all_chap_challenge(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::CHAP_CHALLENGE_TYPE)
+    }
+    pub fn add_chap_challenge(packet: &mut Packet, value: &[u8]) {
+        let attr = Attribute::from_bytes(value);
+        packet.add(Self::CHAP_CHALLENGE_TYPE, &attr);
     }
 
     pub const LOGIN_LAT_PORT_TYPE: AVPType = 63;
