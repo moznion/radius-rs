@@ -22,9 +22,11 @@ impl RFC2865 {
     }
 
     pub const USER_PASSWORD_TYPE: AVPType = 2;
-    pub fn add_user_password(packet: &mut Packet, value: &str) {
-        let attr = Attribute::from_string(value);
+    pub fn add_user_password(packet: &mut Packet, value: &[u8]) -> Result<(), String> {
+        let attr =
+            Attribute::from_user_password(value, packet.get_secret(), packet.get_authenticator())?;
         packet.add(Self::USER_PASSWORD_TYPE, &attr);
+        Ok(())
     }
     pub fn delete_user_password(packet: &mut Packet) {
         packet.delete(Self::USER_PASSWORD_TYPE);

@@ -35,8 +35,11 @@ impl Packet {
     }
 
     pub fn get_secret(&self) -> &Vec<u8> {
-        // TODO
         &self.secret
+    }
+
+    pub fn get_authenticator(&self) -> &Vec<u8> {
+        &self.get_authenticator()
     }
 
     pub fn parse(bs: &[u8], secret: &[u8]) -> Result<Self, String> {

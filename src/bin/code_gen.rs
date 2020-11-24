@@ -26,9 +26,10 @@ struct RadiusValue {
     typ: u16,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum RadiusAttributeValueType {
     STRING,
+    USER_PASSWORD,
     OCTETS,
     IPADDR,
     INTEGER,
@@ -40,6 +41,7 @@ impl FromStr for RadiusAttributeValueType {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_uppercase().as_str() {
             "STRING" => Ok(RadiusAttributeValueType::STRING),
+            "USER_PASSWORD" => Ok(RadiusAttributeValueType::USER_PASSWORD),
             "OCTETS" => Ok(RadiusAttributeValueType::OCTETS),
             "IPADDR" => Ok(RadiusAttributeValueType::IPADDR),
             "INTEGER" => Ok(RadiusAttributeValueType::INTEGER),
@@ -120,6 +122,7 @@ fn generate_attributes_code(w: &mut BufWriter<File>, attrs: &[RadiusAttribute]) 
 fn generate_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
     match attr.value_type {
         RadiusAttributeValueType::STRING => generate_string_attribute_code(w, attr),
+        RadiusAttributeValueType::USER_PASSWORD => generate_user_password_attribute_code(w, attr),
         RadiusAttributeValueType::OCTETS => generate_octets_attribute_code(w, attr),
         RadiusAttributeValueType::IPADDR => generate_ipaddr_attribute_code(w, attr),
         RadiusAttributeValueType::INTEGER => generate_integer_attribute_code(w, attr),
@@ -138,6 +141,39 @@ fn generate_string_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribut
 pub fn add_{method_identifier}(packet: &mut Packet, value: &str) {{
     let attr = Attribute::from_string(value);
     packet.add({type_calling}, &attr);
+}}
+pub fn delete_{method_identifier}(packet: &mut Packet) {{
+    packet.delete({type_calling});
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<&Attribute> {{
+    packet.lookup({type_calling})
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<&Attribute> {{
+    packet.lookup_all({type_calling})
+}}
+
+",
+        method_identifier = attr_name.to_snake_case(),
+        type_identifier = type_identifier,
+        type_calling = type_calling,
+        type_value = attr.typ,
+    );
+
+    w.write_all(code.as_bytes()).unwrap();
+}
+
+fn generate_user_password_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
+    let attr_name = attr.name.clone();
+
+    let type_identifier = format!("{}_TYPE", attr_name.to_screaming_snake_case());
+    let type_calling = format!("Self::{}", type_identifier);
+
+    let code = format!(
+        "pub const {type_identifier}: AVPType = {type_value};
+pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), String> {{
+    let attr = Attribute::from_user_password(value, packet.get_secret(), packet.get_authenticator())?;
+    packet.add({type_calling}, &attr);
+    Ok(())
 }}
 pub fn delete_{method_identifier}(packet: &mut Packet) {{
     packet.delete({type_calling});
@@ -194,18 +230,26 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
         match kind {
             ATTRIBUTE_KIND => {
                 let type_descriptions = items[3].split(' ').collect::<Vec<&str>>();
+
+                let is_encrypt = if type_descriptions.len() >= 2 {
+                    type_descriptions[1] == "encrypt=1" // FIXME: ad-hoc!!!
+                } else {
+                    false
+                };
+
                 let typ = match RadiusAttributeValueType::from_str(type_descriptions[0]) {
-                    Ok(t) => t,
+                    Ok(t) => {
+                        if t == RadiusAttributeValueType::STRING && is_encrypt {
+                            RadiusAttributeValueType::USER_PASSWORD
+                        } else {
+                            t
+                        }
+                    }
                     Err(_) => {
                         return Err(
                             format!("invalid type has come => {}", type_descriptions[0]).to_owned()
                         );
                     }
-                };
-                let is_encrypt = if type_descriptions.len() >= 2 {
-                    type_descriptions[1] == "encrypt=1" // FIXME: ad-hoc!!!
-                } else {
-                    false
                 };
 
                 radius_attributes.push(RadiusAttribute {
