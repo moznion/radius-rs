@@ -70,6 +70,51 @@ impl RFC2865 {
         packet.add(Self::NAS_IP_ADDRESS_TYPE, &attr);
     }
 
+    pub const NAS_PORT_TYPE: AVPType = 5;
+    pub fn delete_nas_port(packet: &mut Packet) {
+        packet.delete(Self::NAS_PORT_TYPE);
+    }
+    pub fn lookup_nas_port(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::NAS_PORT_TYPE)
+    }
+    pub fn lookup_all_nas_port(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::NAS_PORT_TYPE)
+    }
+    pub fn add_nas_port(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::NAS_PORT_TYPE, &attr);
+    }
+
+    pub const SERVICE_TYPE_TYPE: AVPType = 6;
+    pub fn delete_service_type(packet: &mut Packet) {
+        packet.delete(Self::SERVICE_TYPE_TYPE);
+    }
+    pub fn lookup_service_type(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::SERVICE_TYPE_TYPE)
+    }
+    pub fn lookup_all_service_type(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::SERVICE_TYPE_TYPE)
+    }
+    pub fn add_service_type(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::SERVICE_TYPE_TYPE, &attr);
+    }
+
+    pub const FRAMED_PROTOCOL_TYPE: AVPType = 7;
+    pub fn delete_framed_protocol(packet: &mut Packet) {
+        packet.delete(Self::FRAMED_PROTOCOL_TYPE);
+    }
+    pub fn lookup_framed_protocol(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::FRAMED_PROTOCOL_TYPE)
+    }
+    pub fn lookup_all_framed_protocol(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::FRAMED_PROTOCOL_TYPE)
+    }
+    pub fn add_framed_protocol(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::FRAMED_PROTOCOL_TYPE, &attr);
+    }
+
     pub const FRAMED_IP_ADDRESS_TYPE: AVPType = 8;
     pub fn delete_framed_ip_address(packet: &mut Packet) {
         packet.delete(Self::FRAMED_IP_ADDRESS_TYPE);
@@ -100,6 +145,21 @@ impl RFC2865 {
         packet.add(Self::FRAMED_IP_NETMASK_TYPE, &attr);
     }
 
+    pub const FRAMED_ROUTING_TYPE: AVPType = 10;
+    pub fn delete_framed_routing(packet: &mut Packet) {
+        packet.delete(Self::FRAMED_ROUTING_TYPE);
+    }
+    pub fn lookup_framed_routing(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::FRAMED_ROUTING_TYPE)
+    }
+    pub fn lookup_all_framed_routing(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::FRAMED_ROUTING_TYPE)
+    }
+    pub fn add_framed_routing(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::FRAMED_ROUTING_TYPE, &attr);
+    }
+
     pub const FILTER_ID_TYPE: AVPType = 11;
     pub fn delete_filter_id(packet: &mut Packet) {
         packet.delete(Self::FILTER_ID_TYPE);
@@ -115,6 +175,36 @@ impl RFC2865 {
         packet.add(Self::FILTER_ID_TYPE, &attr);
     }
 
+    pub const FRAMED_MTU_TYPE: AVPType = 12;
+    pub fn delete_framed_mtu(packet: &mut Packet) {
+        packet.delete(Self::FRAMED_MTU_TYPE);
+    }
+    pub fn lookup_framed_mtu(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::FRAMED_MTU_TYPE)
+    }
+    pub fn lookup_all_framed_mtu(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::FRAMED_MTU_TYPE)
+    }
+    pub fn add_framed_mtu(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::FRAMED_MTU_TYPE, &attr);
+    }
+
+    pub const FRAMED_COMPRESSION_TYPE: AVPType = 13;
+    pub fn delete_framed_compression(packet: &mut Packet) {
+        packet.delete(Self::FRAMED_COMPRESSION_TYPE);
+    }
+    pub fn lookup_framed_compression(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::FRAMED_COMPRESSION_TYPE)
+    }
+    pub fn lookup_all_framed_compression(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::FRAMED_COMPRESSION_TYPE)
+    }
+    pub fn add_framed_compression(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::FRAMED_COMPRESSION_TYPE, &attr);
+    }
+
     pub const LOGIN_IP_HOST_TYPE: AVPType = 14;
     pub fn delete_login_ip_host(packet: &mut Packet) {
         packet.delete(Self::LOGIN_IP_HOST_TYPE);
@@ -128,6 +218,36 @@ impl RFC2865 {
     pub fn add_login_ip_host(packet: &mut Packet, value: &Ipv4Addr) {
         let attr = Attribute::from_ipv4(value);
         packet.add(Self::LOGIN_IP_HOST_TYPE, &attr);
+    }
+
+    pub const LOGIN_SERVICE_TYPE: AVPType = 15;
+    pub fn delete_login_service(packet: &mut Packet) {
+        packet.delete(Self::LOGIN_SERVICE_TYPE);
+    }
+    pub fn lookup_login_service(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::LOGIN_SERVICE_TYPE)
+    }
+    pub fn lookup_all_login_service(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::LOGIN_SERVICE_TYPE)
+    }
+    pub fn add_login_service(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::LOGIN_SERVICE_TYPE, &attr);
+    }
+
+    pub const LOGIN_TCP_PORT_TYPE: AVPType = 16;
+    pub fn delete_login_tcp_port(packet: &mut Packet) {
+        packet.delete(Self::LOGIN_TCP_PORT_TYPE);
+    }
+    pub fn lookup_login_tcp_port(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::LOGIN_TCP_PORT_TYPE)
+    }
+    pub fn lookup_all_login_tcp_port(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::LOGIN_TCP_PORT_TYPE)
+    }
+    pub fn add_login_tcp_port(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::LOGIN_TCP_PORT_TYPE, &attr);
     }
 
     pub const REPLY_MESSAGE_TYPE: AVPType = 18;
@@ -235,6 +355,51 @@ impl RFC2865 {
         packet.add(Self::CLASS_TYPE, &attr);
     }
 
+    pub const SESSION_TIMEOUT_TYPE: AVPType = 27;
+    pub fn delete_session_timeout(packet: &mut Packet) {
+        packet.delete(Self::SESSION_TIMEOUT_TYPE);
+    }
+    pub fn lookup_session_timeout(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::SESSION_TIMEOUT_TYPE)
+    }
+    pub fn lookup_all_session_timeout(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::SESSION_TIMEOUT_TYPE)
+    }
+    pub fn add_session_timeout(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::SESSION_TIMEOUT_TYPE, &attr);
+    }
+
+    pub const IDLE_TIMEOUT_TYPE: AVPType = 28;
+    pub fn delete_idle_timeout(packet: &mut Packet) {
+        packet.delete(Self::IDLE_TIMEOUT_TYPE);
+    }
+    pub fn lookup_idle_timeout(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::IDLE_TIMEOUT_TYPE)
+    }
+    pub fn lookup_all_idle_timeout(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::IDLE_TIMEOUT_TYPE)
+    }
+    pub fn add_idle_timeout(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::IDLE_TIMEOUT_TYPE, &attr);
+    }
+
+    pub const TERMINATION_ACTION_TYPE: AVPType = 29;
+    pub fn delete_termination_action(packet: &mut Packet) {
+        packet.delete(Self::TERMINATION_ACTION_TYPE);
+    }
+    pub fn lookup_termination_action(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::TERMINATION_ACTION_TYPE)
+    }
+    pub fn lookup_all_termination_action(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::TERMINATION_ACTION_TYPE)
+    }
+    pub fn add_termination_action(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::TERMINATION_ACTION_TYPE, &attr);
+    }
+
     pub const CALLED_STATION_ID_TYPE: AVPType = 30;
     pub fn delete_called_station_id(packet: &mut Packet) {
         packet.delete(Self::CALLED_STATION_ID_TYPE);
@@ -340,6 +505,36 @@ impl RFC2865 {
         packet.add(Self::LOGIN_LAT_GROUP_TYPE, &attr);
     }
 
+    pub const FRAMED_APPLE_TALK_LINK_TYPE: AVPType = 37;
+    pub fn delete_framed_apple_talk_link(packet: &mut Packet) {
+        packet.delete(Self::FRAMED_APPLE_TALK_LINK_TYPE);
+    }
+    pub fn lookup_framed_apple_talk_link(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::FRAMED_APPLE_TALK_LINK_TYPE)
+    }
+    pub fn lookup_all_framed_apple_talk_link(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::FRAMED_APPLE_TALK_LINK_TYPE)
+    }
+    pub fn add_framed_apple_talk_link(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::FRAMED_APPLE_TALK_LINK_TYPE, &attr);
+    }
+
+    pub const FRAMED_APPLE_TALK_NETWORK_TYPE: AVPType = 38;
+    pub fn delete_framed_apple_talk_network(packet: &mut Packet) {
+        packet.delete(Self::FRAMED_APPLE_TALK_NETWORK_TYPE);
+    }
+    pub fn lookup_framed_apple_talk_network(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::FRAMED_APPLE_TALK_NETWORK_TYPE)
+    }
+    pub fn lookup_all_framed_apple_talk_network(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::FRAMED_APPLE_TALK_NETWORK_TYPE)
+    }
+    pub fn add_framed_apple_talk_network(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::FRAMED_APPLE_TALK_NETWORK_TYPE, &attr);
+    }
+
     pub const FRAMED_APPLE_TALK_ZONE_TYPE: AVPType = 39;
     pub fn delete_framed_apple_talk_zone(packet: &mut Packet) {
         packet.delete(Self::FRAMED_APPLE_TALK_ZONE_TYPE);
@@ -368,6 +563,36 @@ impl RFC2865 {
     pub fn add_chap_challenge(packet: &mut Packet, value: &[u8]) {
         let attr = Attribute::from_bytes(value);
         packet.add(Self::CHAP_CHALLENGE_TYPE, &attr);
+    }
+
+    pub const NAS_PORT_TYPE_TYPE: AVPType = 61;
+    pub fn delete_nas_port_type(packet: &mut Packet) {
+        packet.delete(Self::NAS_PORT_TYPE_TYPE);
+    }
+    pub fn lookup_nas_port_type(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::NAS_PORT_TYPE_TYPE)
+    }
+    pub fn lookup_all_nas_port_type(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::NAS_PORT_TYPE_TYPE)
+    }
+    pub fn add_nas_port_type(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::NAS_PORT_TYPE_TYPE, &attr);
+    }
+
+    pub const PORT_LIMIT_TYPE: AVPType = 62;
+    pub fn delete_port_limit(packet: &mut Packet) {
+        packet.delete(Self::PORT_LIMIT_TYPE);
+    }
+    pub fn lookup_port_limit(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::PORT_LIMIT_TYPE)
+    }
+    pub fn lookup_all_port_limit(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::PORT_LIMIT_TYPE)
+    }
+    pub fn add_port_limit(packet: &mut Packet, value: u32) {
+        let attr = Attribute::from_u32(value);
+        packet.add(Self::PORT_LIMIT_TYPE, &attr);
     }
 
     pub const LOGIN_LAT_PORT_TYPE: AVPType = 63;

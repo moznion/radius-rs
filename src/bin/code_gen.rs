@@ -139,7 +139,10 @@ fn generate_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
             generate_common_attribute_code(w, attr);
             generate_ipaddr_attribute_code(w, attr);
         }
-        // RadiusAttributeValueType::INTEGER => generate_integer_attribute_code(w, attr),
+        RadiusAttributeValueType::INTEGER => {
+            generate_common_attribute_code(w, attr);
+            generate_integer_attribute_code(w, attr);
+        }
         // RadiusAttributeValueType::VSA => generate_vsa_attribute_code(w, attr),
         _ => {}
     }
@@ -251,7 +254,22 @@ fn generate_ipaddr_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribut
 }
 
 fn generate_integer_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {
-    unimplemented!()
+    let attr_name = attr.name.clone();
+
+    let type_identifier = format!("{}_TYPE", attr_name.to_screaming_snake_case());
+    let type_calling = format!("Self::{}", type_identifier);
+
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, value: u32) {{
+    let attr = Attribute::from_u32(value);
+    packet.add({type_calling}, &attr);
+}}
+",
+        method_identifier = attr_name.to_snake_case(),
+        type_calling = type_calling,
+    );
+
+    w.write_all(code.as_bytes()).unwrap();
 }
 
 fn generate_vsa_attribute_code(w: &mut BufWriter<File>, attr: &RadiusAttribute) {

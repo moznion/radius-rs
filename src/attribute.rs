@@ -8,7 +8,7 @@ use chrono::{DateTime, TimeZone, Utc};
 pub struct Attribute(pub(crate) Vec<u8>);
 
 impl Attribute {
-    pub fn from_integer32(v: u32) -> Self {
+    pub fn from_u32(v: u32) -> Self {
         Attribute(u32::to_be_bytes(v).to_vec())
     }
 
