@@ -355,6 +355,17 @@ impl RFC2865 {
         packet.add(Self::CLASS_TYPE, &attr);
     }
 
+    pub const VENDOR_SPECIFIC_TYPE: AVPType = 26;
+    pub fn delete_vendor_specific(packet: &mut Packet) {
+        packet.delete(Self::VENDOR_SPECIFIC_TYPE);
+    }
+    pub fn lookup_vendor_specific(packet: &Packet) -> Option<&Attribute> {
+        packet.lookup(Self::VENDOR_SPECIFIC_TYPE)
+    }
+    pub fn lookup_all_vendor_specific(packet: &Packet) -> Vec<&Attribute> {
+        packet.lookup_all(Self::VENDOR_SPECIFIC_TYPE)
+    }
+
     pub const SESSION_TIMEOUT_TYPE: AVPType = 27;
     pub fn delete_session_timeout(packet: &mut Packet) {
         packet.delete(Self::SESSION_TIMEOUT_TYPE);
