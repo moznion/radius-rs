@@ -12,6 +12,11 @@ DICTS=$(ls "$DICTS_DIR")
 for DICT in ${DICTS[@]}; do
   DICT_NAME="${DICT##*.}"
   cat /dev/null > "${SRC_DIR}/${DICT_NAME}.rs"
+done
+
+# shellcheck disable=SC2068
+for DICT in ${DICTS[@]}; do
+  DICT_NAME="${DICT##*.}"
   cargo run --bin code_gen "${DICTS_DIR}/dictionary.${DICT_NAME}" "${SRC_DIR}/${DICT_NAME}.rs"
 done
 
