@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufWriter, Write};
 use std::path::Path;
@@ -110,7 +110,7 @@ use crate::packet::Packet;
 
 fn generate_values_code(
     w: &mut BufWriter<File>,
-    attr_to_values_map: &HashMap<String, Vec<RadiusValue>>,
+    attr_to_values_map: &BTreeMap<String, Vec<RadiusValue>>,
 ) {
     for (attr, values) in attr_to_values_map {
         generate_values_for_attribute_code(w, attr, values);
@@ -333,14 +333,14 @@ fn generate_vsa_attribute_code() {
     // NOP
 }
 
-type DictParsed = (Vec<RadiusAttribute>, HashMap<String, Vec<RadiusValue>>);
+type DictParsed = (Vec<RadiusAttribute>, BTreeMap<String, Vec<RadiusValue>>);
 
 fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
     let line_filter_re = Regex::new(r"^(?:#.*|)$").unwrap();
     let tabs_re = Regex::new(r"\t+").unwrap();
 
     let mut radius_attributes: Vec<RadiusAttribute> = Vec::new();
-    let mut radius_attribute_to_values: HashMap<String, Vec<RadiusValue>> = HashMap::new();
+    let mut radius_attribute_to_values: BTreeMap<String, Vec<RadiusValue>> = BTreeMap::new();
 
     let lines = read_lines(dict_file_path).unwrap();
     for line_result in lines {
