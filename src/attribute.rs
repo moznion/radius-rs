@@ -51,32 +51,35 @@ impl Attribute {
             );
         }
 
-        let mut enc: Vec<u8> = Vec::new();
+        let mut buff = request_authenticator.to_vec();
 
-        let digest = md5::compute([&secret[..], &request_authenticator[..]].concat());
-        enc.extend(digest.to_vec());
-
-        let (head, _) = plain_text.split_at(16);
-
-        let mut i = 0;
-        for b in head {
-            enc[i] ^= b;
-            i += 1;
+        let l = plain_text.len();
+        if l < 16 {
+            let enc = md5::compute([secret, &buff[..]].concat()).to_vec();
+            return Ok(Attribute(
+                enc.iter()
+                    .zip([plain_text, vec![0 as u8; 16 - l].as_slice()].concat())
+                    //                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ zero padding
+                    .map(|(d, p)| d ^ p)
+                    .collect(),
+            ));
         }
 
-        i = 16;
-        while i < plain_text.len() {
-            let digest = md5::compute([&secret[..], &enc[i - 16..i]].concat());
-            enc.extend(digest.to_vec());
-
-            let mut j = 0;
-            for b in &plain_text[i..i + 16] {
-                // TODO this has to be 16 bounds, is this correct?
-                enc[i + j] ^= b;
-                j += 1;
+        let mut enc: Vec<u8> = Vec::new();
+        for chunk in plain_text.chunks(16) {
+            let mut chunk_vec = chunk.to_vec();
+            let l = chunk.len();
+            if l < 16 {
+                chunk_vec.extend(vec![0 as u8; 16 - l]); // zero padding
             }
 
-            i += 16;
+            let enc_block = md5::compute([secret, &buff[..]].concat()).to_vec();
+            buff = enc_block
+                .iter()
+                .zip(chunk_vec)
+                .map(|(d, p)| d ^ p)
+                .collect();
+            enc.extend(&buff);
         }
 
         Ok(Attribute(enc))
@@ -154,43 +157,28 @@ impl Attribute {
         }
 
         let mut dec: Vec<u8> = Vec::new();
+        let mut buff: Vec<u8> = request_authenticator.to_vec();
 
-        let digest = md5::compute([&secret[..], &request_authenticator[..]].concat());
-        dec.extend(digest.to_vec());
-
-        let (head, _) = self.0.split_at(16);
-
-        let mut i = 0;
-        let mut maybe_first_zero_byte_idx = Option::None;
-        for b in head {
-            dec[i] ^= b;
-            if dec[i] == 0 && maybe_first_zero_byte_idx.is_none() {
-                maybe_first_zero_byte_idx = Option::Some(i)
-            }
-            i += 1;
+        // NOTE:
+        // It ensures attribute value has 16 bytes length at least because the value is encoded by md5.
+        // And this must be aligned by each 16 bytes length.
+        for chunk in self.0.chunks(16) {
+            let chunk_vec = chunk.to_vec();
+            let dec_block = md5::compute([secret, &buff[..]].concat()).to_vec();
+            dec.extend(
+                dec_block
+                    .iter()
+                    .zip(&chunk_vec)
+                    .map(|(d, p)| d ^ p)
+                    .collect::<Vec<u8>>(),
+            );
+            buff = chunk_vec.clone();
         }
 
-        i = 16;
-        while i < self.0.len() {
-            let digest = md5::compute([&secret[..], &self.0[i - 16..i]].concat());
-            dec.extend(digest.to_vec());
-
-            let mut j = 0;
-            for b in &self.0[i..i + 16] {
-                // TODO this has to be 16 bounds, is this correct?
-                dec[i + j] ^= b;
-                if dec[i + j] == 0 && maybe_first_zero_byte_idx.is_none() {
-                    maybe_first_zero_byte_idx = Option::Some(i + j)
-                }
-                j += 1;
-            }
-
-            i += 16;
-        }
-
-        match maybe_first_zero_byte_idx {
-            None => Ok(dec),
-            Some(idx) => Ok(dec[..idx].to_vec()),
+        // remove trailing zero bytes
+        match dec.split(|b| *b == 0).next() {
+            Some(dec) => Ok(dec.to_vec()),
+            None => Ok(vec![]),
         }
     }
 
@@ -211,8 +199,9 @@ mod tests {
     use std::net::{Ipv4Addr, Ipv6Addr};
     use std::string::FromUtf8Error;
 
-    use crate::attribute::Attribute;
     use chrono::Utc;
+
+    use crate::attribute::Attribute;
 
     #[test]
     fn it_should_convert_attribute_to_integer32() -> Result<(), String> {
@@ -252,26 +241,58 @@ mod tests {
 
     #[test]
     fn it_should_convert_user_password() {
-        let plain_text = b"texttexttexttexttexttexttexttext".to_vec();
-        let secret = b"secret".to_vec();
+        let secret = b"12345".to_vec();
         let request_authenticator = b"0123456789abcdef".to_vec();
-        let user_password_attr_result =
-            Attribute::from_user_password(&plain_text, &secret, &request_authenticator);
-        let user_password_attr = user_password_attr_result.unwrap();
-        assert_eq!(
-            user_password_attr.0,
-            vec![
-                0xb7, 0xb0, 0xcb, 0x5d, 0x4f, 0x96, 0xd4, 0x75, 0x1c, 0xea, 0x3a, 0xb6, 0xf, 0xc,
-                0xea, 0xa5, 0xc9, 0x22, 0xac, 0x26, 0x28, 0x23, 0x93, 0xef, 0x19, 0x67, 0xcc, 0xeb,
-                0x9d, 0x33, 0xd7, 0x46
-            ],
-        );
-        assert_eq!(
-            user_password_attr
+
+        struct TestCase<'a> {
+            plain_text: &'a str,
+            expected_encoded_len: usize,
+        };
+
+        let test_cases = &[
+            TestCase {
+                plain_text: "",
+                expected_encoded_len: 16,
+            },
+            TestCase {
+                plain_text: "abc",
+                expected_encoded_len: 16,
+            },
+            TestCase {
+                plain_text: "0123456789abcde",
+                expected_encoded_len: 16,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef",
+                expected_encoded_len: 16,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef0",
+                expected_encoded_len: 32,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef0123456789abcdef0123456789abcdef",
+                expected_encoded_len: 48,
+            },
+        ];
+
+        for test_case in test_cases {
+            let user_password_attr_result = Attribute::from_user_password(
+                test_case.plain_text.as_bytes(),
+                &secret,
+                &request_authenticator,
+            );
+            let user_password_attr = user_password_attr_result.unwrap();
+            assert_eq!(user_password_attr.0.len(), test_case.expected_encoded_len);
+
+            let decoded_password = user_password_attr
                 .to_user_password(&secret, &request_authenticator)
-                .unwrap(),
-            plain_text,
-        );
+                .unwrap();
+            assert_eq!(
+                String::from_utf8(decoded_password).unwrap(),
+                test_case.plain_text
+            );
+        }
     }
 
     #[test]
