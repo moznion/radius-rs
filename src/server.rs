@@ -11,11 +11,12 @@ use crate::packet::Packet;
 use crate::request::Request;
 use crate::request_handler::RequestHandler;
 use crate::secret_provider::SecretProvider;
+use std::fmt::Debug;
 
 pub struct Server {}
 
 impl Server {
-    pub async fn run<T: RequestHandler, U: SecretProvider>(
+    pub async fn run<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider>(
         host: &str,
         port: u16,
         buf_size: usize,
@@ -35,7 +36,7 @@ impl Server {
         }
     }
 
-    async fn run_loop<T: RequestHandler, U: SecretProvider>(
+    async fn run_loop<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider>(
         host: &str,
         port: u16,
         buf_size: usize,
@@ -90,7 +91,7 @@ impl Server {
         }
     }
 
-    async fn process_request<T: RequestHandler, U: SecretProvider>(
+    async fn process_request<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider>(
         conn: Arc<UdpSocket>,
         request_data: &[u8],
         local_addr: SocketAddr,
@@ -147,10 +148,18 @@ impl Server {
             undergoing_requests.insert(key);
         }
 
-        request_handler.handle_radius_request(
-            conn.borrow(),
-            &Request::new(local_addr, remote_addr, packet),
-        );
+        match request_handler
+            .handle_radius_request(
+                conn.borrow(),
+                &Request::new(local_addr, remote_addr, packet),
+            )
+            .await
+        {
+            Ok(_) => {}
+            Err(e) => {
+                println!("{:?}", e);
+            }
+        }
 
         let mut undergoing_requests = undergoing_requests_lock.write().unwrap();
         undergoing_requests.remove(&key_for_remove);
