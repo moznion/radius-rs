@@ -31,14 +31,13 @@ impl Attributes {
             attrs.push(AVP {
                 typ: bs[i],
                 attribute: if length > 2 {
-                    debug!("ATTR {:?}", &bs[i + 2..length]);
-                    Attribute(bs[i + 2..length + 2].to_vec())
+                    Attribute(bs[i + 2..i + length].to_vec())
                 } else {
                     Attribute(vec![])
                 },
             });
 
-            i += 2 + length;
+            i += length;
         }
 
         Ok(Attributes(attrs))
@@ -86,7 +85,7 @@ impl Attributes {
                 return Err("attribute is too large".to_owned());
             }
 
-            n += 1 + 1 + (attr_len as u16);
+            n += 2 + (attr_len as u16);
         }
 
         Ok(n)
@@ -101,7 +100,7 @@ impl Attributes {
                 return Err("attribute is too large".to_owned());
             }
             encoded.push(avp.typ);
-            encoded.push(attr_len as u8);
+            encoded.push(2 + attr_len as u8);
             encoded.extend(&avp.attribute.0);
         }
 
