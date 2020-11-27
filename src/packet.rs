@@ -7,6 +7,7 @@ use crate::attributes::{AVPType, Attributes};
 use crate::code::Code;
 
 const MAX_PACKET_LENGTH: usize = 4096;
+const RADIUS_PACKET_HEADER_LENGTH: usize = 20; // i.e. minimum packet lengt
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Packet {
@@ -43,27 +44,28 @@ impl Packet {
     }
 
     pub fn parse(bs: &[u8], secret: &[u8]) -> Result<Self, String> {
-        if bs.len() < 20 {
-            return Err("radius packet doesn't have enough length of bytes; that has to be at least 20 bytes".to_owned());
+        if bs.len() < RADIUS_PACKET_HEADER_LENGTH {
+            return Err(format!("radius packet doesn't have enough length of bytes; that has to be at least {} bytes", RADIUS_PACKET_HEADER_LENGTH));
         }
 
         let len = match bs[2..4].try_into() {
             Ok(v) => u16::from_be_bytes(v),
             Err(e) => return Err(e.to_string()),
         } as usize;
-        if len < 20 || len > MAX_PACKET_LENGTH || bs.len() < len {
+        if len < RADIUS_PACKET_HEADER_LENGTH || len > MAX_PACKET_LENGTH || bs.len() < len {
             return Err("invalid radius packat lengt".to_owned());
         }
 
-        let attributes = match Attributes::parse_attributes(&bs[20..len].to_vec()) {
-            Ok(attributes) => attributes,
-            Err(e) => return Err(e),
-        };
+        let attributes =
+            match Attributes::parse_attributes(&bs[RADIUS_PACKET_HEADER_LENGTH..len].to_vec()) {
+                Ok(attributes) => attributes,
+                Err(e) => return Err(e),
+            };
 
         Ok(Packet {
             code: Code::from(bs[0]),
             identifier: bs[1],
-            authenticator: bs[4..20].to_owned(),
+            authenticator: bs[4..RADIUS_PACKET_HEADER_LENGTH].to_owned(),
             secret: secret.to_owned(),
             attributes,
         })
@@ -80,11 +82,12 @@ impl Packet {
     }
 
     pub fn encode(&self) -> Result<Vec<u8>, String> {
-        let bs = match self.marshal_binary() {
+        let mut bs = match self.marshal_binary() {
             Ok(bs) => bs,
             Err(e) => return Err(e),
         };
 
+        debug!("encoded resp bs: {:?}", bs);
         match self.code {
             Code::AccessRequest | Code::StatusServer => Ok(bs),
             Code::AccessAccept
@@ -107,24 +110,43 @@ impl Packet {
                         ]);
                     }
                     _ => {
-                        buf.extend(self.authenticator.clone());
+                        buf.extend(self.authenticator.clone()); // TODO take from `bs`?
                     }
                 }
-                buf.extend(bs[20..].to_vec());
+                buf.extend(bs[RADIUS_PACKET_HEADER_LENGTH..].to_vec());
                 buf.extend(&self.secret);
-                Ok(md5::compute(buf).to_vec())
+                bs.splice(4..20, md5::compute(&buf).to_vec());
+                debug!("md5: {:?}", md5::compute(&buf).to_vec());
+                debug!("encoded resp bs: {:?}", bs);
+
+                Ok(bs)
             }
             _ => Err("unknown packet code".to_owned()),
         }
     }
 
+    /*
+     * Binary structure:
+     *   0                   1                   2                   3
+     *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+     *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     *  |     Code      |  Identifier   |            Length             |
+     *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     *  |                                                               |
+     *  |                         Authenticator                         |
+     *  |                                                               |
+     *  |                                                               |
+     *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+     *  |  Attributes ...
+     *  +-+-+-+-+-+-+-+-+-+-+-+-+-
+     */
     pub fn marshal_binary(&self) -> Result<Vec<u8>, String> {
-        let attributes_len = match self.attributes.attributes_encoded_len() {
-            Ok(attributes_len) => attributes_len,
+        let encoded_avp = match self.attributes.encode() {
+            Ok(encoded) => encoded,
             Err(e) => return Err(e),
         };
 
-        let size = 20 + attributes_len;
+        let size = RADIUS_PACKET_HEADER_LENGTH as u16 + encoded_avp.len() as u16;
         if size as usize > MAX_PACKET_LENGTH {
             return Err("packet is too large".to_owned());
         }
@@ -134,29 +156,37 @@ impl Packet {
         bs.push(self.identifier);
         bs.extend(u16::to_be_bytes(size).to_vec());
         bs.extend(self.authenticator.to_vec());
-        Ok(self.attributes.encode(bs))
+        bs.extend(match self.attributes.encode() {
+            Ok(encoded) => encoded,
+            Err(e) => return Err(e),
+        });
+        debug!("{:?}", bs);
+        Ok(bs)
     }
 
     pub fn is_authentic_response(response: Vec<u8>, request: Vec<u8>, secret: Vec<u8>) -> bool {
-        if response.len() < 20 || request.len() < 20 || secret.is_empty() {
+        if response.len() < RADIUS_PACKET_HEADER_LENGTH
+            || request.len() < RADIUS_PACKET_HEADER_LENGTH
+            || secret.is_empty()
+        {
             return false;
         }
 
         md5::compute(
             [
                 &response[..4],
-                &request[4..20],
-                &response[20..], // TODO length
+                &request[4..RADIUS_PACKET_HEADER_LENGTH],
+                &response[RADIUS_PACKET_HEADER_LENGTH..], // TODO length
                 &secret,
             ]
             .concat(),
         )
         .to_vec()
-        .eq(&response[4..20].to_vec())
+        .eq(&response[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
     }
 
     pub fn is_authentic_request(request: &[u8], secret: &[u8]) -> bool {
-        if request.len() < 20 || secret.is_empty() {
+        if request.len() < RADIUS_PACKET_HEADER_LENGTH || secret.is_empty() {
             return false;
         }
 
@@ -170,13 +200,13 @@ impl Packet {
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00,
                         ],
-                        &request[20..], // TODO length
+                        &request[RADIUS_PACKET_HEADER_LENGTH..], // TODO length
                         &secret,
                     ]
                     .concat(),
                 )
                 .to_vec()
-                .eq(&request[4..20].to_vec())
+                .eq(&request[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
             }
             _ => false,
         }

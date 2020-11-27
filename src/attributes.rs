@@ -18,7 +18,7 @@ impl Attributes {
         let mut i = 0;
         let mut attrs = Vec::new();
 
-        while bs.len() < i {
+        while bs.len() > i {
             if bs[i..].len() < 2 {
                 return Err("short buffer".to_owned());
             }
@@ -29,15 +29,16 @@ impl Attributes {
             }
 
             attrs.push(AVP {
-                typ: bs[i + 0],
+                typ: bs[i],
                 attribute: if length > 2 {
-                    Attribute(bs[i + 2..].to_vec())
+                    debug!("ATTR {:?}", &bs[i + 2..length]);
+                    Attribute(bs[i + 2..length + 2].to_vec())
                 } else {
                     Attribute(vec![])
                 },
             });
 
-            i += length;
+            i += 2 + length;
         }
 
         Ok(Attributes(attrs))
@@ -91,23 +92,19 @@ impl Attributes {
         Ok(n)
     }
 
-    pub fn encode(&self, data: Vec<u8>) -> Vec<u8> {
+    pub fn encode(&self) -> Result<Vec<u8>, String> {
         let mut encoded: Vec<u8> = Vec::new();
 
-        for attr in &self.0 {
-            let attr_len = attr.attribute.0.len();
+        for avp in &self.0 {
+            let attr_len = avp.attribute.0.len();
             if attr_len > 253 {
-                continue;
+                return Err("attribute is too large".to_owned());
             }
-            let size = 1 + 1 + attr_len;
-
-            encoded = Vec::new();
-            encoded.push(attr.typ);
-            encoded.push(size as u8);
-            encoded.extend(&attr.attribute.0);
-            encoded = encoded[size..].to_owned();
+            encoded.push(avp.typ);
+            encoded.push(attr_len as u8);
+            encoded.extend(&avp.attribute.0);
         }
 
-        encoded
+        Ok(encoded)
     }
 }

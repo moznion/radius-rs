@@ -68,9 +68,9 @@ where
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    let program = args[0].clone();
+    let _program = args[0].clone();
 
-    let mut opts = Options::new();
+    let opts = Options::new();
     let matches = opts
         .parse(&args[1..])
         .unwrap_or_else(|f| panic!(f.to_string()));
