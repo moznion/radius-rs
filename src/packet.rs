@@ -87,7 +87,6 @@ impl Packet {
             Err(e) => return Err(e),
         };
 
-        debug!("encoded resp bs: {:?}", bs);
         match self.code {
             Code::AccessRequest | Code::StatusServer => Ok(bs),
             Code::AccessAccept
@@ -116,8 +115,6 @@ impl Packet {
                 buf.extend(bs[RADIUS_PACKET_HEADER_LENGTH..].to_vec());
                 buf.extend(&self.secret);
                 bs.splice(4..20, md5::compute(&buf).to_vec());
-                debug!("md5: {:?}", md5::compute(&buf).to_vec());
-                debug!("encoded resp bs: {:?}", bs);
 
                 Ok(bs)
             }
@@ -160,7 +157,6 @@ impl Packet {
             Ok(encoded) => encoded,
             Err(e) => return Err(e),
         });
-        debug!("{:?}", bs);
         Ok(bs)
     }
 
