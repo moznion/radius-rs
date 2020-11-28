@@ -210,9 +210,6 @@ pub const {type_identifier}: AVPType = {type_value};
 pub fn delete_{method_identifier}(packet: &mut Packet) {{
     packet.delete({type_identifier});
 }}
-pub fn lookup_{method_identifier}(packet: &Packet) -> Option<&AVP> {{
-    packet.lookup({type_identifier})
-}}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<&AVP> {{
     packet.lookup_all({type_identifier})
 }}
@@ -233,6 +230,9 @@ fn generate_string_attribute_code(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &str) {{
     packet.add(AVP::encode_string({type_identifier}, value));
 }}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<String, AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.decode_string())
+}}
 ",
         method_identifier = method_identifier,
         type_identifier = type_identifier,
@@ -250,6 +250,9 @@ fn generate_user_password_attribute_code(
     packet.add(AVP::encode_user_password({type_identifier}, value, packet.get_secret(), packet.get_authenticator())?);
     Ok(())
 }}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.decode_user_password(packet.get_secret(), packet.get_authenticator()))
+}}
 ",
         method_identifier = method_identifier,
         type_identifier = type_identifier,
@@ -265,6 +268,9 @@ fn generate_octets_attribute_code(
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) {{
     packet.add(AVP::encode_bytes({type_identifier}, value));
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Vec<u8>> {{
+    packet.lookup({type_identifier}).map(|v| v.decode_bytes())
 }}
 ",
         method_identifier = method_identifier,
@@ -282,6 +288,9 @@ fn generate_ipaddr_attribute_code(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &Ipv4Addr) {{
     packet.add(AVP::encode_ipv4({type_identifier}, value));
 }}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.decode_ipv4())
+}}
 ",
         method_identifier = method_identifier,
         type_identifier = type_identifier,
@@ -297,6 +306,9 @@ fn generate_integer_attribute_code(
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: u32) {{
     packet.add(AVP::encode_u32({type_identifier}, value));
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<u32, AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.decode_u32())
 }}
 ",
         method_identifier = method_identifier,
@@ -314,6 +326,9 @@ fn generate_value_defined_integer_attribute_code(
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: {value_type}) {{
     packet.add(AVP::encode_u32({type_identifier}, value as u32));
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<{value_type}, AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| Ok(v.decode_u32()? as {value_type}))
 }}
 ",
         method_identifier = method_identifier,
