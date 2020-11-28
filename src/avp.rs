@@ -117,7 +117,7 @@ impl AVP {
         }
     }
 
-    pub fn to_integer32(&self) -> Result<u32, String> {
+    pub fn to_u32(&self) -> Result<u32, String> {
         const EXPECTED_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != EXPECTED_SIZE {
             return Err("invalid attribute length for integer".to_owned());
@@ -222,112 +222,118 @@ impl AVP {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use std::net::{Ipv4Addr, Ipv6Addr};
-//     use std::string::FromUtf8Error;
-//
-//     use chrono::Utc;
-//
-//     use crate::avp::Attribute;
-//
-//     #[test]
-//     fn it_should_convert_attribute_to_integer32() -> Result<(), String> {
-//         assert_eq!(Attribute(vec![1, 2, 3, 4]).to_integer32()?, 16909060);
-//         Ok(())
-//     }
-//
-//     #[test]
-//     fn it_should_convert_attribute_to_string() -> Result<(), FromUtf8Error> {
-//         assert_eq!(
-//             Attribute(vec![
-//                 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0x2c, 0x20, 0x57, 0x6f, 0x72, 0x6c, 0x64
-//             ])
-//             .to_string()?,
-//             "Hello, World"
-//         );
-//         Ok(())
-//     }
-//
-//     #[test]
-//     fn it_should_convert_ipv4() -> Result<(), String> {
-//         let given_ipv4 = Ipv4Addr::new(192, 0, 2, 1);
-//         let ipv4_attr = Attribute::from_ipv4(&given_ipv4);
-//         assert_eq!(ipv4_attr.to_ipv4()?, given_ipv4,);
-//         Ok(())
-//     }
-//
-//     #[test]
-//     fn it_should_convert_ipv6() -> Result<(), String> {
-//         let given_ipv6 = Ipv6Addr::new(
-//             0x2001, 0x0db8, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
-//         );
-//         let ipv6_attr = Attribute::from_ipv6(&given_ipv6);
-//         assert_eq!(ipv6_attr.to_ipv6()?, given_ipv6,);
-//         Ok(())
-//     }
-//
-//     #[test]
-//     fn it_should_convert_user_password() {
-//         let secret = b"12345".to_vec();
-//         let request_authenticator = b"0123456789abcdef".to_vec();
-//
-//         struct TestCase<'a> {
-//             plain_text: &'a str,
-//             expected_encoded_len: usize,
-//         };
-//
-//         let test_cases = &[
-//             TestCase {
-//                 plain_text: "",
-//                 expected_encoded_len: 16,
-//             },
-//             TestCase {
-//                 plain_text: "abc",
-//                 expected_encoded_len: 16,
-//             },
-//             TestCase {
-//                 plain_text: "0123456789abcde",
-//                 expected_encoded_len: 16,
-//             },
-//             TestCase {
-//                 plain_text: "0123456789abcdef",
-//                 expected_encoded_len: 16,
-//             },
-//             TestCase {
-//                 plain_text: "0123456789abcdef0",
-//                 expected_encoded_len: 32,
-//             },
-//             TestCase {
-//                 plain_text: "0123456789abcdef0123456789abcdef0123456789abcdef",
-//                 expected_encoded_len: 48,
-//             },
-//         ];
-//
-//         for test_case in test_cases {
-//             let user_password_attr_result = Attribute::from_user_password(
-//                 test_case.plain_text.as_bytes(),
-//                 &secret,
-//                 &request_authenticator,
-//             );
-//             let user_password_attr = user_password_attr_result.unwrap();
-//             assert_eq!(user_password_attr.0.len(), test_case.expected_encoded_len);
-//
-//             let decoded_password = user_password_attr
-//                 .to_user_password(&secret, &request_authenticator)
-//                 .unwrap();
-//             assert_eq!(
-//                 String::from_utf8(decoded_password).unwrap(),
-//                 test_case.plain_text
-//             );
-//         }
-//     }
-//
-//     #[test]
-//     fn it_should_convert_date() -> Result<(), String> {
-//         let now = Utc::now();
-//         let attr = Attribute::from_date(&now);
-//         assert_eq!(attr.to_date()?.timestamp(), now.timestamp(),);
-//         Ok(())
-//     }
-// }
+#[cfg(test)]
+mod tests {
+    use std::net::{Ipv4Addr, Ipv6Addr};
+    use std::string::FromUtf8Error;
+
+    use crate::avp::AVP;
+    use chrono::Utc;
+
+    #[test]
+    fn it_should_convert_attribute_to_integer32() -> Result<(), String> {
+        let given_u32 = 16909060;
+        let avp = AVP::from_u32(1, given_u32);
+        assert_eq!(avp.to_u32()?, given_u32);
+        Ok(())
+    }
+
+    #[test]
+    fn it_should_convert_attribute_to_string() -> Result<(), FromUtf8Error> {
+        let given_str = "Hello, World";
+        let avp = AVP::from_string(1, given_str);
+        assert_eq!(avp.to_string()?, given_str);
+        Ok(())
+    }
+
+    #[test]
+    fn it_should_convert_attribute_to_byte() -> Result<(), FromUtf8Error> {
+        let given_bytes = b"Hello, World";
+        let avp = AVP::from_bytes(1, given_bytes);
+        assert_eq!(avp.to_bytes(), given_bytes);
+        Ok(())
+    }
+
+    #[test]
+    fn it_should_convert_ipv4() -> Result<(), String> {
+        let given_ipv4 = Ipv4Addr::new(192, 0, 2, 1);
+        let avp = AVP::from_ipv4(1, &given_ipv4);
+        assert_eq!(avp.to_ipv4()?, given_ipv4);
+        Ok(())
+    }
+
+    #[test]
+    fn it_should_convert_ipv6() -> Result<(), String> {
+        let given_ipv6 = Ipv6Addr::new(
+            0x2001, 0x0db8, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
+        );
+        let avp = AVP::from_ipv6(1, &given_ipv6);
+        assert_eq!(avp.to_ipv6()?, given_ipv6);
+        Ok(())
+    }
+
+    #[test]
+    fn it_should_convert_user_password() {
+        let secret = b"12345".to_vec();
+        let request_authenticator = b"0123456789abcdef".to_vec();
+
+        struct TestCase<'a> {
+            plain_text: &'a str,
+            expected_encoded_len: usize,
+        };
+
+        let test_cases = &[
+            TestCase {
+                plain_text: "",
+                expected_encoded_len: 16,
+            },
+            TestCase {
+                plain_text: "abc",
+                expected_encoded_len: 16,
+            },
+            TestCase {
+                plain_text: "0123456789abcde",
+                expected_encoded_len: 16,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef",
+                expected_encoded_len: 16,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef0",
+                expected_encoded_len: 32,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef0123456789abcdef0123456789abcdef",
+                expected_encoded_len: 48,
+            },
+        ];
+
+        for test_case in test_cases {
+            let user_password_avp_result = AVP::from_user_password(
+                1,
+                test_case.plain_text.as_bytes(),
+                &secret,
+                &request_authenticator,
+            );
+            let avp = user_password_avp_result.unwrap();
+            assert_eq!(avp.value.len(), test_case.expected_encoded_len);
+
+            let decoded_password = avp
+                .to_user_password(&secret, &request_authenticator)
+                .unwrap();
+            assert_eq!(
+                String::from_utf8(decoded_password).unwrap(),
+                test_case.plain_text
+            );
+        }
+    }
+
+    #[test]
+    fn it_should_convert_date() -> Result<(), String> {
+        let now = Utc::now();
+        let avp = AVP::from_date(1, &now);
+        assert_eq!(avp.to_date()?.timestamp(), now.timestamp(),);
+        Ok(())
+    }
+}
