@@ -33,42 +33,42 @@ pub struct AVP {
 }
 
 impl AVP {
-    pub fn from_u32(typ: AVPType, value: u32) -> Self {
+    pub fn encode_u32(typ: AVPType, value: u32) -> Self {
         AVP {
             typ,
             value: u32::to_be_bytes(value).to_vec(),
         }
     }
 
-    pub fn from_string(typ: AVPType, value: &str) -> Self {
+    pub fn encode_string(typ: AVPType, value: &str) -> Self {
         AVP {
             typ,
             value: value.as_bytes().to_vec(),
         }
     }
 
-    pub fn from_bytes(typ: AVPType, value: &[u8]) -> Self {
+    pub fn encode_bytes(typ: AVPType, value: &[u8]) -> Self {
         AVP {
             typ,
             value: value.to_vec(),
         }
     }
 
-    pub fn from_ipv4(typ: AVPType, value: &Ipv4Addr) -> Self {
+    pub fn encode_ipv4(typ: AVPType, value: &Ipv4Addr) -> Self {
         AVP {
             typ,
             value: value.octets().to_vec(),
         }
     }
 
-    pub fn from_ipv6(typ: AVPType, value: &Ipv6Addr) -> Self {
+    pub fn encode_ipv6(typ: AVPType, value: &Ipv6Addr) -> Self {
         AVP {
             typ,
             value: value.octets().to_vec(),
         }
     }
 
-    pub fn from_user_password(
+    pub fn encode_user_password(
         typ: AVPType,
         plain_text: &[u8],
         secret: &[u8],
@@ -122,14 +122,14 @@ impl AVP {
         Ok(AVP { typ, value: enc })
     }
 
-    pub fn from_date(typ: AVPType, dt: &DateTime<Utc>) -> Self {
+    pub fn encode_date(typ: AVPType, dt: &DateTime<Utc>) -> Self {
         AVP {
             typ,
             value: u32::to_be_bytes(dt.timestamp() as u32).to_vec(),
         }
     }
 
-    pub fn to_u32(&self) -> Result<u32, AVPError> {
+    pub fn decode_u32(&self) -> Result<u32, AVPError> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -142,15 +142,15 @@ impl AVP {
         }
     }
 
-    pub fn to_string(&self) -> Result<String, FromUtf8Error> {
+    pub fn decode_string(&self) -> Result<String, FromUtf8Error> {
         String::from_utf8(self.value.to_vec())
     }
 
-    pub fn to_bytes(&self) -> Vec<u8> {
+    pub fn decode_bytes(&self) -> Vec<u8> {
         self.value.to_vec()
     }
 
-    pub fn to_ipv4(&self) -> Result<Ipv4Addr, AVPError> {
+    pub fn decode_ipv4(&self) -> Result<Ipv4Addr, AVPError> {
         const IPV4_SIZE: usize = std::mem::size_of::<Ipv4Addr>();
         if self.value.len() != IPV4_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -163,7 +163,7 @@ impl AVP {
         }
     }
 
-    pub fn to_ipv6(&self) -> Result<Ipv6Addr, AVPError> {
+    pub fn decode_ipv6(&self) -> Result<Ipv6Addr, AVPError> {
         const IPV6_SIZE: usize = std::mem::size_of::<Ipv6Addr>();
         if self.value.len() != IPV6_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -176,7 +176,7 @@ impl AVP {
         }
     }
 
-    pub fn to_user_password(
+    pub fn decode_user_password(
         &self,
         secret: &[u8],
         request_authenticator: &[u8],
@@ -219,7 +219,7 @@ impl AVP {
         }
     }
 
-    pub fn to_date(&self) -> Result<DateTime<Utc>, AVPError> {
+    pub fn decode_date(&self) -> Result<DateTime<Utc>, AVPError> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -247,31 +247,31 @@ mod tests {
     #[test]
     fn it_should_convert_attribute_to_integer32() -> Result<(), AVPError> {
         let given_u32 = 16909060;
-        let avp = AVP::from_u32(1, given_u32);
-        assert_eq!(avp.to_u32()?, given_u32);
+        let avp = AVP::encode_u32(1, given_u32);
+        assert_eq!(avp.decode_u32()?, given_u32);
         Ok(())
     }
 
     #[test]
     fn it_should_convert_attribute_to_string() -> Result<(), FromUtf8Error> {
         let given_str = "Hello, World";
-        let avp = AVP::from_string(1, given_str);
-        assert_eq!(avp.to_string()?, given_str);
+        let avp = AVP::encode_string(1, given_str);
+        assert_eq!(avp.decode_string()?, given_str);
         Ok(())
     }
 
     #[test]
     fn it_should_convert_attribute_to_byte() {
         let given_bytes = b"Hello, World";
-        let avp = AVP::from_bytes(1, given_bytes);
-        assert_eq!(avp.to_bytes(), given_bytes);
+        let avp = AVP::encode_bytes(1, given_bytes);
+        assert_eq!(avp.decode_bytes(), given_bytes);
     }
 
     #[test]
     fn it_should_convert_ipv4() -> Result<(), AVPError> {
         let given_ipv4 = Ipv4Addr::new(192, 0, 2, 1);
-        let avp = AVP::from_ipv4(1, &given_ipv4);
-        assert_eq!(avp.to_ipv4()?, given_ipv4);
+        let avp = AVP::encode_ipv4(1, &given_ipv4);
+        assert_eq!(avp.decode_ipv4()?, given_ipv4);
         Ok(())
     }
 
@@ -280,8 +280,8 @@ mod tests {
         let given_ipv6 = Ipv6Addr::new(
             0x2001, 0x0db8, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
         );
-        let avp = AVP::from_ipv6(1, &given_ipv6);
-        assert_eq!(avp.to_ipv6()?, given_ipv6);
+        let avp = AVP::encode_ipv6(1, &given_ipv6);
+        assert_eq!(avp.decode_ipv6()?, given_ipv6);
         Ok(())
     }
 
@@ -323,7 +323,7 @@ mod tests {
         ];
 
         for test_case in test_cases {
-            let user_password_avp_result = AVP::from_user_password(
+            let user_password_avp_result = AVP::encode_user_password(
                 1,
                 test_case.plain_text.as_bytes(),
                 &secret,
@@ -333,7 +333,7 @@ mod tests {
             assert_eq!(avp.value.len(), test_case.expected_encoded_len);
 
             let decoded_password = avp
-                .to_user_password(&secret, &request_authenticator)
+                .decode_user_password(&secret, &request_authenticator)
                 .unwrap();
             assert_eq!(
                 String::from_utf8(decoded_password).unwrap(),
@@ -345,8 +345,8 @@ mod tests {
     #[test]
     fn it_should_convert_date() -> Result<(), AVPError> {
         let now = Utc::now();
-        let avp = AVP::from_date(1, &now);
-        assert_eq!(avp.to_date()?.timestamp(), now.timestamp(),);
+        let avp = AVP::encode_date(1, &now);
+        assert_eq!(avp.decode_date()?.timestamp(), now.timestamp(),);
         Ok(())
     }
 }

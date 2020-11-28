@@ -231,7 +231,7 @@ fn generate_string_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &str) {{
-    packet.add(AVP::from_string({type_identifier}, value));
+    packet.add(AVP::encode_string({type_identifier}, value));
 }}
 ",
         method_identifier = method_identifier,
@@ -247,7 +247,7 @@ fn generate_user_password_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {{
-    packet.add(AVP::from_user_password({type_identifier}, value, packet.get_secret(), packet.get_authenticator())?);
+    packet.add(AVP::encode_user_password({type_identifier}, value, packet.get_secret(), packet.get_authenticator())?);
     Ok(())
 }}
 ",
@@ -264,7 +264,7 @@ fn generate_octets_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) {{
-    packet.add(AVP::from_bytes({type_identifier}, value));
+    packet.add(AVP::encode_bytes({type_identifier}, value));
 }}
 ",
         method_identifier = method_identifier,
@@ -280,7 +280,7 @@ fn generate_ipaddr_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &Ipv4Addr) {{
-    packet.add(AVP::from_ipv4({type_identifier}, value));
+    packet.add(AVP::encode_ipv4({type_identifier}, value));
 }}
 ",
         method_identifier = method_identifier,
@@ -296,7 +296,7 @@ fn generate_integer_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: u32) {{
-    packet.add(AVP::from_u32({type_identifier}, value));
+    packet.add(AVP::encode_u32({type_identifier}, value));
 }}
 ",
         method_identifier = method_identifier,
@@ -313,7 +313,7 @@ fn generate_value_defined_integer_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: {value_type}) {{
-    packet.add(AVP::from_u32({type_identifier}, value as u32));
+    packet.add(AVP::encode_u32({type_identifier}, value as u32));
 }}
 ",
         method_identifier = method_identifier,

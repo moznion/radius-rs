@@ -46,11 +46,11 @@ impl RequestHandler<(), io::Error> for MyRequestHandler {
         let maybe_user_name_attr = rfc2865::lookup_user_name(req_packet);
         let maybe_user_password_attr = rfc2865::lookup_user_password(req_packet);
 
-        let user_name = maybe_user_name_attr.unwrap().to_string().unwrap();
+        let user_name = maybe_user_name_attr.unwrap().decode_string().unwrap();
         let user_password = String::from_utf8(
             maybe_user_password_attr
                 .unwrap()
-                .to_user_password(req_packet.get_secret(), req_packet.get_authenticator())
+                .decode_user_password(req_packet.get_secret(), req_packet.get_authenticator())
                 .unwrap(),
         )
         .unwrap();

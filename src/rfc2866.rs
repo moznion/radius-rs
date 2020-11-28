@@ -49,7 +49,7 @@ pub fn lookup_all_acct_status_type(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_STATUS_TYPE_TYPE)
 }
 pub fn add_acct_status_type(packet: &mut Packet, value: AcctStatusType) {
-    packet.add(AVP::from_u32(ACCT_STATUS_TYPE_TYPE, value as u32));
+    packet.add(AVP::encode_u32(ACCT_STATUS_TYPE_TYPE, value as u32));
 }
 
 pub const ACCT_DELAY_TIME_TYPE: AVPType = 41;
@@ -63,7 +63,7 @@ pub fn lookup_all_acct_delay_time(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_DELAY_TIME_TYPE)
 }
 pub fn add_acct_delay_time(packet: &mut Packet, value: u32) {
-    packet.add(AVP::from_u32(ACCT_DELAY_TIME_TYPE, value));
+    packet.add(AVP::encode_u32(ACCT_DELAY_TIME_TYPE, value));
 }
 
 pub const ACCT_INPUT_OCTETS_TYPE: AVPType = 42;
@@ -77,7 +77,7 @@ pub fn lookup_all_acct_input_octets(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_INPUT_OCTETS_TYPE)
 }
 pub fn add_acct_input_octets(packet: &mut Packet, value: u32) {
-    packet.add(AVP::from_u32(ACCT_INPUT_OCTETS_TYPE, value));
+    packet.add(AVP::encode_u32(ACCT_INPUT_OCTETS_TYPE, value));
 }
 
 pub const ACCT_OUTPUT_OCTETS_TYPE: AVPType = 43;
@@ -91,7 +91,7 @@ pub fn lookup_all_acct_output_octets(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_OUTPUT_OCTETS_TYPE)
 }
 pub fn add_acct_output_octets(packet: &mut Packet, value: u32) {
-    packet.add(AVP::from_u32(ACCT_OUTPUT_OCTETS_TYPE, value));
+    packet.add(AVP::encode_u32(ACCT_OUTPUT_OCTETS_TYPE, value));
 }
 
 pub const ACCT_SESSION_ID_TYPE: AVPType = 44;
@@ -105,7 +105,7 @@ pub fn lookup_all_acct_session_id(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_SESSION_ID_TYPE)
 }
 pub fn add_acct_session_id(packet: &mut Packet, value: &str) {
-    packet.add(AVP::from_string(ACCT_SESSION_ID_TYPE, value));
+    packet.add(AVP::encode_string(ACCT_SESSION_ID_TYPE, value));
 }
 
 pub const ACCT_AUTHENTIC_TYPE: AVPType = 45;
@@ -119,7 +119,7 @@ pub fn lookup_all_acct_authentic(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_AUTHENTIC_TYPE)
 }
 pub fn add_acct_authentic(packet: &mut Packet, value: AcctAuthentic) {
-    packet.add(AVP::from_u32(ACCT_AUTHENTIC_TYPE, value as u32));
+    packet.add(AVP::encode_u32(ACCT_AUTHENTIC_TYPE, value as u32));
 }
 
 pub const ACCT_SESSION_TIME_TYPE: AVPType = 46;
@@ -133,7 +133,7 @@ pub fn lookup_all_acct_session_time(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_SESSION_TIME_TYPE)
 }
 pub fn add_acct_session_time(packet: &mut Packet, value: u32) {
-    packet.add(AVP::from_u32(ACCT_SESSION_TIME_TYPE, value));
+    packet.add(AVP::encode_u32(ACCT_SESSION_TIME_TYPE, value));
 }
 
 pub const ACCT_INPUT_PACKETS_TYPE: AVPType = 47;
@@ -147,7 +147,7 @@ pub fn lookup_all_acct_input_packets(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_INPUT_PACKETS_TYPE)
 }
 pub fn add_acct_input_packets(packet: &mut Packet, value: u32) {
-    packet.add(AVP::from_u32(ACCT_INPUT_PACKETS_TYPE, value));
+    packet.add(AVP::encode_u32(ACCT_INPUT_PACKETS_TYPE, value));
 }
 
 pub const ACCT_OUTPUT_PACKETS_TYPE: AVPType = 48;
@@ -161,7 +161,7 @@ pub fn lookup_all_acct_output_packets(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_OUTPUT_PACKETS_TYPE)
 }
 pub fn add_acct_output_packets(packet: &mut Packet, value: u32) {
-    packet.add(AVP::from_u32(ACCT_OUTPUT_PACKETS_TYPE, value));
+    packet.add(AVP::encode_u32(ACCT_OUTPUT_PACKETS_TYPE, value));
 }
 
 pub const ACCT_TERMINATE_CAUSE_TYPE: AVPType = 49;
@@ -175,7 +175,7 @@ pub fn lookup_all_acct_terminate_cause(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_TERMINATE_CAUSE_TYPE)
 }
 pub fn add_acct_terminate_cause(packet: &mut Packet, value: AcctTerminateCause) {
-    packet.add(AVP::from_u32(ACCT_TERMINATE_CAUSE_TYPE, value as u32));
+    packet.add(AVP::encode_u32(ACCT_TERMINATE_CAUSE_TYPE, value as u32));
 }
 
 pub const ACCT_MULTI_SESSION_ID_TYPE: AVPType = 50;
@@ -189,7 +189,7 @@ pub fn lookup_all_acct_multi_session_id(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_MULTI_SESSION_ID_TYPE)
 }
 pub fn add_acct_multi_session_id(packet: &mut Packet, value: &str) {
-    packet.add(AVP::from_string(ACCT_MULTI_SESSION_ID_TYPE, value));
+    packet.add(AVP::encode_string(ACCT_MULTI_SESSION_ID_TYPE, value));
 }
 
 pub const ACCT_LINK_COUNT_TYPE: AVPType = 51;
@@ -203,5 +203,5 @@ pub fn lookup_all_acct_link_count(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_LINK_COUNT_TYPE)
 }
 pub fn add_acct_link_count(packet: &mut Packet, value: u32) {
-    packet.add(AVP::from_u32(ACCT_LINK_COUNT_TYPE, value));
+    packet.add(AVP::encode_u32(ACCT_LINK_COUNT_TYPE, value));
 }

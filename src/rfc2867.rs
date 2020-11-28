@@ -22,7 +22,7 @@ pub fn lookup_all_acct_tunnel_connection(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_TUNNEL_CONNECTION_TYPE)
 }
 pub fn add_acct_tunnel_connection(packet: &mut Packet, value: &str) {
-    packet.add(AVP::from_string(ACCT_TUNNEL_CONNECTION_TYPE, value));
+    packet.add(AVP::encode_string(ACCT_TUNNEL_CONNECTION_TYPE, value));
 }
 
 pub const ACCT_TUNNEL_PACKETS_LOST_TYPE: AVPType = 86;
@@ -36,5 +36,5 @@ pub fn lookup_all_acct_tunnel_packets_lost(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(ACCT_TUNNEL_PACKETS_LOST_TYPE)
 }
 pub fn add_acct_tunnel_packets_lost(packet: &mut Packet, value: u32) {
-    packet.add(AVP::from_u32(ACCT_TUNNEL_PACKETS_LOST_TYPE, value));
+    packet.add(AVP::encode_u32(ACCT_TUNNEL_PACKETS_LOST_TYPE, value));
 }
