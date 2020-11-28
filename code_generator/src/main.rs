@@ -14,6 +14,8 @@ const VALUE_KIND: &str = "VALUE";
 
 const RADIUS_VALUE_TYPE: &str = "u32";
 
+const UESR_PASSWORD_TYPE_OPT: &str = "encrypt=1";
+
 #[derive(Debug)]
 struct RadiusAttribute {
     name: String,
@@ -412,11 +414,16 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                 let attribute_type_leaf = trailing_comment_re.replace(items[3], "").to_string();
                 let type_descriptions: Vec<&str> = spaces_re.split(&attribute_type_leaf).collect();
 
-                let is_encrypt = if type_descriptions.len() >= 2 {
-                    type_descriptions[1] == "encrypt=1" // FIXME: ad-hoc!!!
-                } else {
-                    false
-                };
+                let mut is_encrypt = false;
+                if type_descriptions.len() >= 2 {
+                    // TODO consider to extract to a method
+                    for type_opt in type_descriptions[1].split(',') {
+                        if type_opt == UESR_PASSWORD_TYPE_OPT {
+                            is_encrypt = true;
+                            continue;
+                        }
+                    }
+                }
 
                 let typ = match RadiusAttributeValueType::from_str(type_descriptions[0]) {
                     Ok(t) => {
