@@ -70,7 +70,7 @@ impl Packet {
         })
     }
 
-    pub fn response(&self, code: Code) -> Self {
+    pub fn make_response_packet(&self, code: Code) -> Self {
         Packet {
             code,
             identifier: self.identifier,
@@ -136,7 +136,7 @@ impl Packet {
      *  |  Attributes ...
      *  +-+-+-+-+-+-+-+-+-+-+-+-+-
      */
-    pub fn marshal_binary(&self) -> Result<Vec<u8>, String> {
+    fn marshal_binary(&self) -> Result<Vec<u8>, String> {
         let encoded_avp = match self.attributes.encode() {
             Ok(encoded) => encoded,
             Err(e) => return Err(e),

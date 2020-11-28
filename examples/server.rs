@@ -62,7 +62,7 @@ impl RequestHandler<(), io::Error> for MyRequestHandler {
         info!("response => {:?} to {}", code, req.get_remote_addr());
 
         conn.send_to(
-            &req_packet.response(code).encode().unwrap(),
+            &req_packet.make_response_packet(code).encode().unwrap(),
             req.get_remote_addr(),
         )
         .await?;
