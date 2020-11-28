@@ -387,6 +387,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
     let line_filter_re = Regex::new(r"^(?:#.*|)$").unwrap();
     let tabs_re = Regex::new(r"\t+").unwrap();
     let trailing_comment_re = Regex::new(r"\s*?#.+?$").unwrap();
+    let spaces_re = Regex::new(r"\s+").unwrap();
 
     let mut radius_attributes: Vec<RadiusAttribute> = Vec::new();
     let mut radius_attribute_to_values: BTreeMap<String, Vec<RadiusValue>> = BTreeMap::new();
@@ -409,7 +410,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
         match kind {
             ATTRIBUTE_KIND => {
                 let attribute_type_leaf = trailing_comment_re.replace(items[3], "").to_string();
-                let type_descriptions = attribute_type_leaf.split(' ').collect::<Vec<&str>>();
+                let type_descriptions: Vec<&str> = spaces_re.split(&attribute_type_leaf).collect();
 
                 let is_encrypt = if type_descriptions.len() >= 2 {
                     type_descriptions[1] == "encrypt=1" // FIXME: ad-hoc!!!
