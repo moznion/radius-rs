@@ -77,20 +77,6 @@ impl Attributes {
             .collect()
     }
 
-    pub fn attributes_encoded_len(&self) -> Result<u16, String> {
-        let mut n: u16 = 0;
-        for attr in &self.0 {
-            let attr_len = attr.attribute.0.len();
-            if attr_len > 253 {
-                return Err("attribute is too large".to_owned());
-            }
-
-            n += 2 + (attr_len as u16);
-        }
-
-        Ok(n)
-    }
-
     pub fn encode(&self) -> Result<Vec<u8>, String> {
         let mut encoded: Vec<u8> = Vec::new();
 
