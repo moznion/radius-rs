@@ -42,9 +42,6 @@ pub const ACCT_STATUS_TYPE_TYPE: AVPType = 40;
 pub fn delete_acct_status_type(packet: &mut Packet) {
     packet.delete(ACCT_STATUS_TYPE_TYPE);
 }
-pub fn lookup_all_acct_status_type(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_STATUS_TYPE_TYPE)
-}
 pub fn add_acct_status_type(packet: &mut Packet, value: AcctStatusType) {
     packet.add(AVP::encode_u32(ACCT_STATUS_TYPE_TYPE, value as u32));
 }
@@ -53,13 +50,17 @@ pub fn lookup_acct_status_type(packet: &Packet) -> Option<Result<AcctStatusType,
         .lookup(ACCT_STATUS_TYPE_TYPE)
         .map(|v| Ok(v.decode_u32()? as AcctStatusType))
 }
+pub fn lookup_all_acct_status_type(packet: &Packet) -> Result<Vec<AcctStatusType>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_STATUS_TYPE_TYPE) {
+        vec.push(avp.decode_u32()? as AcctStatusType)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_DELAY_TIME_TYPE: AVPType = 41;
 pub fn delete_acct_delay_time(packet: &mut Packet) {
     packet.delete(ACCT_DELAY_TIME_TYPE);
-}
-pub fn lookup_all_acct_delay_time(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_DELAY_TIME_TYPE)
 }
 pub fn add_acct_delay_time(packet: &mut Packet, value: u32) {
     packet.add(AVP::encode_u32(ACCT_DELAY_TIME_TYPE, value));
@@ -67,13 +68,17 @@ pub fn add_acct_delay_time(packet: &mut Packet, value: u32) {
 pub fn lookup_acct_delay_time(packet: &Packet) -> Option<Result<u32, AVPError>> {
     packet.lookup(ACCT_DELAY_TIME_TYPE).map(|v| v.decode_u32())
 }
+pub fn lookup_all_acct_delay_time(packet: &Packet) -> Result<Vec<u32>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_DELAY_TIME_TYPE) {
+        vec.push(avp.decode_u32()?)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_INPUT_OCTETS_TYPE: AVPType = 42;
 pub fn delete_acct_input_octets(packet: &mut Packet) {
     packet.delete(ACCT_INPUT_OCTETS_TYPE);
-}
-pub fn lookup_all_acct_input_octets(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_INPUT_OCTETS_TYPE)
 }
 pub fn add_acct_input_octets(packet: &mut Packet, value: u32) {
     packet.add(AVP::encode_u32(ACCT_INPUT_OCTETS_TYPE, value));
@@ -83,13 +88,17 @@ pub fn lookup_acct_input_octets(packet: &Packet) -> Option<Result<u32, AVPError>
         .lookup(ACCT_INPUT_OCTETS_TYPE)
         .map(|v| v.decode_u32())
 }
+pub fn lookup_all_acct_input_octets(packet: &Packet) -> Result<Vec<u32>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_INPUT_OCTETS_TYPE) {
+        vec.push(avp.decode_u32()?)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_OUTPUT_OCTETS_TYPE: AVPType = 43;
 pub fn delete_acct_output_octets(packet: &mut Packet) {
     packet.delete(ACCT_OUTPUT_OCTETS_TYPE);
-}
-pub fn lookup_all_acct_output_octets(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_OUTPUT_OCTETS_TYPE)
 }
 pub fn add_acct_output_octets(packet: &mut Packet, value: u32) {
     packet.add(AVP::encode_u32(ACCT_OUTPUT_OCTETS_TYPE, value));
@@ -99,13 +108,17 @@ pub fn lookup_acct_output_octets(packet: &Packet) -> Option<Result<u32, AVPError
         .lookup(ACCT_OUTPUT_OCTETS_TYPE)
         .map(|v| v.decode_u32())
 }
+pub fn lookup_all_acct_output_octets(packet: &Packet) -> Result<Vec<u32>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_OUTPUT_OCTETS_TYPE) {
+        vec.push(avp.decode_u32()?)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_SESSION_ID_TYPE: AVPType = 44;
 pub fn delete_acct_session_id(packet: &mut Packet) {
     packet.delete(ACCT_SESSION_ID_TYPE);
-}
-pub fn lookup_all_acct_session_id(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_SESSION_ID_TYPE)
 }
 pub fn add_acct_session_id(packet: &mut Packet, value: &str) {
     packet.add(AVP::encode_string(ACCT_SESSION_ID_TYPE, value));
@@ -115,13 +128,17 @@ pub fn lookup_acct_session_id(packet: &Packet) -> Option<Result<String, AVPError
         .lookup(ACCT_SESSION_ID_TYPE)
         .map(|v| v.decode_string())
 }
+pub fn lookup_all_acct_session_id(packet: &Packet) -> Result<Vec<String>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_SESSION_ID_TYPE) {
+        vec.push(avp.decode_string()?)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_AUTHENTIC_TYPE: AVPType = 45;
 pub fn delete_acct_authentic(packet: &mut Packet) {
     packet.delete(ACCT_AUTHENTIC_TYPE);
-}
-pub fn lookup_all_acct_authentic(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_AUTHENTIC_TYPE)
 }
 pub fn add_acct_authentic(packet: &mut Packet, value: AcctAuthentic) {
     packet.add(AVP::encode_u32(ACCT_AUTHENTIC_TYPE, value as u32));
@@ -131,13 +148,17 @@ pub fn lookup_acct_authentic(packet: &Packet) -> Option<Result<AcctAuthentic, AV
         .lookup(ACCT_AUTHENTIC_TYPE)
         .map(|v| Ok(v.decode_u32()? as AcctAuthentic))
 }
+pub fn lookup_all_acct_authentic(packet: &Packet) -> Result<Vec<AcctAuthentic>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_AUTHENTIC_TYPE) {
+        vec.push(avp.decode_u32()? as AcctAuthentic)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_SESSION_TIME_TYPE: AVPType = 46;
 pub fn delete_acct_session_time(packet: &mut Packet) {
     packet.delete(ACCT_SESSION_TIME_TYPE);
-}
-pub fn lookup_all_acct_session_time(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_SESSION_TIME_TYPE)
 }
 pub fn add_acct_session_time(packet: &mut Packet, value: u32) {
     packet.add(AVP::encode_u32(ACCT_SESSION_TIME_TYPE, value));
@@ -147,13 +168,17 @@ pub fn lookup_acct_session_time(packet: &Packet) -> Option<Result<u32, AVPError>
         .lookup(ACCT_SESSION_TIME_TYPE)
         .map(|v| v.decode_u32())
 }
+pub fn lookup_all_acct_session_time(packet: &Packet) -> Result<Vec<u32>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_SESSION_TIME_TYPE) {
+        vec.push(avp.decode_u32()?)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_INPUT_PACKETS_TYPE: AVPType = 47;
 pub fn delete_acct_input_packets(packet: &mut Packet) {
     packet.delete(ACCT_INPUT_PACKETS_TYPE);
-}
-pub fn lookup_all_acct_input_packets(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_INPUT_PACKETS_TYPE)
 }
 pub fn add_acct_input_packets(packet: &mut Packet, value: u32) {
     packet.add(AVP::encode_u32(ACCT_INPUT_PACKETS_TYPE, value));
@@ -163,13 +188,17 @@ pub fn lookup_acct_input_packets(packet: &Packet) -> Option<Result<u32, AVPError
         .lookup(ACCT_INPUT_PACKETS_TYPE)
         .map(|v| v.decode_u32())
 }
+pub fn lookup_all_acct_input_packets(packet: &Packet) -> Result<Vec<u32>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_INPUT_PACKETS_TYPE) {
+        vec.push(avp.decode_u32()?)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_OUTPUT_PACKETS_TYPE: AVPType = 48;
 pub fn delete_acct_output_packets(packet: &mut Packet) {
     packet.delete(ACCT_OUTPUT_PACKETS_TYPE);
-}
-pub fn lookup_all_acct_output_packets(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_OUTPUT_PACKETS_TYPE)
 }
 pub fn add_acct_output_packets(packet: &mut Packet, value: u32) {
     packet.add(AVP::encode_u32(ACCT_OUTPUT_PACKETS_TYPE, value));
@@ -179,13 +208,17 @@ pub fn lookup_acct_output_packets(packet: &Packet) -> Option<Result<u32, AVPErro
         .lookup(ACCT_OUTPUT_PACKETS_TYPE)
         .map(|v| v.decode_u32())
 }
+pub fn lookup_all_acct_output_packets(packet: &Packet) -> Result<Vec<u32>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_OUTPUT_PACKETS_TYPE) {
+        vec.push(avp.decode_u32()?)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_TERMINATE_CAUSE_TYPE: AVPType = 49;
 pub fn delete_acct_terminate_cause(packet: &mut Packet) {
     packet.delete(ACCT_TERMINATE_CAUSE_TYPE);
-}
-pub fn lookup_all_acct_terminate_cause(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_TERMINATE_CAUSE_TYPE)
 }
 pub fn add_acct_terminate_cause(packet: &mut Packet, value: AcctTerminateCause) {
     packet.add(AVP::encode_u32(ACCT_TERMINATE_CAUSE_TYPE, value as u32));
@@ -197,13 +230,19 @@ pub fn lookup_acct_terminate_cause(
         .lookup(ACCT_TERMINATE_CAUSE_TYPE)
         .map(|v| Ok(v.decode_u32()? as AcctTerminateCause))
 }
+pub fn lookup_all_acct_terminate_cause(
+    packet: &Packet,
+) -> Result<Vec<AcctTerminateCause>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_TERMINATE_CAUSE_TYPE) {
+        vec.push(avp.decode_u32()? as AcctTerminateCause)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_MULTI_SESSION_ID_TYPE: AVPType = 50;
 pub fn delete_acct_multi_session_id(packet: &mut Packet) {
     packet.delete(ACCT_MULTI_SESSION_ID_TYPE);
-}
-pub fn lookup_all_acct_multi_session_id(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_MULTI_SESSION_ID_TYPE)
 }
 pub fn add_acct_multi_session_id(packet: &mut Packet, value: &str) {
     packet.add(AVP::encode_string(ACCT_MULTI_SESSION_ID_TYPE, value));
@@ -213,17 +252,28 @@ pub fn lookup_acct_multi_session_id(packet: &Packet) -> Option<Result<String, AV
         .lookup(ACCT_MULTI_SESSION_ID_TYPE)
         .map(|v| v.decode_string())
 }
+pub fn lookup_all_acct_multi_session_id(packet: &Packet) -> Result<Vec<String>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_MULTI_SESSION_ID_TYPE) {
+        vec.push(avp.decode_string()?)
+    }
+    Ok(vec)
+}
 
 pub const ACCT_LINK_COUNT_TYPE: AVPType = 51;
 pub fn delete_acct_link_count(packet: &mut Packet) {
     packet.delete(ACCT_LINK_COUNT_TYPE);
-}
-pub fn lookup_all_acct_link_count(packet: &Packet) -> Vec<&AVP> {
-    packet.lookup_all(ACCT_LINK_COUNT_TYPE)
 }
 pub fn add_acct_link_count(packet: &mut Packet, value: u32) {
     packet.add(AVP::encode_u32(ACCT_LINK_COUNT_TYPE, value));
 }
 pub fn lookup_acct_link_count(packet: &Packet) -> Option<Result<u32, AVPError>> {
     packet.lookup(ACCT_LINK_COUNT_TYPE).map(|v| v.decode_u32())
+}
+pub fn lookup_all_acct_link_count(packet: &Packet) -> Result<Vec<u32>, AVPError> {
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all(ACCT_LINK_COUNT_TYPE) {
+        vec.push(avp.decode_u32()?)
+    }
+    Ok(vec)
 }

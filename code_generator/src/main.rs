@@ -210,9 +210,6 @@ pub const {type_identifier}: AVPType = {type_value};
 pub fn delete_{method_identifier}(packet: &mut Packet) {{
     packet.delete({type_identifier});
 }}
-pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<&AVP> {{
-    packet.lookup_all({type_identifier})
-}}
 ",
         method_identifier = attr_name.to_snake_case(),
         type_identifier = type_identifier,
@@ -232,6 +229,13 @@ fn generate_string_attribute_code(
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<String, AVPError>> {{
     packet.lookup({type_identifier}).map(|v| v.decode_string())
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<String>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_string()?)
+    }}
+    Ok(vec)
 }}
 ",
         method_identifier = method_identifier,
@@ -253,6 +257,13 @@ fn generate_user_password_attribute_code(
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {{
     packet.lookup({type_identifier}).map(|v| v.decode_user_password(packet.get_secret(), packet.get_authenticator()))
 }}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_user_password(packet.get_secret(), packet.get_authenticator())?)
+    }}
+    Ok(vec)
+}}
 ",
         method_identifier = method_identifier,
         type_identifier = type_identifier,
@@ -271,6 +282,13 @@ fn generate_octets_attribute_code(
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Vec<u8>> {{
     packet.lookup({type_identifier}).map(|v| v.decode_bytes())
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<Vec<u8>> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_bytes())
+    }}
+    vec
 }}
 ",
         method_identifier = method_identifier,
@@ -291,6 +309,13 @@ fn generate_ipaddr_attribute_code(
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {{
     packet.lookup({type_identifier}).map(|v| v.decode_ipv4())
 }}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Ipv4Addr>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_ipv4()?)
+    }}
+    Ok(vec)
+}}
 ",
         method_identifier = method_identifier,
         type_identifier = type_identifier,
@@ -309,6 +334,13 @@ fn generate_integer_attribute_code(
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<u32, AVPError>> {{
     packet.lookup({type_identifier}).map(|v| v.decode_u32())
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<u32>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_u32()?)
+    }}
+    Ok(vec)
 }}
 ",
         method_identifier = method_identifier,
@@ -329,6 +361,13 @@ fn generate_value_defined_integer_attribute_code(
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<{value_type}, AVPError>> {{
     packet.lookup({type_identifier}).map(|v| Ok(v.decode_u32()? as {value_type}))
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<{value_type}>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_u32()? as {value_type})
+    }}
+    Ok(vec)
 }}
 ",
         method_identifier = method_identifier,
