@@ -413,7 +413,6 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
     let line_filter_re = Regex::new(r"^(?:#.*|)$").unwrap();
     let tabs_re = Regex::new(r"\t+").unwrap();
     let trailing_comment_re = Regex::new(r"\s*?#.+?$").unwrap();
-    let spaces_re = Regex::new(r"\s+").unwrap();
 
     let mut radius_attributes: Vec<RadiusAttribute> = Vec::new();
     let mut radius_attribute_to_values: BTreeMap<String, Vec<RadiusValue>> = BTreeMap::new();
@@ -435,14 +434,11 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
         let kind = items[0];
         match kind {
             ATTRIBUTE_KIND => {
-                let attribute_type_leaf = trailing_comment_re.replace(items[3], "").to_string();
-                let type_descriptions: Vec<&str> = spaces_re.split(&attribute_type_leaf).collect();
-
                 let mut encryption_type: Option<EncryptionType> = None;
                 let mut has_tag = false;
-                if type_descriptions.len() >= 2 {
+                if items.len() >= 5 {
                     // TODO consider to extract to a method
-                    for type_opt in type_descriptions[1].split(',') {
+                    for type_opt in items[4].split(',') {
                         if type_opt == USER_PASSWORD_TYPE_OPT {
                             encryption_type = Some(EncryptionType::UserPassword);
                             continue;
@@ -458,7 +454,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                     }
                 }
 
-                let typ = match RadiusAttributeValueType::from_str(type_descriptions[0]) {
+                let typ = match RadiusAttributeValueType::from_str(items[3]) {
                     Ok(t) => {
                         if t == RadiusAttributeValueType::String {
                             match encryption_type {
@@ -475,7 +471,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                         }
                     }
                     Err(_) => {
-                        return Err(format!("invalid type has come => {}", type_descriptions[0]));
+                        return Err(format!("invalid type has come => {}", items[3]));
                     }
                 };
 
