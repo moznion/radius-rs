@@ -14,14 +14,21 @@ const VALUE_KIND: &str = "VALUE";
 
 const RADIUS_VALUE_TYPE: &str = "u32";
 
-const UESR_PASSWORD_TYPE_OPT: &str = "encrypt=1";
+const USER_PASSWORD_TYPE_OPT: &str = "encrypt=1";
+const TUNNEL_PASSWORD_TYPE_OPT: &str = "encrypt=2";
+const HAS_TAG_TYPE_OPT: &str = "has_tag";
+
+#[derive(Debug)]
+enum EncryptionType {
+    UserPassword,
+    TunnelPassword,
+}
 
 #[derive(Debug)]
 struct RadiusAttribute {
     name: String,
     typ: u8,
     value_type: RadiusAttributeValueType,
-    is_encrypt: bool,
 }
 
 #[derive(Debug)]
@@ -414,12 +421,17 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                 let attribute_type_leaf = trailing_comment_re.replace(items[3], "").to_string();
                 let type_descriptions: Vec<&str> = spaces_re.split(&attribute_type_leaf).collect();
 
-                let mut is_encrypt = false;
+                let mut encryption_type: Option<EncryptionType> = None;
+                let mut has_tag = false;
                 if type_descriptions.len() >= 2 {
                     // TODO consider to extract to a method
                     for type_opt in type_descriptions[1].split(',') {
-                        if type_opt == UESR_PASSWORD_TYPE_OPT {
-                            is_encrypt = true;
+                        if type_opt == USER_PASSWORD_TYPE_OPT {
+                            encryption_type = Some(EncryptionType::UserPassword);
+                            continue;
+                        }
+                        if type_opt == TUNNEL_PASSWORD_TYPE_OPT {
+                            encryption_type = Some(EncryptionType::TunnelPassword);
                             continue;
                         }
                     }
@@ -427,8 +439,14 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
 
                 let typ = match RadiusAttributeValueType::from_str(type_descriptions[0]) {
                     Ok(t) => {
-                        if t == RadiusAttributeValueType::String && is_encrypt {
-                            RadiusAttributeValueType::UserPassword
+                        if t == RadiusAttributeValueType::String {
+                            match encryption_type {
+                                Some(EncryptionType::UserPassword) => {
+                                    RadiusAttributeValueType::UserPassword
+                                }
+                                Some(EncryptionType::TunnelPassword) => t, // TODO
+                                None => t,
+                            }
                         } else {
                             t
                         }
@@ -442,7 +460,6 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                     name: items[1].to_string(),
                     typ: items[2].parse().unwrap(),
                     value_type: typ,
-                    is_encrypt,
                 });
             }
             VALUE_KIND => {
