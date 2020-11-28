@@ -121,7 +121,7 @@ impl Server {
             return;
         }
 
-        let packet = match Packet::parse(request_data, &secret) {
+        let packet = match Packet::decode(request_data, &secret) {
             Ok(packet) => packet,
             Err(e) => {
                 error!(

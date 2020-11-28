@@ -43,7 +43,7 @@ impl Packet {
         &self.authenticator
     }
 
-    pub fn parse(bs: &[u8], secret: &[u8]) -> Result<Self, String> {
+    pub fn decode(bs: &[u8], secret: &[u8]) -> Result<Self, String> {
         if bs.len() < RADIUS_PACKET_HEADER_LENGTH {
             return Err(format!("radius packet doesn't have enough length of bytes; that has to be at least {} bytes", RADIUS_PACKET_HEADER_LENGTH));
         }
@@ -56,11 +56,10 @@ impl Packet {
             return Err("invalid radius packat lengt".to_owned());
         }
 
-        let attributes =
-            match Attributes::parse_attributes(&bs[RADIUS_PACKET_HEADER_LENGTH..len].to_vec()) {
-                Ok(attributes) => attributes,
-                Err(e) => return Err(e),
-            };
+        let attributes = match Attributes::decode(&bs[RADIUS_PACKET_HEADER_LENGTH..len].to_vec()) {
+            Ok(attributes) => attributes,
+            Err(e) => return Err(e),
+        };
 
         Ok(Packet {
             code: Code::from(bs[0]),
@@ -242,7 +241,7 @@ mod tests {
             0x0a, 0xee, 0x04, 0x06, 0xc0, 0xa8, 0x01, 0x10, 0x05, 0x06, 0x00, 0x00, 0x00, 0x03,
         ];
 
-        let packet = Packet::parse(&request, &secret)?;
+        let packet = Packet::decode(&request, &secret)?;
         assert_eq!(packet.code, Code::AccessRequest);
         assert_eq!(packet.identifier, 0);
 

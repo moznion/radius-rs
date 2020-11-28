@@ -74,7 +74,7 @@ impl Client {
             }
         };
 
-        match Packet::parse(&buf[..len].to_vec(), request_packet.get_secret()) {
+        match Packet::decode(&buf[..len].to_vec(), request_packet.get_secret()) {
             Ok(response_packet) => Ok(response_packet),
             Err(e) => Err(FailedParsingUDPResponse(e)),
         }
