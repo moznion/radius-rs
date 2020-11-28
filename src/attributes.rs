@@ -1,7 +1,7 @@
 use crate::avp::{AVPType, AVP};
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct Attributes(pub(crate) Vec<AVP>);
+pub(crate) struct Attributes(pub(crate) Vec<AVP>);
 
 impl Attributes {
     pub(crate) fn decode(bs: &[u8]) -> Result<Attributes, String> {
@@ -67,7 +67,7 @@ impl Attributes {
             .collect()
     }
 
-    pub fn encode(&self) -> Result<Vec<u8>, String> {
+    pub(crate) fn encode(&self) -> Result<Vec<u8>, String> {
         let mut encoded: Vec<u8> = Vec::new();
 
         for avp in &self.0 {

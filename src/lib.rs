@@ -2,7 +2,7 @@ extern crate inflector;
 #[macro_use]
 extern crate log;
 
-pub mod attributes;
+pub(crate) mod attributes;
 pub mod avp;
 pub mod client;
 pub mod code;
