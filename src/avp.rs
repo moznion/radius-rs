@@ -1,9 +1,7 @@
 use std::convert::TryInto;
 use std::net::{Ipv4Addr, Ipv6Addr};
-use std::string::FromUtf8Error;
 
 use chrono::{DateTime, TimeZone, Utc};
-
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -142,8 +140,11 @@ impl AVP {
         }
     }
 
-    pub fn decode_string(&self) -> Result<String, FromUtf8Error> {
-        String::from_utf8(self.value.to_vec())
+    pub fn decode_string(&self) -> Result<String, AVPError> {
+        match String::from_utf8(self.value.to_vec()) {
+            Ok(str) => Ok(str),
+            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+        }
     }
 
     pub fn decode_bytes(&self) -> Vec<u8> {
@@ -239,10 +240,10 @@ impl AVP {
 #[cfg(test)]
 mod tests {
     use std::net::{Ipv4Addr, Ipv6Addr};
-    use std::string::FromUtf8Error;
+
+    use chrono::Utc;
 
     use crate::avp::{AVPError, AVP};
-    use chrono::Utc;
 
     #[test]
     fn it_should_convert_attribute_to_integer32() -> Result<(), AVPError> {
@@ -253,7 +254,7 @@ mod tests {
     }
 
     #[test]
-    fn it_should_convert_attribute_to_string() -> Result<(), FromUtf8Error> {
+    fn it_should_convert_attribute_to_string() -> Result<(), AVPError> {
         let given_str = "Hello, World";
         let avp = AVP::encode_string(1, given_str);
         assert_eq!(avp.decode_string()?, given_str);
