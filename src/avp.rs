@@ -72,6 +72,21 @@ impl AVP {
         secret: &[u8],
         request_authenticator: &[u8],
     ) -> Result<Self, AVPError> {
+        // Call the shared secret S and the pseudo-random 128-bit Request
+        // Authenticator RA.  Break the password into 16-octet chunks p1, p2,
+        // etc.  with the last one padded at the end with nulls to a 16-octet
+        // boundary.  Call the ciphertext blocks c(1), c(2), etc.  We'll need
+        // intermediate values b1, b2, etc.
+        //
+        //    b1 = MD5(S + RA)       c(1) = p1 xor b1
+        //    b2 = MD5(S + c(1))     c(2) = p2 xor b2
+        //           .                       .
+        //           .                       .
+        //           .                       .
+        //    bi = MD5(S + c(i-1))   c(i) = pi xor bi
+        //
+        // ref: https://tools.ietf.org/html/rfc2865#section-5.2
+
         if plain_text.len() > 128 {
             return Err(AVPError::PlainTextMaximumLengthExceededError());
         }
