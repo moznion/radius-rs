@@ -178,7 +178,7 @@ impl Packet {
         Ok(bs)
     }
 
-    pub fn is_authentic_response(response: Vec<u8>, request: Vec<u8>, secret: Vec<u8>) -> bool {
+    pub fn is_authentic_response(response: &[u8], request: &[u8], secret: &[u8]) -> bool {
         if response.len() < RADIUS_PACKET_HEADER_LENGTH
             || request.len() < RADIUS_PACKET_HEADER_LENGTH
             || secret.is_empty()
@@ -190,7 +190,7 @@ impl Packet {
             [
                 &response[..4],
                 &request[4..RADIUS_PACKET_HEADER_LENGTH],
-                &response[RADIUS_PACKET_HEADER_LENGTH..], // TODO length
+                &response[RADIUS_PACKET_HEADER_LENGTH..],
                 &secret,
             ]
             .concat(),
@@ -206,22 +206,20 @@ impl Packet {
 
         match Code::from(request[0]) {
             Code::AccessRequest | Code::StatusServer => true,
-            Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => {
-                md5::compute(
-                    [
-                        &request[..4],
-                        &[
-                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                            0x00, 0x00, 0x00, 0x00,
-                        ],
-                        &request[RADIUS_PACKET_HEADER_LENGTH..], // TODO length
-                        &secret,
-                    ]
-                    .concat(),
-                )
-                .to_vec()
-                .eq(&request[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
-            }
+            Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => md5::compute(
+                [
+                    &request[..4],
+                    &[
+                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                    ],
+                    &request[RADIUS_PACKET_HEADER_LENGTH..],
+                    &secret,
+                ]
+                .concat(),
+            )
+            .to_vec()
+            .eq(&request[4..RADIUS_PACKET_HEADER_LENGTH].to_vec()),
             _ => false,
         }
     }
@@ -245,25 +243,64 @@ impl Packet {
 
 #[cfg(test)]
 mod tests {
+    use crate::code::Code;
+    use crate::packet::{Packet, PacketError};
+    use crate::rfc2865;
+    use std::net::Ipv4Addr;
 
-    // #[test]
-    // fn test_for_rfc2865_7_1() -> Result<(), String> {
-    //     // ref: https://tools.ietf.org/html/rfc2865#section-7.1
-    //
-    //     let secret: Vec<u8> = "xyzzy5461".as_bytes().to_vec();
-    //     let request: Vec<u8> = vec![
-    //         0x01, 0x00, 0x00, 0x38, 0x0f, 0x40, 0x3f, 0x94, 0x73, 0x97, 0x80, 0x57, 0xbd, 0x83,
-    //         0xd5, 0xcb, 0x98, 0xf4, 0x22, 0x7a, 0x01, 0x06, 0x6e, 0x65, 0x6d, 0x6f, 0x02, 0x12,
-    //         0x0d, 0xbe, 0x70, 0x8d, 0x93, 0xd4, 0x13, 0xce, 0x31, 0x96, 0xe4, 0x3f, 0x78, 0x2a,
-    //         0x0a, 0xee, 0x04, 0x06, 0xc0, 0xa8, 0x01, 0x10, 0x05, 0x06, 0x00, 0x00, 0x00, 0x03,
-    //     ];
-    //
-    //     let packet = Packet::decode(&request, &secret)?;
-    //     assert_eq!(packet.code, Code::AccessRequest);
-    //     assert_eq!(packet.identifier, 0);
-    //
-    //     // TODO
-    //
-    //     Ok(())
-    // }
+    #[test]
+    fn test_for_rfc2865_7_1() -> Result<(), PacketError> {
+        // ref: https://tools.ietf.org/html/rfc2865#section-7.1
+
+        let secret: Vec<u8> = "xyzzy5461".as_bytes().to_vec();
+        let request: Vec<u8> = vec![
+            0x01, 0x00, 0x00, 0x38, 0x0f, 0x40, 0x3f, 0x94, 0x73, 0x97, 0x80, 0x57, 0xbd, 0x83,
+            0xd5, 0xcb, 0x98, 0xf4, 0x22, 0x7a, 0x01, 0x06, 0x6e, 0x65, 0x6d, 0x6f, 0x02, 0x12,
+            0x0d, 0xbe, 0x70, 0x8d, 0x93, 0xd4, 0x13, 0xce, 0x31, 0x96, 0xe4, 0x3f, 0x78, 0x2a,
+            0x0a, 0xee, 0x04, 0x06, 0xc0, 0xa8, 0x01, 0x10, 0x05, 0x06, 0x00, 0x00, 0x00, 0x03,
+        ];
+
+        let request_packet = Packet::decode(&request, &secret)?;
+        assert_eq!(request_packet.code, Code::AccessRequest);
+        assert_eq!(request_packet.identifier, 0);
+        assert_eq!(
+            rfc2865::lookup_user_name(&request_packet).unwrap().unwrap(),
+            "nemo"
+        );
+        assert_eq!(
+            rfc2865::lookup_user_password(&request_packet)
+                .unwrap()
+                .unwrap(),
+            b"arctangent"
+        );
+        assert_eq!(
+            rfc2865::lookup_nas_ip_address(&request_packet)
+                .unwrap()
+                .unwrap(),
+            Ipv4Addr::from([192, 168, 1, 16]),
+        );
+        assert_eq!(
+            rfc2865::lookup_nas_port(&request_packet).unwrap().unwrap(),
+            3
+        );
+        assert_eq!(request_packet.encode().unwrap(), request);
+        assert_eq!(Packet::is_authentic_request(&request, &secret), true);
+
+        let response: Vec<u8> = vec![
+            0x02, 0x00, 0x00, 0x26, 0x86, 0xfe, 0x22, 0x0e, 0x76, 0x24, 0xba, 0x2a, 0x10, 0x05,
+            0xf6, 0xbf, 0x9b, 0x55, 0xe0, 0xb2, 0x06, 0x06, 0x00, 0x00, 0x00, 0x01, 0x0f, 0x06,
+            0x00, 0x00, 0x00, 0x00, 0x0e, 0x06, 0xc0, 0xa8, 0x01, 0x03,
+        ];
+        let mut response_packet = request_packet.make_response_packet(Code::AccessAccept);
+        rfc2865::add_service_type(&mut response_packet, rfc2865::SERVICE_TYPE_LOGIN_USER);
+        rfc2865::add_login_service(&mut response_packet, rfc2865::LOGIN_SERVICE_TELNET);
+        rfc2865::add_login_ip_host(&mut response_packet, &Ipv4Addr::from([192, 168, 1, 3]));
+        assert_eq!(response_packet.encode().unwrap(), response);
+        assert_eq!(
+            Packet::is_authentic_response(&response, &request, &secret),
+            true
+        );
+
+        Ok(())
+    }
 }
