@@ -29,6 +29,7 @@ struct RadiusAttribute {
     name: String,
     typ: u8,
     value_type: RadiusAttributeValueType,
+    has_tag: bool,
 }
 
 #[derive(Debug)]
@@ -41,6 +42,7 @@ struct RadiusValue {
 enum RadiusAttributeValueType {
     String,
     UserPassword,
+    TunnelPassword,
     Octets,
     IpAddr,
     Integer,
@@ -179,28 +181,43 @@ fn generate_attribute_code(
 
     generate_common_attribute_code(w, &attr_name, &type_identifier, type_value);
     match attr.value_type {
-        RadiusAttributeValueType::String => {
-            generate_string_attribute_code(w, &method_identifier, &type_identifier)
-        }
-        RadiusAttributeValueType::UserPassword => {
-            generate_user_password_attribute_code(w, &method_identifier, &type_identifier)
-        }
-        RadiusAttributeValueType::Octets => {
-            generate_octets_attribute_code(w, &method_identifier, &type_identifier)
-        }
-        RadiusAttributeValueType::IpAddr => {
-            generate_ipaddr_attribute_code(w, &method_identifier, &type_identifier)
-        }
+        RadiusAttributeValueType::String => match attr.has_tag {
+            true => unimplemented!(),
+            false => generate_string_attribute_code(w, &method_identifier, &type_identifier),
+        },
+        RadiusAttributeValueType::UserPassword => match attr.has_tag {
+            true => unimplemented!(),
+            false => generate_user_password_attribute_code(w, &method_identifier, &type_identifier),
+        },
+        RadiusAttributeValueType::TunnelPassword => match attr.has_tag {
+            true => unimplemented!(),
+            false => unimplemented!(),
+        },
+        RadiusAttributeValueType::Octets => match attr.has_tag {
+            true => unimplemented!(),
+            false => generate_octets_attribute_code(w, &method_identifier, &type_identifier),
+        },
+        RadiusAttributeValueType::IpAddr => match attr.has_tag {
+            true => unimplemented!(),
+            false => generate_ipaddr_attribute_code(w, &method_identifier, &type_identifier),
+        },
         RadiusAttributeValueType::Integer => {
-            if value_defined_attributes_set.contains(&attr_name) {
-                generate_value_defined_integer_attribute_code(
-                    w,
-                    &method_identifier,
-                    &type_identifier,
-                    &attr_name.to_pascal_case(),
-                );
-            } else {
-                generate_integer_attribute_code(w, &method_identifier, &type_identifier);
+            match value_defined_attributes_set.contains(&attr_name) {
+                true => match attr.has_tag {
+                    true => unimplemented!(),
+                    false => generate_value_defined_integer_attribute_code(
+                        w,
+                        &method_identifier,
+                        &type_identifier,
+                        &attr_name.to_pascal_case(),
+                    ),
+                },
+                false => match attr.has_tag {
+                    true => unimplemented!(),
+                    false => {
+                        generate_integer_attribute_code(w, &method_identifier, &type_identifier)
+                    }
+                },
             }
         }
         RadiusAttributeValueType::VSA => generate_vsa_attribute_code(),
@@ -434,6 +451,10 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                             encryption_type = Some(EncryptionType::TunnelPassword);
                             continue;
                         }
+                        if type_opt == HAS_TAG_TYPE_OPT {
+                            has_tag = true;
+                            continue;
+                        }
                     }
                 }
 
@@ -444,7 +465,9 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                                 Some(EncryptionType::UserPassword) => {
                                     RadiusAttributeValueType::UserPassword
                                 }
-                                Some(EncryptionType::TunnelPassword) => t, // TODO
+                                Some(EncryptionType::TunnelPassword) => {
+                                    RadiusAttributeValueType::TunnelPassword
+                                }
                                 None => t,
                             }
                         } else {
@@ -460,6 +483,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                     name: items[1].to_string(),
                     typ: items[2].parse().unwrap(),
                     value_type: typ,
+                    has_tag,
                 });
             }
             VALUE_KIND => {
