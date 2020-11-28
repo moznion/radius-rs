@@ -1,4 +1,3 @@
-extern crate inflector;
 #[macro_use]
 extern crate log;
 

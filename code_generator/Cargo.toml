@@ -1,0 +1,13 @@
+[package]
+name = "code_generator"
+version = "0.1.0"
+authors = ["moznion <moznion@gmail.com>"]
+edition = "2018"
+license-file = "LICENSE"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+regex = "1"
+getopts = "0.2"
+Inflector = "0.11"
