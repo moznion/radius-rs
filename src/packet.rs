@@ -98,7 +98,6 @@ impl Packet {
             | Code::CoARequest
             | Code::CoAACK
             | Code::CoANAK => {
-                // TODO length checking
                 let mut buf: Vec<u8> = bs[..4].to_vec();
                 match self.code {
                     Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => {
