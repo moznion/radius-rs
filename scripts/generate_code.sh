@@ -20,6 +20,6 @@ for DICT in ${DICTS[@]}; do
   cargo run --bin code_gen "${DICTS_DIR}/dictionary.${DICT_NAME}" "${SRC_DIR}/${DICT_NAME}.rs"
 done
 
-cargo fix --allow-dirty
+cargo fix --allow-dirty --allow-staged
 cargo fmt
 

@@ -1,14 +1,4 @@
-use crate::attribute::Attribute;
-
-pub type AVPType = u8;
-
-pub const TYPE_INVALID: AVPType = 255;
-
-#[derive(Debug, Clone, PartialEq)]
-pub struct AVP {
-    typ: AVPType,
-    attribute: Attribute,
-}
+use crate::avp::{AVPType, AVP};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Attributes(pub(crate) Vec<AVP>);
@@ -30,10 +20,10 @@ impl Attributes {
 
             attrs.push(AVP {
                 typ: bs[i],
-                attribute: if length > 2 {
-                    Attribute(bs[i + 2..i + length].to_vec())
+                value: if length > 2 {
+                    bs[i + 2..i + length].to_vec()
                 } else {
-                    Attribute(vec![])
+                    vec![]
                 },
             });
 
@@ -43,8 +33,8 @@ impl Attributes {
         Ok(Attributes(attrs))
     }
 
-    pub(crate) fn add(&mut self, typ: AVPType, attribute: Attribute) {
-        self.0.push(AVP { typ, attribute })
+    pub(crate) fn add(&mut self, avp: AVP) {
+        self.0.push(avp)
     }
 
     pub(crate) fn del(&mut self, typ: AVPType) {
@@ -56,21 +46,21 @@ impl Attributes {
             .collect();
     }
 
-    pub(crate) fn lookup(&self, typ: AVPType) -> Option<&Attribute> {
+    pub(crate) fn lookup(&self, typ: AVPType) -> Option<&AVP> {
         self.0.iter().find_map(|avp| {
             if avp.typ == typ {
-                return Some(&avp.attribute);
+                return Some(avp);
             }
             None
         })
     }
 
-    pub(crate) fn lookup_all(&self, typ: AVPType) -> Vec<&Attribute> {
+    pub(crate) fn lookup_all(&self, typ: AVPType) -> Vec<&AVP> {
         self.0
             .iter()
             .filter_map(|avp| {
                 if avp.typ == typ {
-                    Some(&avp.attribute);
+                    Some(avp);
                 }
                 None
             })
@@ -81,13 +71,13 @@ impl Attributes {
         let mut encoded: Vec<u8> = Vec::new();
 
         for avp in &self.0 {
-            let attr_len = avp.attribute.0.len();
+            let attr_len = avp.value.len();
             if attr_len > 253 {
                 return Err("attribute is too large".to_owned());
             }
             encoded.push(avp.typ);
             encoded.push(2 + attr_len as u8);
-            encoded.extend(&avp.attribute.0);
+            encoded.extend(&avp.value);
         }
 
         Ok(encoded)

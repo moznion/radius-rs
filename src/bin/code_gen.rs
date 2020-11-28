@@ -99,8 +99,7 @@ fn generate_header(w: &mut BufWriter<File>) {
 
 use std::net::Ipv4Addr;
 
-use crate::attribute::Attribute;
-use crate::attributes::AVPType;
+use crate::avp::{AVP, AVPType};
 use crate::packet::Packet;
 
 ";
@@ -210,10 +209,10 @@ pub const {type_identifier}: AVPType = {type_value};
 pub fn delete_{method_identifier}(packet: &mut Packet) {{
     packet.delete({type_identifier});
 }}
-pub fn lookup_{method_identifier}(packet: &Packet) -> Option<&Attribute> {{
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<&AVP> {{
     packet.lookup({type_identifier})
 }}
-pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<&Attribute> {{
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<&AVP> {{
     packet.lookup_all({type_identifier})
 }}
 ",
@@ -231,8 +230,7 @@ fn generate_string_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &str) {{
-    let attr = Attribute::from_string(value);
-    packet.add({type_identifier}, &attr);
+    packet.add(AVP::from_string({type_identifier}, value));
 }}
 ",
         method_identifier = method_identifier,
@@ -248,8 +246,7 @@ fn generate_user_password_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), String> {{
-    let attr = Attribute::from_user_password(value, packet.get_secret(), packet.get_authenticator())?;
-    packet.add({type_identifier}, &attr);
+    packet.add(AVP::from_user_password({type_identifier}, value, packet.get_secret(), packet.get_authenticator())?);
     Ok(())
 }}
 ",
@@ -266,8 +263,7 @@ fn generate_octets_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) {{
-    let attr = Attribute::from_bytes(value);
-    packet.add({type_identifier}, &attr);
+    packet.add(AVP::from_bytes({type_identifier}, value));
 }}
 ",
         method_identifier = method_identifier,
@@ -283,8 +279,7 @@ fn generate_ipaddr_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &Ipv4Addr) {{
-    let attr = Attribute::from_ipv4(value);
-    packet.add({type_identifier}, &attr);
+    packet.add(AVP::from_ipv4({type_identifier}, value));
 }}
 ",
         method_identifier = method_identifier,
@@ -300,8 +295,7 @@ fn generate_integer_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: u32) {{
-    let attr = Attribute::from_u32(value);
-    packet.add({type_identifier}, &attr);
+    packet.add(AVP::from_u32({type_identifier}, value));
 }}
 ",
         method_identifier = method_identifier,
@@ -318,8 +312,7 @@ fn generate_value_defined_integer_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: {value_type}) {{
-    let attr = Attribute::from_u32(value as u32);
-    packet.add({type_identifier}, &attr);
+    packet.add(AVP::from_u32({type_identifier}, value as u32));
 }}
 ",
         method_identifier = method_identifier,

@@ -2,8 +2,8 @@ use std::convert::TryInto;
 
 use rand::Rng;
 
-use crate::attribute::Attribute;
-use crate::attributes::{AVPType, Attributes};
+use crate::attributes::Attributes;
+use crate::avp::{AVPType, AVP};
 use crate::code::Code;
 
 const MAX_PACKET_LENGTH: usize = 4096;
@@ -206,19 +206,19 @@ impl Packet {
         }
     }
 
-    pub fn add(&mut self, typ: AVPType, attr: &Attribute) {
-        self.attributes.add(typ, attr.clone());
+    pub fn add(&mut self, avp: AVP) {
+        self.attributes.add(avp);
     }
 
     pub fn delete(&mut self, typ: AVPType) {
         self.attributes.del(typ);
     }
 
-    pub fn lookup(&self, typ: AVPType) -> Option<&Attribute> {
+    pub fn lookup(&self, typ: AVPType) -> Option<&AVP> {
         self.attributes.lookup(typ)
     }
 
-    pub fn lookup_all(&self, typ: AVPType) -> Vec<&Attribute> {
+    pub fn lookup_all(&self, typ: AVPType) -> Vec<&AVP> {
         self.attributes.lookup_all(typ)
     }
 }
