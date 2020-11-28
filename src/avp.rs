@@ -4,6 +4,24 @@ use std::string::FromUtf8Error;
 
 use chrono::{DateTime, TimeZone, Utc};
 
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum AVPError {
+    #[error(
+        "the maximum length of the plain text is 128, but the given value is longer than that"
+    )]
+    PlainTextMaximumLengthExceededError(),
+    #[error("secret hasn't be empty, but the given value is empty")]
+    SecretMissingError(),
+    #[error("request authenticator has to have 16-bytes payload, but the given value doesn't")]
+    InvalidRequestAuthenticatorLength(),
+    #[error("invalid attribute length: {0}")]
+    InvalidAttributeLengthError(usize),
+    #[error("unexpected decoding error: {0}")]
+    UnexpectedDecodingError(String),
+}
+
 pub type AVPType = u8;
 
 pub const TYPE_INVALID: AVPType = 255;
@@ -55,23 +73,17 @@ impl AVP {
         plain_text: &[u8],
         secret: &[u8],
         request_authenticator: &[u8],
-    ) -> Result<Self, String> {
+    ) -> Result<Self, AVPError> {
         if plain_text.len() > 128 {
-            return Err(
-                "the length of plain_text has to be within 128, but the given value is longer"
-                    .to_owned(),
-            );
+            return Err(AVPError::PlainTextMaximumLengthExceededError());
         }
 
         if secret.is_empty() {
-            return Err("secret hasn't be empty, but the given value is empty".to_owned());
+            return Err(AVPError::SecretMissingError());
         }
 
         if request_authenticator.len() != 16 {
-            return Err(
-                "request_authenticator has to have 16-bytes payload, but the given value doesn't"
-                    .to_owned(),
-            );
+            return Err(AVPError::InvalidRequestAuthenticatorLength());
         }
 
         let mut buff = request_authenticator.to_vec();
@@ -117,16 +129,16 @@ impl AVP {
         }
     }
 
-    pub fn to_u32(&self) -> Result<u32, String> {
-        const EXPECTED_SIZE: usize = std::mem::size_of::<u32>();
-        if self.value.len() != EXPECTED_SIZE {
-            return Err("invalid attribute length for integer".to_owned());
+    pub fn to_u32(&self) -> Result<u32, AVPError> {
+        const U32_SIZE: usize = std::mem::size_of::<u32>();
+        if self.value.len() != U32_SIZE {
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
         }
 
-        let (int_bytes, _) = self.value.split_at(EXPECTED_SIZE);
+        let (int_bytes, _) = self.value.split_at(U32_SIZE);
         match int_bytes.try_into() {
             Ok(boxed_array) => Ok(u32::from_be_bytes(boxed_array)),
-            Err(e) => Err(e.to_string()),
+            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
         }
     }
 
@@ -138,29 +150,29 @@ impl AVP {
         self.value.to_vec()
     }
 
-    pub fn to_ipv4(&self) -> Result<Ipv4Addr, String> {
+    pub fn to_ipv4(&self) -> Result<Ipv4Addr, AVPError> {
         const IPV4_SIZE: usize = std::mem::size_of::<Ipv4Addr>();
         if self.value.len() != IPV4_SIZE {
-            return Err("invalid attribute length for ipv4 address".to_owned());
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
         }
 
         let (int_bytes, _) = self.value.split_at(IPV4_SIZE);
         match int_bytes.try_into() {
             Ok::<[u8; IPV4_SIZE], _>(boxed_array) => Ok(Ipv4Addr::from(boxed_array)),
-            Err(e) => Err(e.to_string()),
+            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
         }
     }
 
-    pub fn to_ipv6(&self) -> Result<Ipv6Addr, String> {
+    pub fn to_ipv6(&self) -> Result<Ipv6Addr, AVPError> {
         const IPV6_SIZE: usize = std::mem::size_of::<Ipv6Addr>();
         if self.value.len() != IPV6_SIZE {
-            return Err("invalid attribute length for ipv6 address".to_owned());
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
         }
 
         let (int_bytes, _) = self.value.split_at(IPV6_SIZE);
         match int_bytes.try_into() {
             Ok::<[u8; IPV6_SIZE], _>(boxed_array) => Ok(Ipv6Addr::from(boxed_array)),
-            Err(e) => Err(e.to_string()),
+            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
         }
     }
 
@@ -168,20 +180,17 @@ impl AVP {
         &self,
         secret: &[u8],
         request_authenticator: &[u8],
-    ) -> Result<Vec<u8>, String> {
+    ) -> Result<Vec<u8>, AVPError> {
         if self.value.len() < 16 || self.value.len() > 128 {
-            return Err(format!("invalid attribute length {}", self.value.len()));
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
         }
 
         if secret.is_empty() {
-            return Err("secret hasn't be empty, but the given value is empty".to_owned());
+            return Err(AVPError::SecretMissingError());
         }
 
         if request_authenticator.len() != 16 {
-            return Err(
-                "request_authenticator has to have 16-bytes payload, but the given value doesn't"
-                    .to_owned(),
-            );
+            return Err(AVPError::InvalidRequestAuthenticatorLength());
         }
 
         let mut dec: Vec<u8> = Vec::new();
@@ -210,14 +219,19 @@ impl AVP {
         }
     }
 
-    pub fn to_date(&self) -> Result<DateTime<Utc>, String> {
-        let (int_bytes, _) = self.value.split_at(std::mem::size_of::<u32>());
+    pub fn to_date(&self) -> Result<DateTime<Utc>, AVPError> {
+        const U32_SIZE: usize = std::mem::size_of::<u32>();
+        if self.value.len() != U32_SIZE {
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+        }
+
+        let (int_bytes, _) = self.value.split_at(U32_SIZE);
         match int_bytes.try_into() {
             Ok(boxed_array) => {
                 let timestamp = u32::from_be_bytes(boxed_array);
                 Ok(Utc.timestamp(timestamp as i64, 0))
             }
-            Err(e) => Err(e.to_string()),
+            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
         }
     }
 }
@@ -227,11 +241,11 @@ mod tests {
     use std::net::{Ipv4Addr, Ipv6Addr};
     use std::string::FromUtf8Error;
 
-    use crate::avp::AVP;
+    use crate::avp::{AVPError, AVP};
     use chrono::Utc;
 
     #[test]
-    fn it_should_convert_attribute_to_integer32() -> Result<(), String> {
+    fn it_should_convert_attribute_to_integer32() -> Result<(), AVPError> {
         let given_u32 = 16909060;
         let avp = AVP::from_u32(1, given_u32);
         assert_eq!(avp.to_u32()?, given_u32);
@@ -247,15 +261,14 @@ mod tests {
     }
 
     #[test]
-    fn it_should_convert_attribute_to_byte() -> Result<(), FromUtf8Error> {
+    fn it_should_convert_attribute_to_byte() {
         let given_bytes = b"Hello, World";
         let avp = AVP::from_bytes(1, given_bytes);
         assert_eq!(avp.to_bytes(), given_bytes);
-        Ok(())
     }
 
     #[test]
-    fn it_should_convert_ipv4() -> Result<(), String> {
+    fn it_should_convert_ipv4() -> Result<(), AVPError> {
         let given_ipv4 = Ipv4Addr::new(192, 0, 2, 1);
         let avp = AVP::from_ipv4(1, &given_ipv4);
         assert_eq!(avp.to_ipv4()?, given_ipv4);
@@ -263,7 +276,7 @@ mod tests {
     }
 
     #[test]
-    fn it_should_convert_ipv6() -> Result<(), String> {
+    fn it_should_convert_ipv6() -> Result<(), AVPError> {
         let given_ipv6 = Ipv6Addr::new(
             0x2001, 0x0db8, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
         );
@@ -330,7 +343,7 @@ mod tests {
     }
 
     #[test]
-    fn it_should_convert_date() -> Result<(), String> {
+    fn it_should_convert_date() -> Result<(), AVPError> {
         let now = Utc::now();
         let avp = AVP::from_date(1, &now);
         assert_eq!(avp.to_date()?.timestamp(), now.timestamp(),);

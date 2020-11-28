@@ -2,7 +2,7 @@
 
 use std::net::Ipv4Addr;
 
-use crate::avp::{AVPType, AVP};
+use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
 pub type FramedCompression = u32;
@@ -103,7 +103,7 @@ pub fn lookup_user_password(packet: &Packet) -> Option<&AVP> {
 pub fn lookup_all_user_password(packet: &Packet) -> Vec<&AVP> {
     packet.lookup_all(USER_PASSWORD_TYPE)
 }
-pub fn add_user_password(packet: &mut Packet, value: &[u8]) -> Result<(), String> {
+pub fn add_user_password(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
     packet.add(AVP::from_user_password(
         USER_PASSWORD_TYPE,
         value,

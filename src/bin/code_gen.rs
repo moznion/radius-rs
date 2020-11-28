@@ -99,7 +99,7 @@ fn generate_header(w: &mut BufWriter<File>) {
 
 use std::net::Ipv4Addr;
 
-use crate::avp::{AVP, AVPType};
+use crate::avp::{AVP, AVPType, AVPError};
 use crate::packet::Packet;
 
 ";
@@ -245,7 +245,7 @@ fn generate_user_password_attribute_code(
     type_identifier: &str,
 ) {
     let code = format!(
-        "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), String> {{
+        "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {{
     packet.add(AVP::from_user_password({type_identifier}, value, packet.get_secret(), packet.get_authenticator())?);
     Ok(())
 }}
