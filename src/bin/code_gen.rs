@@ -121,11 +121,7 @@ fn generate_values_code(
     }
 }
 
-fn generate_values_for_attribute_code(
-    w: &mut BufWriter<File>,
-    attr: &String,
-    values: &[RadiusValue],
-) {
+fn generate_values_for_attribute_code(w: &mut BufWriter<File>, attr: &str, values: &[RadiusValue]) {
     let type_name = attr.to_pascal_case();
     w.write_all(
         format!(

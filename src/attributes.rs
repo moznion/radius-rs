@@ -60,7 +60,7 @@ impl Attributes {
             .iter()
             .filter_map(|avp| {
                 if avp.typ == typ {
-                    Some(avp);
+                    return Some(avp);
                 }
                 None
             })
