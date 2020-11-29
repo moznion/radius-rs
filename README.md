@@ -60,7 +60,7 @@ Simple example implementations are here:
 
 ## Note
 
-This implementation and design are based on [layeh/radius](https://github.com/layeh/radius).
+Original implementation and design of this are based on [layeh/radius](https://github.com/layeh/radius).
 
 ## Author
 
