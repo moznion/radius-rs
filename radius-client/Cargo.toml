@@ -1,0 +1,13 @@
+[package]
+name = "radius-client"
+version = "0.1.0"
+authors = ["moznion <moznion@gmail.com>"]
+edition = "2018"
+license-file = "../LICENSE"
+repository = "https://github.com/moznion/radius-rs"
+keywords = ["radius", "client"]
+
+[dependencies]
+radius = { path = "../radius" }
+tokio = { version = "0.3.4", features = ["net"] }
+thiserror = "1.0"

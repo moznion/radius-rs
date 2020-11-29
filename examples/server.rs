@@ -8,12 +8,12 @@ use async_trait::async_trait;
 use tokio::net::UdpSocket;
 use tokio::signal;
 
-use radius_rs::code::Code;
-use radius_rs::request::Request;
-use radius_rs::request_handler::RequestHandler;
-use radius_rs::rfc2865;
-use radius_rs::secret_provider::{SecretProvider, SecretProviderError};
-use radius_rs::server::Server;
+use radius::code::Code;
+use radius::request::Request;
+use radius::rfc2865;
+use radius_server::request_handler::RequestHandler;
+use radius_server::secret_provider::{SecretProvider, SecretProviderError};
+use radius_server::server::Server;
 
 #[tokio::main]
 async fn main() {

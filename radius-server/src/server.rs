@@ -7,10 +7,10 @@ use std::sync::{Arc, RwLock};
 
 use tokio::net::UdpSocket;
 
-use crate::packet::Packet;
-use crate::request::Request;
 use crate::request_handler::RequestHandler;
 use crate::secret_provider::SecretProvider;
+use radius::packet::Packet;
+use radius::request::Request;
 use std::fmt::Debug;
 
 pub struct Server {}

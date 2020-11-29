@@ -1,19 +1,11 @@
-[package]
-name = "radius-rs"
-version = "0.1.0"
-authors = ["moznion <moznion@gmail.com>"]
-edition = "2018"
-license-file = "LICENSE"
+[workspace]
 
-[dependencies]
-md5 = "0.7.0"
-chrono = "0.4"
-rand = "0.7.3"
-num_enum = "0.5.1"
-tokio = { version = "0.3.4", features = ["full"] }
-log = "0.4.11"
-thiserror = "1.0"
-async-trait = "0.1.42"
+members = [
+  "radius",
+  "radius-server",
+  "radius-client",
 
-[dev-dependencies]
-env_logger = "0.8.2"
+  # Internal
+  "code-generator",
+  "examples",
+]

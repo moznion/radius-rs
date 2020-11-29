@@ -7,7 +7,7 @@ use crate::client::ClientError::{
     FailedConnection, FailedParsingUDPResponse, FailedRadiusPacketEncoding,
     FailedReceivingResponse, FailedSendingPacket, FailedUdpSocketBinding,
 };
-use crate::packet::Packet;
+use radius::packet::Packet;
 
 #[derive(Error, Debug)]
 pub enum ClientError {

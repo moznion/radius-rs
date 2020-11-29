@@ -8,4 +8,4 @@ lint:
 	cargo clippy
 
 gen:
-	bash ./scripts/generate_code.sh
+	bash ./scripts/generate-code.sh

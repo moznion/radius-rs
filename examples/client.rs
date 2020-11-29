@@ -1,9 +1,9 @@
 #[macro_use]
 extern crate log;
-use radius_rs::client::Client;
-use radius_rs::code::Code;
-use radius_rs::packet::Packet;
-use radius_rs::rfc2865;
+use radius::code::Code;
+use radius::packet::Packet;
+use radius::rfc2865;
+use radius_client::client::Client;
 use std::net::SocketAddr;
 
 #[tokio::main]

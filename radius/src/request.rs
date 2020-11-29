@@ -9,7 +9,7 @@ pub struct Request {
 }
 
 impl Request {
-    pub(crate) fn new(local_addr: SocketAddr, remote_addr: SocketAddr, packet: Packet) -> Self {
+    pub fn new(local_addr: SocketAddr, remote_addr: SocketAddr, packet: Packet) -> Self {
         Self {
             local_addr,
             remote_addr,

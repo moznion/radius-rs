@@ -1,0 +1,15 @@
+[package]
+name = "radius"
+version = "0.1.0"
+authors = ["moznion <moznion@gmail.com>"]
+edition = "2018"
+license-file = "../LICENSE"
+repository = "https://github.com/moznion/radius-rs"
+keywords = ["radius"]
+
+[dependencies]
+md5 = "0.7.0"
+chrono = "0.4"
+rand = "0.7.3"
+num_enum = "0.5.1"
+thiserror = "1.0"
