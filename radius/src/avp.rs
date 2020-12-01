@@ -41,14 +41,14 @@ pub struct AVP {
 }
 
 impl AVP {
-    pub fn encode_u32(typ: AVPType, value: u32) -> Self {
+    pub fn from_u32(typ: AVPType, value: u32) -> Self {
         AVP {
             typ,
             value: u32::to_be_bytes(value).to_vec(),
         }
     }
 
-    pub fn encode_tagged_u32(typ: AVPType, tag: Option<&Tag>, value: u32) -> Self {
+    pub fn from_tagged_u32(typ: AVPType, tag: Option<&Tag>, value: u32) -> Self {
         let tag = match tag {
             None => &Tag {
                 value: UNUSED_TAG_VALUE,
@@ -62,14 +62,14 @@ impl AVP {
         }
     }
 
-    pub fn encode_string(typ: AVPType, value: &str) -> Self {
+    pub fn from_string(typ: AVPType, value: &str) -> Self {
         AVP {
             typ,
             value: value.as_bytes().to_vec(),
         }
     }
 
-    pub fn encode_tagged_string(typ: AVPType, tag: Option<&Tag>, value: &str) -> Self {
+    pub fn from_tagged_string(typ: AVPType, tag: Option<&Tag>, value: &str) -> Self {
         match tag {
             None => AVP {
                 typ,
@@ -82,28 +82,28 @@ impl AVP {
         }
     }
 
-    pub fn encode_bytes(typ: AVPType, value: &[u8]) -> Self {
+    pub fn from_bytes(typ: AVPType, value: &[u8]) -> Self {
         AVP {
             typ,
             value: value.to_vec(),
         }
     }
 
-    pub fn encode_ipv4(typ: AVPType, value: &Ipv4Addr) -> Self {
+    pub fn from_ipv4(typ: AVPType, value: &Ipv4Addr) -> Self {
         AVP {
             typ,
             value: value.octets().to_vec(),
         }
     }
 
-    pub fn encode_ipv6(typ: AVPType, value: &Ipv6Addr) -> Self {
+    pub fn from_ipv6(typ: AVPType, value: &Ipv6Addr) -> Self {
         AVP {
             typ,
             value: value.octets().to_vec(),
         }
     }
 
-    pub fn encode_user_password(
+    pub fn from_user_password(
         typ: AVPType,
         plain_text: &[u8],
         secret: &[u8],
@@ -166,14 +166,14 @@ impl AVP {
         Ok(AVP { typ, value: enc })
     }
 
-    pub fn encode_date(typ: AVPType, dt: &DateTime<Utc>) -> Self {
+    pub fn from_date(typ: AVPType, dt: &DateTime<Utc>) -> Self {
         AVP {
             typ,
             value: u32::to_be_bytes(dt.timestamp() as u32).to_vec(),
         }
     }
 
-    pub fn encode_tunnel_password(
+    pub fn from_tunnel_password(
         typ: AVPType,
         tag: Option<&Tag>,
         plain_text: &[u8],
@@ -262,7 +262,7 @@ impl AVP {
         Ok(AVP { typ, value: enc })
     }
 
-    pub fn decode_u32(&self) -> Result<u32, AVPError> {
+    pub fn encode_u32(&self) -> Result<u32, AVPError> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -275,7 +275,7 @@ impl AVP {
         }
     }
 
-    pub fn decode_tagged_u32(&self) -> Result<(u32, Tag), AVPError> {
+    pub fn encode_tagged_u32(&self) -> Result<(u32, Tag), AVPError> {
         if self.value.is_empty() {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
         }
@@ -302,14 +302,14 @@ impl AVP {
         }
     }
 
-    pub fn decode_string(&self) -> Result<String, AVPError> {
+    pub fn encode_string(&self) -> Result<String, AVPError> {
         match String::from_utf8(self.value.to_vec()) {
             Ok(str) => Ok(str),
             Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
         }
     }
 
-    pub fn decode_tagged_string(&self) -> Result<(String, Option<Tag>), AVPError> {
+    pub fn encode_tagged_string(&self) -> Result<(String, Option<Tag>), AVPError> {
         let string_vec = self.value.to_vec();
         if string_vec.is_empty() {
             return Err(AVPError::InvalidAttributeLengthError(string_vec.len()));
@@ -344,11 +344,11 @@ impl AVP {
         }
     }
 
-    pub fn decode_bytes(&self) -> Vec<u8> {
+    pub fn encode_bytes(&self) -> Vec<u8> {
         self.value.to_vec()
     }
 
-    pub fn decode_ipv4(&self) -> Result<Ipv4Addr, AVPError> {
+    pub fn encode_ipv4(&self) -> Result<Ipv4Addr, AVPError> {
         const IPV4_SIZE: usize = std::mem::size_of::<Ipv4Addr>();
         if self.value.len() != IPV4_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -361,7 +361,7 @@ impl AVP {
         }
     }
 
-    pub fn decode_ipv6(&self) -> Result<Ipv6Addr, AVPError> {
+    pub fn encode_ipv6(&self) -> Result<Ipv6Addr, AVPError> {
         const IPV6_SIZE: usize = std::mem::size_of::<Ipv6Addr>();
         if self.value.len() != IPV6_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -374,7 +374,7 @@ impl AVP {
         }
     }
 
-    pub fn decode_user_password(
+    pub fn encode_user_password(
         &self,
         secret: &[u8],
         request_authenticator: &[u8],
@@ -417,7 +417,7 @@ impl AVP {
         }
     }
 
-    pub fn decode_date(&self) -> Result<DateTime<Utc>, AVPError> {
+    pub fn encode_date(&self) -> Result<DateTime<Utc>, AVPError> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -433,7 +433,7 @@ impl AVP {
         }
     }
 
-    pub fn decode_tunnel_password(
+    pub fn encode_tunnel_password(
         &self,
         secret: &[u8],
         request_authenticator: &[u8],
@@ -498,31 +498,31 @@ mod tests {
     #[test]
     fn it_should_convert_attribute_to_integer32() -> Result<(), AVPError> {
         let given_u32 = 16909060;
-        let avp = AVP::encode_u32(1, given_u32);
-        assert_eq!(avp.decode_u32()?, given_u32);
+        let avp = AVP::from_u32(1, given_u32);
+        assert_eq!(avp.encode_u32()?, given_u32);
         Ok(())
     }
 
     #[test]
     fn it_should_convert_attribute_to_string() -> Result<(), AVPError> {
         let given_str = "Hello, World";
-        let avp = AVP::encode_string(1, given_str);
-        assert_eq!(avp.decode_string()?, given_str);
+        let avp = AVP::from_string(1, given_str);
+        assert_eq!(avp.encode_string()?, given_str);
         Ok(())
     }
 
     #[test]
     fn it_should_convert_attribute_to_byte() {
         let given_bytes = b"Hello, World";
-        let avp = AVP::encode_bytes(1, given_bytes);
-        assert_eq!(avp.decode_bytes(), given_bytes);
+        let avp = AVP::from_bytes(1, given_bytes);
+        assert_eq!(avp.encode_bytes(), given_bytes);
     }
 
     #[test]
     fn it_should_convert_ipv4() -> Result<(), AVPError> {
         let given_ipv4 = Ipv4Addr::new(192, 0, 2, 1);
-        let avp = AVP::encode_ipv4(1, &given_ipv4);
-        assert_eq!(avp.decode_ipv4()?, given_ipv4);
+        let avp = AVP::from_ipv4(1, &given_ipv4);
+        assert_eq!(avp.encode_ipv4()?, given_ipv4);
         Ok(())
     }
 
@@ -531,8 +531,8 @@ mod tests {
         let given_ipv6 = Ipv6Addr::new(
             0x2001, 0x0db8, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001,
         );
-        let avp = AVP::encode_ipv6(1, &given_ipv6);
-        assert_eq!(avp.decode_ipv6()?, given_ipv6);
+        let avp = AVP::from_ipv6(1, &given_ipv6);
+        assert_eq!(avp.encode_ipv6()?, given_ipv6);
         Ok(())
     }
 
@@ -574,7 +574,7 @@ mod tests {
         ];
 
         for test_case in test_cases {
-            let user_password_avp_result = AVP::encode_user_password(
+            let user_password_avp_result = AVP::from_user_password(
                 1,
                 test_case.plain_text.as_bytes(),
                 &secret,
@@ -584,7 +584,7 @@ mod tests {
             assert_eq!(avp.value.len(), test_case.expected_encoded_len);
 
             let decoded_password = avp
-                .decode_user_password(&secret, &request_authenticator)
+                .encode_user_password(&secret, &request_authenticator)
                 .unwrap();
             assert_eq!(
                 String::from_utf8(decoded_password).unwrap(),
@@ -596,8 +596,8 @@ mod tests {
     #[test]
     fn it_should_convert_date() -> Result<(), AVPError> {
         let now = Utc::now();
-        let avp = AVP::encode_date(1, &now);
-        assert_eq!(avp.decode_date()?.timestamp(), now.timestamp(),);
+        let avp = AVP::from_date(1, &now);
+        assert_eq!(avp.encode_date()?.timestamp(), now.timestamp(),);
         Ok(())
     }
 
@@ -640,7 +640,7 @@ mod tests {
         ];
 
         for test_case in test_cases {
-            let user_password_avp_result = AVP::encode_tunnel_password(
+            let user_password_avp_result = AVP::from_tunnel_password(
                 1,
                 Some(&tag),
                 test_case.plain_text.as_bytes(),
@@ -651,7 +651,7 @@ mod tests {
             assert_eq!(avp.value.len(), test_case.expected_encoded_len);
 
             let (decoded_password, got_tag) = avp
-                .decode_tunnel_password(&secret, &request_authenticator)
+                .encode_tunnel_password(&secret, &request_authenticator)
                 .unwrap();
             assert_eq!(got_tag, tag);
             assert_eq!(

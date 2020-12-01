@@ -16,17 +16,17 @@ pub fn delete_acct_tunnel_connection(packet: &mut Packet) {
     packet.delete(ACCT_TUNNEL_CONNECTION_TYPE);
 }
 pub fn add_acct_tunnel_connection(packet: &mut Packet, value: &str) {
-    packet.add(AVP::encode_string(ACCT_TUNNEL_CONNECTION_TYPE, value));
+    packet.add(AVP::from_string(ACCT_TUNNEL_CONNECTION_TYPE, value));
 }
 pub fn lookup_acct_tunnel_connection(packet: &Packet) -> Option<Result<String, AVPError>> {
     packet
         .lookup(ACCT_TUNNEL_CONNECTION_TYPE)
-        .map(|v| v.decode_string())
+        .map(|v| v.encode_string())
 }
 pub fn lookup_all_acct_tunnel_connection(packet: &Packet) -> Result<Vec<String>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(ACCT_TUNNEL_CONNECTION_TYPE) {
-        vec.push(avp.decode_string()?)
+        vec.push(avp.encode_string()?)
     }
     Ok(vec)
 }
@@ -36,17 +36,17 @@ pub fn delete_acct_tunnel_packets_lost(packet: &mut Packet) {
     packet.delete(ACCT_TUNNEL_PACKETS_LOST_TYPE);
 }
 pub fn add_acct_tunnel_packets_lost(packet: &mut Packet, value: u32) {
-    packet.add(AVP::encode_u32(ACCT_TUNNEL_PACKETS_LOST_TYPE, value));
+    packet.add(AVP::from_u32(ACCT_TUNNEL_PACKETS_LOST_TYPE, value));
 }
 pub fn lookup_acct_tunnel_packets_lost(packet: &Packet) -> Option<Result<u32, AVPError>> {
     packet
         .lookup(ACCT_TUNNEL_PACKETS_LOST_TYPE)
-        .map(|v| v.decode_u32())
+        .map(|v| v.encode_u32())
 }
 pub fn lookup_all_acct_tunnel_packets_lost(packet: &Packet) -> Result<Vec<u32>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(ACCT_TUNNEL_PACKETS_LOST_TYPE) {
-        vec.push(avp.decode_u32()?)
+        vec.push(avp.encode_u32()?)
     }
     Ok(vec)
 }

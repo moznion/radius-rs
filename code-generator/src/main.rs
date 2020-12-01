@@ -263,15 +263,15 @@ fn generate_string_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &str) {{
-    packet.add(AVP::encode_string({type_identifier}, value));
+    packet.add(AVP::from_string({type_identifier}, value));
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<String, AVPError>> {{
-    packet.lookup({type_identifier}).map(|v| v.decode_string())
+    packet.lookup({type_identifier}).map(|v| v.encode_string())
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<String>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_string()?)
+        vec.push(avp.encode_string()?)
     }}
     Ok(vec)
 }}
@@ -289,15 +289,15 @@ fn generate_tagged_string_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: &str) {{
-    packet.add(AVP::encode_tagged_string({type_identifier}, tag, value));
+    packet.add(AVP::from_tagged_string({type_identifier}, tag, value));
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<(String, Option<Tag>), AVPError>> {{
-    packet.lookup({type_identifier}).map(|v| v.decode_tagged_string())
+    packet.lookup({type_identifier}).map(|v| v.encode_tagged_string())
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(String, Option<Tag>)>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_tagged_string()?)
+        vec.push(avp.encode_tagged_string()?)
     }}
     Ok(vec)
 }}
@@ -315,16 +315,16 @@ fn generate_user_password_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {{
-    packet.add(AVP::encode_user_password({type_identifier}, value, packet.get_secret(), packet.get_authenticator())?);
+    packet.add(AVP::from_user_password({type_identifier}, value, packet.get_secret(), packet.get_authenticator())?);
     Ok(())
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {{
-    packet.lookup({type_identifier}).map(|v| v.decode_user_password(packet.get_secret(), packet.get_authenticator()))
+    packet.lookup({type_identifier}).map(|v| v.encode_user_password(packet.get_secret(), packet.get_authenticator()))
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_user_password(packet.get_secret(), packet.get_authenticator())?)
+        vec.push(avp.encode_user_password(packet.get_secret(), packet.get_authenticator())?)
     }}
     Ok(vec)
 }}
@@ -342,16 +342,16 @@ fn generate_tunnel_password_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: &[u8]) -> Result<(), AVPError> {{
-    packet.add(AVP::encode_tunnel_password({type_identifier}, tag, value, packet.get_secret(), packet.get_authenticator())?);
+    packet.add(AVP::from_tunnel_password({type_identifier}, tag, value, packet.get_secret(), packet.get_authenticator())?);
     Ok(())
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<(Vec<u8>, Tag), AVPError>> {{
-    packet.lookup({type_identifier}).map(|v| v.decode_tunnel_password(packet.get_secret(), packet.get_authenticator()))
+    packet.lookup({type_identifier}).map(|v| v.encode_tunnel_password(packet.get_secret(), packet.get_authenticator()))
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(Vec<u8>, Tag)>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_tunnel_password(packet.get_secret(), packet.get_authenticator())?)
+        vec.push(avp.encode_tunnel_password(packet.get_secret(), packet.get_authenticator())?)
     }}
     Ok(vec)
 }}
@@ -369,15 +369,15 @@ fn generate_octets_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) {{
-    packet.add(AVP::encode_bytes({type_identifier}, value));
+    packet.add(AVP::from_bytes({type_identifier}, value));
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Vec<u8>> {{
-    packet.lookup({type_identifier}).map(|v| v.decode_bytes())
+    packet.lookup({type_identifier}).map(|v| v.encode_bytes())
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<Vec<u8>> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_bytes())
+        vec.push(avp.encode_bytes())
     }}
     vec
 }}
@@ -395,15 +395,15 @@ fn generate_ipaddr_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &Ipv4Addr) {{
-    packet.add(AVP::encode_ipv4({type_identifier}, value));
+    packet.add(AVP::from_ipv4({type_identifier}, value));
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {{
-    packet.lookup({type_identifier}).map(|v| v.decode_ipv4())
+    packet.lookup({type_identifier}).map(|v| v.encode_ipv4())
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Ipv4Addr>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_ipv4()?)
+        vec.push(avp.encode_ipv4()?)
     }}
     Ok(vec)
 }}
@@ -421,15 +421,15 @@ fn generate_integer_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: u32) {{
-    packet.add(AVP::encode_u32({type_identifier}, value));
+    packet.add(AVP::from_u32({type_identifier}, value));
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<u32, AVPError>> {{
-    packet.lookup({type_identifier}).map(|v| v.decode_u32())
+    packet.lookup({type_identifier}).map(|v| v.encode_u32())
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<u32>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_u32()?)
+        vec.push(avp.encode_u32()?)
     }}
     Ok(vec)
 }}
@@ -447,15 +447,15 @@ fn generate_tagged_integer_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: u32) {{
-    packet.add(AVP::encode_tagged_u32({type_identifier}, tag, value));
+    packet.add(AVP::from_tagged_u32({type_identifier}, tag, value));
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<(u32, Tag), AVPError>> {{
-    packet.lookup({type_identifier}).map(|v| v.decode_tagged_u32())
+    packet.lookup({type_identifier}).map(|v| v.encode_tagged_u32())
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(u32, Tag)>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_tagged_u32()?)
+        vec.push(avp.encode_tagged_u32()?)
     }}
     Ok(vec)
 }}
@@ -474,15 +474,15 @@ fn generate_value_defined_integer_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: {value_type}) {{
-    packet.add(AVP::encode_u32({type_identifier}, value as u32));
+    packet.add(AVP::from_u32({type_identifier}, value as u32));
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<{value_type}, AVPError>> {{
-    packet.lookup({type_identifier}).map(|v| Ok(v.decode_u32()? as {value_type}))
+    packet.lookup({type_identifier}).map(|v| Ok(v.encode_u32()? as {value_type}))
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<{value_type}>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        vec.push(avp.decode_u32()? as {value_type})
+        vec.push(avp.encode_u32()? as {value_type})
     }}
     Ok(vec)
 }}
@@ -502,18 +502,18 @@ fn generate_value_tagged_defined_integer_attribute_code(
 ) {
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: {value_type}) {{
-    packet.add(AVP::encode_tagged_u32({type_identifier}, tag, value as u32));
+    packet.add(AVP::from_tagged_u32({type_identifier}, tag, value as u32));
 }}
 pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<({value_type}, Tag), AVPError>> {{
     packet.lookup({type_identifier}).map(|v| {{
-        let (v, t) = v.decode_tagged_u32()?;
+        let (v, t) = v.encode_tagged_u32()?;
         Ok((v as {value_type}, t))
     }})
 }}
 pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<({value_type}, Tag)>, AVPError> {{
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
-        let (v, t) = avp.decode_tagged_u32()?;
+        let (v, t) = avp.encode_tagged_u32()?;
         vec.push((v as {value_type}, t))
     }}
     Ok(vec)

@@ -41,18 +41,18 @@ pub fn delete_tunnel_type(packet: &mut Packet) {
     packet.delete(TUNNEL_TYPE_TYPE);
 }
 pub fn add_tunnel_type(packet: &mut Packet, tag: Option<&Tag>, value: TunnelType) {
-    packet.add(AVP::encode_tagged_u32(TUNNEL_TYPE_TYPE, tag, value as u32));
+    packet.add(AVP::from_tagged_u32(TUNNEL_TYPE_TYPE, tag, value as u32));
 }
 pub fn lookup_tunnel_type(packet: &Packet) -> Option<Result<(TunnelType, Tag), AVPError>> {
     packet.lookup(TUNNEL_TYPE_TYPE).map(|v| {
-        let (v, t) = v.decode_tagged_u32()?;
+        let (v, t) = v.encode_tagged_u32()?;
         Ok((v as TunnelType, t))
     })
 }
 pub fn lookup_all_tunnel_type(packet: &Packet) -> Result<Vec<(TunnelType, Tag)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_TYPE_TYPE) {
-        let (v, t) = avp.decode_tagged_u32()?;
+        let (v, t) = avp.encode_tagged_u32()?;
         vec.push((v as TunnelType, t))
     }
     Ok(vec)
@@ -63,7 +63,7 @@ pub fn delete_tunnel_medium_type(packet: &mut Packet) {
     packet.delete(TUNNEL_MEDIUM_TYPE_TYPE);
 }
 pub fn add_tunnel_medium_type(packet: &mut Packet, tag: Option<&Tag>, value: TunnelMediumType) {
-    packet.add(AVP::encode_tagged_u32(
+    packet.add(AVP::from_tagged_u32(
         TUNNEL_MEDIUM_TYPE_TYPE,
         tag,
         value as u32,
@@ -73,7 +73,7 @@ pub fn lookup_tunnel_medium_type(
     packet: &Packet,
 ) -> Option<Result<(TunnelMediumType, Tag), AVPError>> {
     packet.lookup(TUNNEL_MEDIUM_TYPE_TYPE).map(|v| {
-        let (v, t) = v.decode_tagged_u32()?;
+        let (v, t) = v.encode_tagged_u32()?;
         Ok((v as TunnelMediumType, t))
     })
 }
@@ -82,7 +82,7 @@ pub fn lookup_all_tunnel_medium_type(
 ) -> Result<Vec<(TunnelMediumType, Tag)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_MEDIUM_TYPE_TYPE) {
-        let (v, t) = avp.decode_tagged_u32()?;
+        let (v, t) = avp.encode_tagged_u32()?;
         vec.push((v as TunnelMediumType, t))
     }
     Ok(vec)
@@ -93,7 +93,7 @@ pub fn delete_tunnel_client_endpoint(packet: &mut Packet) {
     packet.delete(TUNNEL_CLIENT_ENDPOINT_TYPE);
 }
 pub fn add_tunnel_client_endpoint(packet: &mut Packet, tag: Option<&Tag>, value: &str) {
-    packet.add(AVP::encode_tagged_string(
+    packet.add(AVP::from_tagged_string(
         TUNNEL_CLIENT_ENDPOINT_TYPE,
         tag,
         value,
@@ -104,14 +104,14 @@ pub fn lookup_tunnel_client_endpoint(
 ) -> Option<Result<(String, Option<Tag>), AVPError>> {
     packet
         .lookup(TUNNEL_CLIENT_ENDPOINT_TYPE)
-        .map(|v| v.decode_tagged_string())
+        .map(|v| v.encode_tagged_string())
 }
 pub fn lookup_all_tunnel_client_endpoint(
     packet: &Packet,
 ) -> Result<Vec<(String, Option<Tag>)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_CLIENT_ENDPOINT_TYPE) {
-        vec.push(avp.decode_tagged_string()?)
+        vec.push(avp.encode_tagged_string()?)
     }
     Ok(vec)
 }
@@ -121,7 +121,7 @@ pub fn delete_tunnel_server_endpoint(packet: &mut Packet) {
     packet.delete(TUNNEL_SERVER_ENDPOINT_TYPE);
 }
 pub fn add_tunnel_server_endpoint(packet: &mut Packet, tag: Option<&Tag>, value: &str) {
-    packet.add(AVP::encode_tagged_string(
+    packet.add(AVP::from_tagged_string(
         TUNNEL_SERVER_ENDPOINT_TYPE,
         tag,
         value,
@@ -132,14 +132,14 @@ pub fn lookup_tunnel_server_endpoint(
 ) -> Option<Result<(String, Option<Tag>), AVPError>> {
     packet
         .lookup(TUNNEL_SERVER_ENDPOINT_TYPE)
-        .map(|v| v.decode_tagged_string())
+        .map(|v| v.encode_tagged_string())
 }
 pub fn lookup_all_tunnel_server_endpoint(
     packet: &Packet,
 ) -> Result<Vec<(String, Option<Tag>)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_SERVER_ENDPOINT_TYPE) {
-        vec.push(avp.decode_tagged_string()?)
+        vec.push(avp.encode_tagged_string()?)
     }
     Ok(vec)
 }
@@ -153,7 +153,7 @@ pub fn add_tunnel_password(
     tag: Option<&Tag>,
     value: &[u8],
 ) -> Result<(), AVPError> {
-    packet.add(AVP::encode_tunnel_password(
+    packet.add(AVP::from_tunnel_password(
         TUNNEL_PASSWORD_TYPE,
         tag,
         value,
@@ -165,12 +165,12 @@ pub fn add_tunnel_password(
 pub fn lookup_tunnel_password(packet: &Packet) -> Option<Result<(Vec<u8>, Tag), AVPError>> {
     packet
         .lookup(TUNNEL_PASSWORD_TYPE)
-        .map(|v| v.decode_tunnel_password(packet.get_secret(), packet.get_authenticator()))
+        .map(|v| v.encode_tunnel_password(packet.get_secret(), packet.get_authenticator()))
 }
 pub fn lookup_all_tunnel_password(packet: &Packet) -> Result<Vec<(Vec<u8>, Tag)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_PASSWORD_TYPE) {
-        vec.push(avp.decode_tunnel_password(packet.get_secret(), packet.get_authenticator())?)
+        vec.push(avp.encode_tunnel_password(packet.get_secret(), packet.get_authenticator())?)
     }
     Ok(vec)
 }
@@ -180,7 +180,7 @@ pub fn delete_tunnel_private_group_id(packet: &mut Packet) {
     packet.delete(TUNNEL_PRIVATE_GROUP_ID_TYPE);
 }
 pub fn add_tunnel_private_group_id(packet: &mut Packet, tag: Option<&Tag>, value: &str) {
-    packet.add(AVP::encode_tagged_string(
+    packet.add(AVP::from_tagged_string(
         TUNNEL_PRIVATE_GROUP_ID_TYPE,
         tag,
         value,
@@ -191,14 +191,14 @@ pub fn lookup_tunnel_private_group_id(
 ) -> Option<Result<(String, Option<Tag>), AVPError>> {
     packet
         .lookup(TUNNEL_PRIVATE_GROUP_ID_TYPE)
-        .map(|v| v.decode_tagged_string())
+        .map(|v| v.encode_tagged_string())
 }
 pub fn lookup_all_tunnel_private_group_id(
     packet: &Packet,
 ) -> Result<Vec<(String, Option<Tag>)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_PRIVATE_GROUP_ID_TYPE) {
-        vec.push(avp.decode_tagged_string()?)
+        vec.push(avp.encode_tagged_string()?)
     }
     Ok(vec)
 }
@@ -208,7 +208,7 @@ pub fn delete_tunnel_assignment_id(packet: &mut Packet) {
     packet.delete(TUNNEL_ASSIGNMENT_ID_TYPE);
 }
 pub fn add_tunnel_assignment_id(packet: &mut Packet, tag: Option<&Tag>, value: &str) {
-    packet.add(AVP::encode_tagged_string(
+    packet.add(AVP::from_tagged_string(
         TUNNEL_ASSIGNMENT_ID_TYPE,
         tag,
         value,
@@ -219,14 +219,14 @@ pub fn lookup_tunnel_assignment_id(
 ) -> Option<Result<(String, Option<Tag>), AVPError>> {
     packet
         .lookup(TUNNEL_ASSIGNMENT_ID_TYPE)
-        .map(|v| v.decode_tagged_string())
+        .map(|v| v.encode_tagged_string())
 }
 pub fn lookup_all_tunnel_assignment_id(
     packet: &Packet,
 ) -> Result<Vec<(String, Option<Tag>)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_ASSIGNMENT_ID_TYPE) {
-        vec.push(avp.decode_tagged_string()?)
+        vec.push(avp.encode_tagged_string()?)
     }
     Ok(vec)
 }
@@ -236,17 +236,17 @@ pub fn delete_tunnel_preference(packet: &mut Packet) {
     packet.delete(TUNNEL_PREFERENCE_TYPE);
 }
 pub fn add_tunnel_preference(packet: &mut Packet, tag: Option<&Tag>, value: u32) {
-    packet.add(AVP::encode_tagged_u32(TUNNEL_PREFERENCE_TYPE, tag, value));
+    packet.add(AVP::from_tagged_u32(TUNNEL_PREFERENCE_TYPE, tag, value));
 }
 pub fn lookup_tunnel_preference(packet: &Packet) -> Option<Result<(u32, Tag), AVPError>> {
     packet
         .lookup(TUNNEL_PREFERENCE_TYPE)
-        .map(|v| v.decode_tagged_u32())
+        .map(|v| v.encode_tagged_u32())
 }
 pub fn lookup_all_tunnel_preference(packet: &Packet) -> Result<Vec<(u32, Tag)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_PREFERENCE_TYPE) {
-        vec.push(avp.decode_tagged_u32()?)
+        vec.push(avp.encode_tagged_u32()?)
     }
     Ok(vec)
 }
@@ -256,7 +256,7 @@ pub fn delete_tunnel_client_auth_id(packet: &mut Packet) {
     packet.delete(TUNNEL_CLIENT_AUTH_ID_TYPE);
 }
 pub fn add_tunnel_client_auth_id(packet: &mut Packet, tag: Option<&Tag>, value: &str) {
-    packet.add(AVP::encode_tagged_string(
+    packet.add(AVP::from_tagged_string(
         TUNNEL_CLIENT_AUTH_ID_TYPE,
         tag,
         value,
@@ -267,14 +267,14 @@ pub fn lookup_tunnel_client_auth_id(
 ) -> Option<Result<(String, Option<Tag>), AVPError>> {
     packet
         .lookup(TUNNEL_CLIENT_AUTH_ID_TYPE)
-        .map(|v| v.decode_tagged_string())
+        .map(|v| v.encode_tagged_string())
 }
 pub fn lookup_all_tunnel_client_auth_id(
     packet: &Packet,
 ) -> Result<Vec<(String, Option<Tag>)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_CLIENT_AUTH_ID_TYPE) {
-        vec.push(avp.decode_tagged_string()?)
+        vec.push(avp.encode_tagged_string()?)
     }
     Ok(vec)
 }
@@ -284,7 +284,7 @@ pub fn delete_tunnel_server_auth_id(packet: &mut Packet) {
     packet.delete(TUNNEL_SERVER_AUTH_ID_TYPE);
 }
 pub fn add_tunnel_server_auth_id(packet: &mut Packet, tag: Option<&Tag>, value: &str) {
-    packet.add(AVP::encode_tagged_string(
+    packet.add(AVP::from_tagged_string(
         TUNNEL_SERVER_AUTH_ID_TYPE,
         tag,
         value,
@@ -295,14 +295,14 @@ pub fn lookup_tunnel_server_auth_id(
 ) -> Option<Result<(String, Option<Tag>), AVPError>> {
     packet
         .lookup(TUNNEL_SERVER_AUTH_ID_TYPE)
-        .map(|v| v.decode_tagged_string())
+        .map(|v| v.encode_tagged_string())
 }
 pub fn lookup_all_tunnel_server_auth_id(
     packet: &Packet,
 ) -> Result<Vec<(String, Option<Tag>)>, AVPError> {
     let mut vec = Vec::new();
     for avp in packet.lookup_all(TUNNEL_SERVER_AUTH_ID_TYPE) {
-        vec.push(avp.decode_tagged_string()?)
+        vec.push(avp.encode_tagged_string()?)
     }
     Ok(vec)
 }
