@@ -15,6 +15,7 @@ This supports the following RFC dictionaries at the moment:
 - [RFC2867](https://tools.ietf.org/html/rfc2867)
 - [RFC2868](https://tools.ietf.org/html/rfc2868)
 - [RFC3576](https://tools.ietf.org/html/rfc3576)
+- [RFC5090](https://tools.ietf.org/html/rfc5090)
 - [RFC6519](https://tools.ietf.org/html/rfc6519)
 - [RFC6677](https://tools.ietf.org/html/rfc6677)
 
