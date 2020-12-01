@@ -1,6 +1,7 @@
 use std::convert::TryInto;
 use std::net::{Ipv4Addr, Ipv6Addr};
 
+use crate::tag::Tag;
 use chrono::{DateTime, TimeZone, Utc};
 use thiserror::Error;
 
@@ -16,8 +17,11 @@ pub enum AVPError {
     InvalidRequestAuthenticatorLength(),
     #[error("invalid attribute length: {0}")]
     InvalidAttributeLengthError(usize),
+    // TODO: more meaningful error message
     #[error("unexpected decoding error: {0}")]
     UnexpectedDecodingError(String),
+    #[error("invalid salt. the MSB has to be 1, but given value isn't: {0}")]
+    InvalidSaltMSBError(u8),
 }
 
 pub type AVPType = u8;
@@ -101,17 +105,11 @@ impl AVP {
 
         let mut buff = request_authenticator.to_vec();
 
-        let l = plain_text.len();
-        if l < 16 {
+        if plain_text.is_empty() {
             let enc = md5::compute([secret, &buff[..]].concat()).to_vec();
             return Ok(AVP {
                 typ,
-                value: enc
-                    .iter()
-                    .zip([plain_text, vec![0 as u8; 16 - l].as_slice()].concat())
-                    //                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ zero padding
-                    .map(|(d, p)| d ^ p)
-                    .collect(),
+                value: enc.iter().zip(vec![0; 16]).map(|(d, p)| d ^ p).collect(),
             });
         }
 
@@ -140,6 +138,97 @@ impl AVP {
             typ,
             value: u32::to_be_bytes(dt.timestamp() as u32).to_vec(),
         }
+    }
+
+    pub fn encode_tunnel_password(
+        typ: AVPType,
+        plain_text: &[u8],
+        tag: u8,
+        salt: &[u8],
+        secret: &[u8],
+        request_authenticator: &[u8],
+    ) -> Result<Self, AVPError> {
+        /*
+         *   0                   1                   2                   3
+         *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+         *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+         *  |     Type      |    Length     |     Tag       |   Salt
+         *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+         *     Salt (cont)  |   String ...
+         *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+         *
+         *    b(1) = MD5(S + R + A)    c(1) = p(1) xor b(1)   C = c(1)
+         *    b(2) = MD5(S + c(1))     c(2) = p(2) xor b(2)   C = C + c(2)
+         *                .                      .
+         *                .                      .
+         *                .                      .
+         *    b(i) = MD5(S + c(i-1))   c(i) = p(i) xor b(i)   C = C + c(i)
+         *
+         *  The resulting encrypted String field will contain
+         *  c(1)+c(2)+...+c(i).
+         *
+         *  https://tools.ietf.org/html/rfc2868#section-3.5
+         */
+
+        if request_authenticator.len() > 240 {
+            return Err(AVPError::InvalidAttributeLengthError(
+                request_authenticator.len(),
+            ));
+        }
+
+        if salt.len() != 2 {
+            return Err(AVPError::InvalidAttributeLengthError(2));
+        }
+
+        if salt[0] & 0x80 != 0x80 {
+            return Err(AVPError::InvalidSaltMSBError(salt[0]));
+        }
+
+        if secret.is_empty() {
+            return Err(AVPError::SecretMissingError());
+        }
+
+        if request_authenticator.len() != 16 {
+            return Err(AVPError::InvalidRequestAuthenticatorLength());
+        }
+
+        // NOTE: prepend one byte as a tag and two bytes as a salt
+        // TODO: should it separate them to private struct fields?
+        let mut enc: Vec<u8> = [vec![tag], salt.to_vec()].concat();
+
+        let mut buff = [request_authenticator, salt].concat();
+        if plain_text.is_empty() {
+            return Ok(AVP {
+                typ,
+                value: [
+                    enc,
+                    md5::compute([secret, &buff[..]].concat())
+                        .iter()
+                        .zip(vec![0; 16])
+                        .map(|(d, p)| d ^ p)
+                        .collect::<Vec<u8>>(),
+                ]
+                .concat(),
+            });
+        }
+
+        for chunk in plain_text.chunks(16) {
+            let mut chunk_vec = chunk.to_vec();
+            let l = chunk.len();
+            if l < 16 {
+                chunk_vec.extend(vec![0 as u8; 16 - l]); // zero padding
+            }
+
+            let enc_block = md5::compute([secret, &buff[..]].concat()).to_vec();
+            buff = enc_block
+                .iter()
+                .zip(chunk_vec)
+                .map(|(d, p)| d ^ p)
+                .collect();
+            enc.extend(&buff);
+        }
+
+        Ok(AVP { typ, value: enc })
     }
 
     pub fn decode_u32(&self) -> Result<u32, AVPError> {
@@ -250,6 +339,58 @@ impl AVP {
             Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
         }
     }
+
+    pub fn decode_tunnel_password(
+        &self,
+        secret: &[u8],
+        request_authenticator: &[u8],
+    ) -> Result<(Vec<u8>, Tag), AVPError> {
+        if self.value.len() - 3 < 16
+            || self.value.len() - 3 > 240
+            || (self.value.len() - 3) % 16 != 0
+        {
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+        }
+
+        if self.value[1] & 0x80 != 0x80 {
+            // salt
+            return Err(AVPError::InvalidSaltMSBError(self.value[1]));
+        }
+
+        if secret.is_empty() {
+            return Err(AVPError::SecretMissingError());
+        }
+
+        if request_authenticator.len() != 16 {
+            return Err(AVPError::InvalidRequestAuthenticatorLength());
+        }
+
+        let tag = Tag {
+            value: self.value[0],
+        };
+        let mut dec: Vec<u8> = Vec::new();
+        let mut buff: Vec<u8> =
+            [request_authenticator.to_vec(), self.value[1..3].to_vec()].concat();
+
+        for chunk in self.value[3..].chunks(16) {
+            let chunk_vec = chunk.to_vec();
+            let dec_block = md5::compute([secret, &buff[..]].concat()).to_vec();
+            dec.extend(
+                dec_block
+                    .iter()
+                    .zip(&chunk_vec)
+                    .map(|(d, p)| d ^ p)
+                    .collect::<Vec<u8>>(),
+            );
+            buff = chunk_vec.clone();
+        }
+
+        // remove trailing zero bytes
+        match dec.split(|b| *b == 0).next() {
+            Some(dec) => Ok((dec.to_vec(), tag)),
+            None => Ok((vec![], tag)),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -259,6 +400,7 @@ mod tests {
     use chrono::Utc;
 
     use crate::avp::{AVPError, AVP};
+    use crate::tag::Tag;
 
     #[test]
     fn it_should_convert_attribute_to_integer32() -> Result<(), AVPError> {
@@ -363,6 +505,70 @@ mod tests {
         let now = Utc::now();
         let avp = AVP::encode_date(1, &now);
         assert_eq!(avp.decode_date()?.timestamp(), now.timestamp(),);
+        Ok(())
+    }
+
+    #[test]
+    fn it_should_convert_tunnel_password() -> Result<(), AVPError> {
+        let salt: Vec<u8> = vec![0x80, 0xef];
+        let tag = Tag { value: 0x1e };
+        let secret = b"12345".to_vec();
+        let request_authenticator = b"0123456789abcdef".to_vec();
+
+        struct TestCase<'a> {
+            plain_text: &'a str,
+            expected_encoded_len: usize,
+        };
+
+        let test_cases = &[
+            TestCase {
+                plain_text: "",
+                expected_encoded_len: 16 + 3,
+            },
+            TestCase {
+                plain_text: "abc",
+                expected_encoded_len: 16 + 3,
+            },
+            TestCase {
+                plain_text: "0123456789abcde",
+                expected_encoded_len: 16 + 3,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef",
+                expected_encoded_len: 16 + 3,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef0",
+                expected_encoded_len: 32 + 3,
+            },
+            TestCase {
+                plain_text: "0123456789abcdef0123456789abcdef0123456789abcdef",
+                expected_encoded_len: 48 + 3,
+            },
+        ];
+
+        for test_case in test_cases {
+            let user_password_avp_result = AVP::encode_tunnel_password(
+                1,
+                test_case.plain_text.as_bytes(),
+                tag.value,
+                &salt,
+                &secret,
+                &request_authenticator,
+            );
+            let avp = user_password_avp_result.unwrap();
+            assert_eq!(avp.value.len(), test_case.expected_encoded_len);
+
+            let (decoded_password, got_tag) = avp
+                .decode_tunnel_password(&secret, &request_authenticator)
+                .unwrap();
+            assert_eq!(got_tag, tag);
+            assert_eq!(
+                String::from_utf8(decoded_password).unwrap(),
+                test_case.plain_text
+            );
+        }
+
         Ok(())
     }
 }
