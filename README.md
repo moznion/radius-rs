@@ -14,6 +14,7 @@ This supports the following RFC dictionaries at the moment:
 - [RFC2866](https://tools.ietf.org/html/rfc2866)
 - [RFC2867](https://tools.ietf.org/html/rfc2867)
 - [RFC2868](https://tools.ietf.org/html/rfc2868)
+- [RFC3576](https://tools.ietf.org/html/rfc3576)
 
 ## Usage
 
@@ -29,7 +30,6 @@ Simple example implementations are here:
 - Support the following RFC dictionaries:
   - rfc2869
   - rfc3162
-  - rfc3576
   - rfc3580
   - rfc4072
   - rfc4372
