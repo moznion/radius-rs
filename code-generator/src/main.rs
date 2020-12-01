@@ -117,6 +117,7 @@ use std::net::Ipv4Addr;
 
 use crate::avp::{AVP, AVPType, AVPError};
 use crate::packet::Packet;
+use crate::tag::Tag;
 
 ";
 
@@ -182,7 +183,7 @@ fn generate_attribute_code(
     generate_common_attribute_code(w, &attr_name, &type_identifier, type_value);
     match attr.value_type {
         RadiusAttributeValueType::String => match attr.has_tag {
-            true => unimplemented!(),
+            true => generate_tagged_string_attribute_code(w, &method_identifier, &type_identifier),
             false => generate_string_attribute_code(w, &method_identifier, &type_identifier),
         },
         RadiusAttributeValueType::UserPassword => match attr.has_tag {
@@ -190,7 +191,9 @@ fn generate_attribute_code(
             false => generate_user_password_attribute_code(w, &method_identifier, &type_identifier),
         },
         RadiusAttributeValueType::TunnelPassword => match attr.has_tag {
-            true => unimplemented!(),
+            true => {
+                generate_tunnel_password_attribute_code(w, &method_identifier, &type_identifier)
+            }
             false => unimplemented!(),
         },
         RadiusAttributeValueType::Octets => match attr.has_tag {
@@ -204,7 +207,12 @@ fn generate_attribute_code(
         RadiusAttributeValueType::Integer => {
             match value_defined_attributes_set.contains(&attr_name) {
                 true => match attr.has_tag {
-                    true => unimplemented!(),
+                    true => generate_value_tagged_defined_integer_attribute_code(
+                        w,
+                        &method_identifier,
+                        &type_identifier,
+                        &attr_name.to_pascal_case(),
+                    ),
                     false => generate_value_defined_integer_attribute_code(
                         w,
                         &method_identifier,
@@ -213,7 +221,11 @@ fn generate_attribute_code(
                     ),
                 },
                 false => match attr.has_tag {
-                    true => unimplemented!(),
+                    true => generate_tagged_integer_attribute_code(
+                        w,
+                        &method_identifier,
+                        &type_identifier,
+                    ),
                     false => {
                         generate_integer_attribute_code(w, &method_identifier, &type_identifier)
                     }
@@ -270,6 +282,32 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<String>, AV
     w.write_all(code.as_bytes()).unwrap();
 }
 
+fn generate_tagged_string_attribute_code(
+    w: &mut BufWriter<File>,
+    method_identifier: &str,
+    type_identifier: &str,
+) {
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: &str) {{
+    packet.add(AVP::encode_tagged_string({type_identifier}, tag, value));
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<(String, Option<Tag>), AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.decode_tagged_string())
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(String, Option<Tag>)>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_tagged_string()?)
+    }}
+    Ok(vec)
+}}
+",
+        method_identifier = method_identifier,
+        type_identifier = type_identifier,
+    );
+    w.write_all(code.as_bytes()).unwrap();
+}
+
 fn generate_user_password_attribute_code(
     w: &mut BufWriter<File>,
     method_identifier: &str,
@@ -287,6 +325,33 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Vec<u8>>, A
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
         vec.push(avp.decode_user_password(packet.get_secret(), packet.get_authenticator())?)
+    }}
+    Ok(vec)
+}}
+",
+        method_identifier = method_identifier,
+        type_identifier = type_identifier,
+    );
+    w.write_all(code.as_bytes()).unwrap();
+}
+
+fn generate_tunnel_password_attribute_code(
+    w: &mut BufWriter<File>,
+    method_identifier: &str,
+    type_identifier: &str,
+) {
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: &[u8]) -> Result<(), AVPError> {{
+    packet.add(AVP::encode_tunnel_password({type_identifier}, tag, value, packet.get_secret(), packet.get_authenticator())?);
+    Ok(())
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<(Vec<u8>, Tag), AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.decode_tunnel_password(packet.get_secret(), packet.get_authenticator()))
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(Vec<u8>, Tag)>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_tunnel_password(packet.get_secret(), packet.get_authenticator())?)
     }}
     Ok(vec)
 }}
@@ -375,6 +440,32 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<u32>, AVPEr
     w.write_all(code.as_bytes()).unwrap();
 }
 
+fn generate_tagged_integer_attribute_code(
+    w: &mut BufWriter<File>,
+    method_identifier: &str,
+    type_identifier: &str,
+) {
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: u32) {{
+    packet.add(AVP::encode_tagged_u32({type_identifier}, tag, value));
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<(u32, Tag), AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.decode_tagged_u32())
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(u32, Tag)>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.decode_tagged_u32()?)
+    }}
+    Ok(vec)
+}}
+",
+        method_identifier = method_identifier,
+        type_identifier = type_identifier,
+    );
+    w.write_all(code.as_bytes()).unwrap();
+}
+
 fn generate_value_defined_integer_attribute_code(
     w: &mut BufWriter<File>,
     method_identifier: &str,
@@ -392,6 +483,38 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<{value_type
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
         vec.push(avp.decode_u32()? as {value_type})
+    }}
+    Ok(vec)
+}}
+",
+        method_identifier = method_identifier,
+        type_identifier = type_identifier,
+        value_type = value_type,
+    );
+    w.write_all(code.as_bytes()).unwrap();
+}
+
+fn generate_value_tagged_defined_integer_attribute_code(
+    w: &mut BufWriter<File>,
+    method_identifier: &str,
+    type_identifier: &str,
+    value_type: &str,
+) {
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: {value_type}) {{
+    packet.add(AVP::encode_tagged_u32({type_identifier}, tag, value as u32));
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<({value_type}, Tag), AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| {{
+        let (v, t) = v.decode_tagged_u32()?;
+        Ok((v as {value_type}, t))
+    }})
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<({value_type}, Tag)>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        let (v, t) = avp.decode_tagged_u32()?;
+        vec.push((v as {value_type}, t))
     }}
     Ok(vec)
 }}

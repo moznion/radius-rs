@@ -1,9 +1,11 @@
+use rand::Rng;
 use std::convert::TryInto;
 use std::net::{Ipv4Addr, Ipv6Addr};
 
-use crate::tag::Tag;
 use chrono::{DateTime, TimeZone, Utc};
 use thiserror::Error;
+
+use crate::tag::{Tag, UNUSED_TAG_VALUE};
 
 #[derive(Error, Debug)]
 pub enum AVPError {
@@ -22,6 +24,10 @@ pub enum AVPError {
     UnexpectedDecodingError(String),
     #[error("invalid salt. the MSB has to be 1, but given value isn't: {0}")]
     InvalidSaltMSBError(u8),
+    #[error("invalid tag for string value. this must not be zero")]
+    InvalidTagForStringValueError(),
+    #[error("invalid tag for integer value. this must be less than or equal 0x1f")]
+    InvalidTagForIntegerValueError(),
 }
 
 pub type AVPType = u8;
@@ -42,10 +48,37 @@ impl AVP {
         }
     }
 
+    pub fn encode_tagged_u32(typ: AVPType, tag: Option<&Tag>, value: u32) -> Self {
+        let tag = match tag {
+            None => &Tag {
+                value: UNUSED_TAG_VALUE,
+            },
+            Some(tag) => tag,
+        };
+
+        AVP {
+            typ,
+            value: [vec![tag.value], u32::to_be_bytes(value).to_vec()].concat(),
+        }
+    }
+
     pub fn encode_string(typ: AVPType, value: &str) -> Self {
         AVP {
             typ,
             value: value.as_bytes().to_vec(),
+        }
+    }
+
+    pub fn encode_tagged_string(typ: AVPType, tag: Option<&Tag>, value: &str) -> Self {
+        match tag {
+            None => AVP {
+                typ,
+                value: value.as_bytes().to_vec(),
+            },
+            Some(tag) => AVP {
+                typ,
+                value: [vec![tag.value], value.as_bytes().to_vec()].concat(),
+            },
         }
     }
 
@@ -142,9 +175,8 @@ impl AVP {
 
     pub fn encode_tunnel_password(
         typ: AVPType,
+        tag: Option<&Tag>,
         plain_text: &[u8],
-        tag: u8,
-        salt: &[u8],
         secret: &[u8],
         request_authenticator: &[u8],
     ) -> Result<Self, AVPError> {
@@ -176,13 +208,8 @@ impl AVP {
             ));
         }
 
-        if salt.len() != 2 {
-            return Err(AVPError::InvalidAttributeLengthError(2));
-        }
-
-        if salt[0] & 0x80 != 0x80 {
-            return Err(AVPError::InvalidSaltMSBError(salt[0]));
-        }
+        let mut rng = rand::thread_rng();
+        let salt: [u8; 2] = [rng.gen::<u8>() | 0x80, rng.gen::<u8>()];
 
         if secret.is_empty() {
             return Err(AVPError::SecretMissingError());
@@ -194,9 +221,13 @@ impl AVP {
 
         // NOTE: prepend one byte as a tag and two bytes as a salt
         // TODO: should it separate them to private struct fields?
-        let mut enc: Vec<u8> = [vec![tag], salt.to_vec()].concat();
+        let mut enc: Vec<u8> = [
+            vec![tag.map_or(UNUSED_TAG_VALUE, |v| v.value)],
+            salt.to_vec(),
+        ]
+        .concat();
 
-        let mut buff = [request_authenticator, salt].concat();
+        let mut buff = [request_authenticator, &salt].concat();
         if plain_text.is_empty() {
             return Ok(AVP {
                 typ,
@@ -244,9 +275,71 @@ impl AVP {
         }
     }
 
+    pub fn decode_tagged_u32(&self) -> Result<(u32, Tag), AVPError> {
+        if self.value.is_empty() {
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+        }
+
+        let tag = Tag {
+            value: self.value[0],
+        };
+
+        // ref RFC2868:
+        //   Valid values for this field are 0x01 through 0x1F,
+        //   inclusive.  If the Tag field is unused, it MUST be zero (0x00)
+        if !tag.is_valid_value() && !tag.is_zero() {
+            return Err(AVPError::InvalidTagForIntegerValueError());
+        }
+
+        const U32_SIZE: usize = std::mem::size_of::<u32>();
+        if self.value[1..].len() != U32_SIZE {
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+        }
+        let (int_bytes, _) = self.value[1..].split_at(U32_SIZE);
+        match int_bytes.try_into() {
+            Ok(boxed_array) => Ok((u32::from_be_bytes(boxed_array), tag)),
+            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+        }
+    }
+
     pub fn decode_string(&self) -> Result<String, AVPError> {
         match String::from_utf8(self.value.to_vec()) {
             Ok(str) => Ok(str),
+            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+        }
+    }
+
+    pub fn decode_tagged_string(&self) -> Result<(String, Option<Tag>), AVPError> {
+        let string_vec = self.value.to_vec();
+        if string_vec.is_empty() {
+            return Err(AVPError::InvalidAttributeLengthError(string_vec.len()));
+        }
+
+        let tag = Tag {
+            value: string_vec[0],
+        };
+
+        // ref RFC2868:
+        //   If the value of the Tag field is greater than 0x00
+        //   and less than or equal to 0x1F, it SHOULD be interpreted as
+        //   indicating which tunnel (of several alternatives) this attribute
+        //   pertains.
+        if tag.is_valid_value() {
+            return match String::from_utf8(string_vec[1..].to_vec()) {
+                Ok(str) => Ok((str, Some(tag))),
+                Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            };
+        }
+
+        if tag.is_zero() {
+            return Err(AVPError::InvalidTagForStringValueError());
+        }
+
+        // ref RFC2868:
+        //   If the Tag field is greater than 0x1F, it SHOULD be
+        //   interpreted as the first byte of the following String field.
+        match String::from_utf8(self.value.to_vec()) {
+            Ok(str) => Ok((str, None)),
             Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
         }
     }
@@ -510,7 +603,6 @@ mod tests {
 
     #[test]
     fn it_should_convert_tunnel_password() -> Result<(), AVPError> {
-        let salt: Vec<u8> = vec![0x80, 0xef];
         let tag = Tag { value: 0x1e };
         let secret = b"12345".to_vec();
         let request_authenticator = b"0123456789abcdef".to_vec();
@@ -550,9 +642,8 @@ mod tests {
         for test_case in test_cases {
             let user_password_avp_result = AVP::encode_tunnel_password(
                 1,
+                Some(&tag),
                 test_case.plain_text.as_bytes(),
-                tag.value,
-                &salt,
                 &secret,
                 &request_authenticator,
             );

@@ -1,15 +1,21 @@
+pub(crate) const UNUSED_TAG_VALUE: u8 = 0x00;
+
 #[derive(Debug, PartialEq)]
 pub struct Tag {
     pub(crate) value: u8,
 }
 
 impl Tag {
+    pub fn new(value: u8) -> Self {
+        Tag { value }
+    }
+
     pub fn get_value(&self) -> u8 {
         self.value
     }
 
     pub fn is_zero(&self) -> bool {
-        self.value == 0
+        self.value == UNUSED_TAG_VALUE
     }
 
     pub fn is_valid_value(&self) -> bool {

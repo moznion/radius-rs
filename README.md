@@ -13,6 +13,7 @@ This supports the following RFC dictionaries at the moment:
 - [RFC2865](https://tools.ietf.org/html/rfc2865)
 - [RFC2866](https://tools.ietf.org/html/rfc2866)
 - [RFC2867](https://tools.ietf.org/html/rfc2867)
+- [RFC2868](https://tools.ietf.org/html/rfc2868)
 
 ## Usage
 
@@ -26,7 +27,6 @@ Simple example implementations are here:
 - timeout feature on the client
 - retransmission feature on the client
 - Support the following RFC dictionaries:
-  - rfc2868
   - rfc2869
   - rfc3162
   - rfc3576

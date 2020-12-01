@@ -6,4 +6,5 @@ pub mod request;
 pub mod rfc2865;
 pub mod rfc2866;
 pub mod rfc2867;
+pub mod rfc2868;
 pub mod tag;
