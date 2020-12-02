@@ -29,6 +29,7 @@ struct RadiusAttribute {
     name: String,
     typ: u8,
     value_type: RadiusAttributeValueType,
+    fixed_octets_length: Option<usize>,
     has_tag: bool,
 }
 
@@ -202,7 +203,15 @@ fn generate_attribute_code(
         },
         RadiusAttributeValueType::Octets => match attr.has_tag {
             true => unimplemented!("tagged-octets"),
-            false => generate_octets_attribute_code(w, &method_identifier, &type_identifier),
+            false => match attr.fixed_octets_length {
+                Some(fixed_octets_length) => generate_fixed_length_octets_attribute_code(
+                    w,
+                    &method_identifier,
+                    &type_identifier,
+                    fixed_octets_length,
+                ),
+                None => generate_octets_attribute_code(w, &method_identifier, &type_identifier),
+            },
         },
         RadiusAttributeValueType::IpAddr => match attr.has_tag {
             true => unimplemented!("tagged-ip-addr"),
@@ -396,6 +405,38 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<Vec<u8>> {{
     w.write_all(code.as_bytes()).unwrap();
 }
 
+fn generate_fixed_length_octets_attribute_code(
+    w: &mut BufWriter<File>,
+    method_identifier: &str,
+    type_identifier: &str,
+    fixed_octets_length: usize,
+) {
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {{
+    if value.len() != {fixed_octets_length} {{
+        return Err(AVPError::InvalidAttributeLengthError({fixed_octets_length}));
+    }}
+    packet.add(AVP::from_bytes({type_identifier}, value));
+    Ok(())
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Vec<u8>> {{
+    packet.lookup({type_identifier}).map(|v| v.encode_bytes())
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<Vec<u8>> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.encode_bytes())
+    }}
+    vec
+}}
+",
+        method_identifier = method_identifier,
+        type_identifier = type_identifier,
+        fixed_octets_length = fixed_octets_length,
+    );
+    w.write_all(code.as_bytes()).unwrap();
+}
+
 fn generate_ipaddr_attribute_code(
     w: &mut BufWriter<File>,
     method_identifier: &str,
@@ -570,6 +611,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
     let line_filter_re = Regex::new(r"^(?:#.*|)$").unwrap();
     let tabs_re = Regex::new(r"\t+").unwrap();
     let trailing_comment_re = Regex::new(r"\s*?#.+?$").unwrap();
+    let fixed_length_octets_re = Regex::new(r"^octets\[(\d+)]$").unwrap();
 
     let mut radius_attributes: Vec<RadiusAttribute> = Vec::new();
     let mut radius_attribute_to_values: BTreeMap<String, Vec<RadiusValue>> = BTreeMap::new();
@@ -611,24 +653,41 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                     }
                 }
 
-                let typ = match RadiusAttributeValueType::from_str(items[3]) {
+                let (typ, fixed_octets_length) = match RadiusAttributeValueType::from_str(items[3])
+                {
                     Ok(t) => {
                         if t == RadiusAttributeValueType::String {
                             match encryption_type {
                                 Some(EncryptionType::UserPassword) => {
-                                    RadiusAttributeValueType::UserPassword
+                                    (RadiusAttributeValueType::UserPassword, None)
                                 }
                                 Some(EncryptionType::TunnelPassword) => {
-                                    RadiusAttributeValueType::TunnelPassword
+                                    (RadiusAttributeValueType::TunnelPassword, None)
                                 }
-                                None => t,
+                                None => (t, None),
                             }
                         } else {
-                            t
+                            (t, None)
                         }
                     }
                     Err(_) => {
-                        return Err(format!("invalid type has come => {}", items[3]));
+                        // XXX ad-hoc
+                        let cap = fixed_length_octets_re.captures(items[3]);
+                        if cap.is_some() {
+                            (
+                                RadiusAttributeValueType::Octets,
+                                Some(
+                                    cap.unwrap()
+                                        .get(1)
+                                        .unwrap()
+                                        .as_str()
+                                        .parse::<usize>()
+                                        .unwrap(),
+                                ),
+                            )
+                        } else {
+                            return Err(format!("invalid type has come => {}", items[3]));
+                        }
                     }
                 };
 
@@ -636,6 +695,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                     name: items[1].to_string(),
                     typ: items[2].parse().unwrap(),
                     value_type: typ,
+                    fixed_octets_length,
                     has_tag,
                 });
             }
