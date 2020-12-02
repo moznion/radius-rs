@@ -17,6 +17,7 @@ const RADIUS_VALUE_TYPE: &str = "u32";
 const USER_PASSWORD_TYPE_OPT: &str = "encrypt=1";
 const TUNNEL_PASSWORD_TYPE_OPT: &str = "encrypt=2";
 const HAS_TAG_TYPE_OPT: &str = "has_tag";
+const CONCAT_TYPE_OPT: &str = "concat";
 
 #[derive(Debug)]
 enum EncryptionType {
@@ -30,6 +31,7 @@ struct RadiusAttribute {
     typ: u8,
     value_type: RadiusAttributeValueType,
     fixed_octets_length: Option<usize>,
+    concat_octets: bool,
     has_tag: bool,
 }
 
@@ -210,7 +212,16 @@ fn generate_attribute_code(
                     &type_identifier,
                     fixed_octets_length,
                 ),
-                None => generate_octets_attribute_code(w, &method_identifier, &type_identifier),
+                None => match attr.concat_octets {
+                    true => generate_concat_octets_attribute_code(
+                        w,
+                        &method_identifier,
+                        &type_identifier,
+                    ),
+                    false => {
+                        generate_octets_attribute_code(w, &method_identifier, &type_identifier)
+                    }
+                },
             },
         },
         RadiusAttributeValueType::IpAddr => match attr.has_tag {
@@ -397,6 +408,37 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<Vec<u8>> {{
         vec.push(avp.encode_bytes())
     }}
     vec
+}}
+",
+        method_identifier = method_identifier,
+        type_identifier = type_identifier,
+    );
+    w.write_all(code.as_bytes()).unwrap();
+}
+
+fn generate_concat_octets_attribute_code(
+    w: &mut BufWriter<File>,
+    method_identifier: &str,
+    type_identifier: &str,
+) {
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) {{
+    packet.extend(
+        value
+            .chunks(253)
+            .map(|chunk| AVP::from_bytes({type_identifier}, chunk))
+            .collect(),
+    );
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Vec<u8>> {{
+    let avps = packet.lookup_all({type_identifier});
+    match avps.is_empty() {{
+        true => None,
+        false => Some(avps.into_iter().fold(Vec::new(), |mut acc, v| {{
+            acc.extend(v.encode_bytes());
+            acc
+        }})),
+    }}
 }}
 ",
         method_identifier = method_identifier,
@@ -635,6 +677,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
             ATTRIBUTE_KIND => {
                 let mut encryption_type: Option<EncryptionType> = None;
                 let mut has_tag = false;
+                let mut concat_octets = false;
                 if items.len() >= 5 {
                     // TODO consider to extract to a method
                     for type_opt in items[4].split(',') {
@@ -648,6 +691,10 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                         }
                         if type_opt == HAS_TAG_TYPE_OPT {
                             has_tag = true;
+                            continue;
+                        }
+                        if type_opt == CONCAT_TYPE_OPT {
+                            concat_octets = true;
                             continue;
                         }
                     }
@@ -696,6 +743,7 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                     typ: items[2].parse().unwrap(),
                     value_type: typ,
                     fixed_octets_length,
+                    concat_octets,
                     has_tag,
                 });
             }
