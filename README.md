@@ -30,7 +30,6 @@ Simple example implementations are here:
 
 ## Roadmap
 
-- timeout feature on the client
 - retransmission feature on the client
 - Support the following RFC dictionaries:
   - rfc2869
