@@ -231,6 +231,10 @@ impl Packet {
         self.attributes.add(avp);
     }
 
+    pub fn extend(&mut self, avps: Vec<AVP>) {
+        self.attributes.extend(avps)
+    }
+
     pub fn delete(&mut self, typ: AVPType) {
         self.attributes.del(typ);
     }

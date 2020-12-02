@@ -19,7 +19,7 @@ pub enum AVPError {
     InvalidRequestAuthenticatorLength(),
     #[error("invalid attribute length: {0}")]
     InvalidAttributeLengthError(usize),
-    // TODO: more meaningful error message
+    // ^ TODO: more meaningful error message
     #[error("unexpected decoding error: {0}")]
     UnexpectedDecodingError(String),
     #[error("invalid salt. the MSB has to be 1, but given value isn't: {0}")]

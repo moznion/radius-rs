@@ -37,6 +37,10 @@ impl Attributes {
         self.0.push(avp)
     }
 
+    pub(crate) fn extend(&mut self, avps: Vec<AVP>) {
+        self.0.extend(avps)
+    }
+
     pub(crate) fn del(&mut self, typ: AVPType) {
         self.0 = self
             .0
