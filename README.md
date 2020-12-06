@@ -20,10 +20,18 @@ This supports the following RFC dictionaries at the moment:
 - [RFC3580](https://tools.ietf.org/html/rfc3580)
 - [RFC4072](https://tools.ietf.org/html/rfc4072)
 - [RFC4372](https://tools.ietf.org/html/rfc4372)
+- [RFC4603](https://tools.ietf.org/html/rfc4603)
+- [RFC4675](https://tools.ietf.org/html/rfc4675)
+- [RFC4818](https://tools.ietf.org/html/rfc4818)
+- [RFC4849](https://tools.ietf.org/html/rfc4849)
 - [RFC5090](https://tools.ietf.org/html/rfc5090)
+- [RFC5176](https://tools.ietf.org/html/rfc5176)
 - [RFC5607](https://tools.ietf.org/html/rfc5607)
 - [RFC6519](https://tools.ietf.org/html/rfc6519)
 - [RFC6677](https://tools.ietf.org/html/rfc6677)
+- [RFC6911](https://tools.ietf.org/html/rfc6911)
+- [RFC7055](https://tools.ietf.org/html/rfc7055)
+- [RFC7155](https://tools.ietf.org/html/rfc7155)
 
 ## Usage
 
@@ -36,21 +44,13 @@ Simple example implementations are here:
 
 - retransmission feature on the client
 - Support the following RFC dictionaries:
-  - rfc4603
-  - rfc4675
   - rfc4679
-  - rfc4818
-  - rfc4849
-  - rfc5176
   - rfc5447
   - rfc5580
   - rfc5904
   - rfc6572
-  - rfc6911
   - rfc6929
   - rfc6930
-  - rfc7055
-  - rfc7155
   - rfc7268
   - rfc7499
   - rfc7930
