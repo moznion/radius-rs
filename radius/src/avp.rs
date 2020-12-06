@@ -103,6 +103,18 @@ impl AVP {
         }
     }
 
+    pub fn from_ipv4_prefix(typ: AVPType, prefix: &[u8]) -> Result<Self, AVPError> {
+        let prefix_len = prefix.len();
+        if prefix_len != 4 {
+            return Err(AVPError::InvalidAttributeLengthError(prefix_len));
+        }
+
+        Ok(AVP {
+            typ,
+            value: [vec![0x00, prefix_len as u8 & 0b00111111], prefix.to_vec()].concat::<u8>(),
+        })
+    }
+
     pub fn from_ipv6(typ: AVPType, value: &Ipv6Addr) -> Self {
         AVP {
             typ,
@@ -118,7 +130,7 @@ impl AVP {
 
         Ok(AVP {
             typ,
-            value: [vec![0x00, prefix_len as u8], prefix.to_vec()].concat::<u8>(),
+            value: [vec![0x00, (prefix_len * 8) as u8], prefix.to_vec()].concat::<u8>(),
         })
     }
 
@@ -390,6 +402,13 @@ impl AVP {
         match int_bytes.try_into() {
             Ok::<[u8; IPV4_SIZE], _>(boxed_array) => Ok(Ipv4Addr::from(boxed_array)),
             Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+        }
+    }
+
+    pub fn encode_ipv4_prefix(&self) -> Result<Vec<u8>, AVPError> {
+        match self.value.len() == 6 {
+            true => Ok(self.value[2..].to_owned()),
+            false => Err(AVPError::InvalidAttributeLengthError(self.value.len())),
         }
     }
 

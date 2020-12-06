@@ -48,6 +48,7 @@ enum RadiusAttributeValueType {
     TunnelPassword,
     Octets,
     IpAddr,
+    Ipv4Prefix,
     Ipv6Addr,
     Ipv6Prefix,
     IfId,
@@ -64,6 +65,7 @@ impl FromStr for RadiusAttributeValueType {
             "string" => Ok(RadiusAttributeValueType::String),
             "octets" => Ok(RadiusAttributeValueType::Octets),
             "ipaddr" => Ok(RadiusAttributeValueType::IpAddr),
+            "ipv4prefix" => Ok(RadiusAttributeValueType::Ipv4Prefix),
             "ipv6addr" => Ok(RadiusAttributeValueType::Ipv6Addr),
             "ipv6prefix" => Ok(RadiusAttributeValueType::Ipv6Prefix),
             "ifid" => Ok(RadiusAttributeValueType::IfId),
@@ -235,6 +237,10 @@ fn generate_attribute_code(
         RadiusAttributeValueType::IpAddr => match attr.has_tag {
             true => unimplemented!("tagged-ip-addr"),
             false => generate_ipaddr_attribute_code(w, &method_identifier, &type_identifier),
+        },
+        RadiusAttributeValueType::Ipv4Prefix => match attr.has_tag {
+            true => unimplemented!("tagged-ip-addr"),
+            false => generate_ipv4_prefix_attribute_code(w, &method_identifier, &type_identifier),
         },
         RadiusAttributeValueType::Ipv6Addr => match attr.has_tag {
             true => unimplemented!("tagged-ip-v6-addr"),
@@ -524,6 +530,33 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Ipv4Addr>, 
     let mut vec = Vec::new();
     for avp in packet.lookup_all({type_identifier}) {{
         vec.push(avp.encode_ipv4()?)
+    }}
+    Ok(vec)
+}}
+",
+        method_identifier = method_identifier,
+        type_identifier = type_identifier,
+    );
+    w.write_all(code.as_bytes()).unwrap();
+}
+
+fn generate_ipv4_prefix_attribute_code(
+    w: &mut BufWriter<File>,
+    method_identifier: &str,
+    type_identifier: &str,
+) {
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {{
+    packet.add(AVP::from_ipv4_prefix({type_identifier}, value)?);
+    Ok(())
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.encode_ipv4_prefix())
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.encode_ipv4_prefix()?)
     }}
     Ok(vec)
 }}

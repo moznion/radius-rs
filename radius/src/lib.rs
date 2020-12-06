@@ -22,6 +22,7 @@ pub mod rfc5176;
 pub mod rfc5607;
 pub mod rfc5904;
 pub mod rfc6519;
+pub mod rfc6572;
 pub mod rfc6677;
 pub mod rfc6911;
 pub mod rfc7055;

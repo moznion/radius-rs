@@ -29,6 +29,7 @@ This supports the following RFC dictionaries at the moment:
 - [RFC5607](https://tools.ietf.org/html/rfc5607)
 - [RFC5904](https://tools.ietf.org/html/rfc5904)
 - [RFC6519](https://tools.ietf.org/html/rfc6519)
+- [RFC6572](https://tools.ietf.org/html/rfc6572)
 - [RFC6677](https://tools.ietf.org/html/rfc6677)
 - [RFC6911](https://tools.ietf.org/html/rfc6911)
 - [RFC7055](https://tools.ietf.org/html/rfc7055)
@@ -48,7 +49,6 @@ Simple example implementations are here:
   - rfc4679
   - rfc5447
   - rfc5580
-  - rfc6572
   - rfc6929
   - rfc6930
   - rfc7268
