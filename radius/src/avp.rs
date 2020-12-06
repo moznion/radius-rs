@@ -7,7 +7,7 @@ use thiserror::Error;
 
 use crate::tag::{Tag, UNUSED_TAG_VALUE};
 
-#[derive(Error, Debug)]
+#[derive(Error, PartialEq, Debug)]
 pub enum AVPError {
     #[error(
         "the maximum length of the plain text is 128, but the given value is longer than that"
@@ -426,7 +426,7 @@ impl AVP {
     }
 
     pub fn encode_ipv6_prefix(&self) -> Result<Vec<u8>, AVPError> {
-        match self.value.len() > 2 {
+        match self.value.len() >= 2 {
             true => Ok(self.value[2..].to_owned()),
             false => Err(AVPError::InvalidAttributeLengthError(self.value.len())),
         }
@@ -562,10 +562,52 @@ mod tests {
     }
 
     #[test]
+    fn it_should_convert_attribute_to_integer16() -> Result<(), AVPError> {
+        let given_u16 = 65534;
+        let avp = AVP::from_u16(1, given_u16);
+        assert_eq!(avp.encode_u16()?, given_u16);
+        Ok(())
+    }
+
+    #[test]
+    fn it_should_convert_attribute_to_tagged_integer32() -> Result<(), AVPError> {
+        let given_u32 = 16909060;
+        let avp = AVP::from_tagged_u32(1, None, given_u32);
+        assert_eq!(avp.encode_tagged_u32()?, (given_u32, Tag::new_unused()));
+
+        let tag = Tag::new(2);
+        let avp = AVP::from_tagged_u32(1, Some(&tag), given_u32);
+        assert_eq!(avp.encode_tagged_u32()?, (given_u32, tag));
+        Ok(())
+    }
+
+    #[test]
     fn it_should_convert_attribute_to_string() -> Result<(), AVPError> {
         let given_str = "Hello, World";
         let avp = AVP::from_string(1, given_str);
         assert_eq!(avp.encode_string()?, given_str);
+        Ok(())
+    }
+
+    #[test]
+    fn it_should_convert_tagged_attribute_to_string() -> Result<(), AVPError> {
+        let given_str = "Hello, World";
+        let avp = AVP::from_tagged_string(1, None, given_str);
+        assert_eq!(avp.encode_tagged_string()?, (given_str.to_owned(), None));
+
+        let tag = Tag::new(3);
+        let avp = AVP::from_tagged_string(1, Some(&tag), given_str);
+        assert_eq!(
+            avp.encode_tagged_string()?,
+            (given_str.to_owned(), Some(tag))
+        );
+
+        let avp = AVP::from_tagged_string(1, Some(&Tag::new_unused()), given_str);
+        assert_eq!(
+            avp.encode_tagged_string().unwrap_err(),
+            AVPError::InvalidTagForStringValueError()
+        );
+
         Ok(())
     }
 
@@ -719,5 +761,65 @@ mod tests {
         }
 
         Ok(())
+    }
+
+    #[test]
+    fn should_convert_ipv4_prefix() -> Result<(), AVPError> {
+        let prefix = vec![0x01, 0x02, 0x03, 0x04];
+        let avp = AVP::from_ipv4_prefix(1, &prefix)?;
+        assert_eq!(avp.encode_ipv4_prefix()?, prefix);
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_convert_ipv4_prefix_fail_because_of_invalid_prefix_length() {
+        let avp = AVP::from_ipv4_prefix(1, &[0x01, 0x02, 0x03]);
+        assert_eq!(avp.unwrap_err(), AVPError::InvalidAttributeLengthError(3));
+
+        let avp = AVP::from_ipv4_prefix(1, &[0x01, 0x02, 0x03, 0x04, 0x05]);
+        assert_eq!(avp.unwrap_err(), AVPError::InvalidAttributeLengthError(5));
+
+        assert_eq!(
+            AVP {
+                typ: 1,
+                value: vec![]
+            }
+            .encode_ipv4_prefix()
+            .unwrap_err(),
+            AVPError::InvalidAttributeLengthError(0)
+        );
+    }
+
+    #[test]
+    fn should_convert_ipv6_prefix() -> Result<(), AVPError> {
+        let prefix = vec![];
+        let avp = AVP::from_ipv6_prefix(1, &prefix)?;
+        assert_eq!(avp.encode_ipv6_prefix()?, prefix);
+
+        let prefix = vec![0x00, 0x01, 0x02, 0x03];
+        let avp = AVP::from_ipv6_prefix(1, &prefix)?;
+        assert_eq!(avp.encode_ipv6_prefix()?, prefix);
+
+        let prefix = vec![
+            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
+            0x0e, 0x0f,
+        ];
+        let avp = AVP::from_ipv6_prefix(1, &prefix)?;
+        assert_eq!(avp.encode_ipv6_prefix()?, prefix);
+
+        Ok(())
+    }
+
+    #[test]
+    fn should_convert_ipv6_prefix_fail_because_of_invalid_prefix_length() {
+        let avp = AVP::from_ipv6_prefix(
+            1,
+            &[
+                0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d,
+                0x0e, 0x0f, 0x10,
+            ],
+        );
+        assert_eq!(avp.unwrap_err(), AVPError::InvalidAttributeLengthError(17));
     }
 }

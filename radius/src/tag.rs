@@ -10,6 +10,12 @@ impl Tag {
         Tag { value }
     }
 
+    pub fn new_unused() -> Self {
+        Tag {
+            value: UNUSED_TAG_VALUE,
+        }
+    }
+
     pub fn get_value(&self) -> u8 {
         self.value
     }
