@@ -10,6 +10,7 @@ pub mod rfc2868;
 pub mod rfc2869;
 pub mod rfc3162;
 pub mod rfc3576;
+pub mod rfc3580;
 pub mod rfc4072;
 pub mod rfc5090;
 pub mod rfc5607;

@@ -17,6 +17,7 @@ This supports the following RFC dictionaries at the moment:
 - [RFC2869](https://tools.ietf.org/html/rfc2869)
 - [RFC3162](https://tools.ietf.org/html/rfc3162)
 - [RFC3576](https://tools.ietf.org/html/rfc3576)
+- [RFC3580](https://tools.ietf.org/html/rfc3580)
 - [RFC4072](https://tools.ietf.org/html/rfc4072)
 - [RFC5090](https://tools.ietf.org/html/rfc5090)
 - [RFC5607](https://tools.ietf.org/html/rfc5607)
@@ -34,7 +35,6 @@ Simple example implementations are here:
 
 - retransmission feature on the client
 - Support the following RFC dictionaries:
-  - rfc3580
   - rfc4372
   - rfc4603
   - rfc4675
