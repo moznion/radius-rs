@@ -48,6 +48,13 @@ impl AVP {
         }
     }
 
+    pub fn from_u16(typ: AVPType, value: u16) -> Self {
+        AVP {
+            typ,
+            value: u16::to_be_bytes(value).to_vec(),
+        }
+    }
+
     pub fn from_tagged_u32(typ: AVPType, tag: Option<&Tag>, value: u32) -> Self {
         let tag = match tag {
             None => &Tag {
@@ -283,6 +290,19 @@ impl AVP {
         let (int_bytes, _) = self.value.split_at(U32_SIZE);
         match int_bytes.try_into() {
             Ok(boxed_array) => Ok(u32::from_be_bytes(boxed_array)),
+            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+        }
+    }
+
+    pub fn encode_u16(&self) -> Result<u16, AVPError> {
+        const U16_SIZE: usize = std::mem::size_of::<u16>();
+        if self.value.len() != U16_SIZE {
+            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+        }
+
+        let (int_bytes, _) = self.value.split_at(U16_SIZE);
+        match int_bytes.try_into() {
+            Ok(boxed_array) => Ok(u16::from_be_bytes(boxed_array)),
             Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
         }
     }

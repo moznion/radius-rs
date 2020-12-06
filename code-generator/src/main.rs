@@ -53,6 +53,7 @@ enum RadiusAttributeValueType {
     IfId,
     Date,
     Integer,
+    Short,
     VSA,
 }
 
@@ -68,6 +69,7 @@ impl FromStr for RadiusAttributeValueType {
             "ifid" => Ok(RadiusAttributeValueType::IfId),
             "date" => Ok(RadiusAttributeValueType::Date),
             "integer" => Ok(RadiusAttributeValueType::Integer),
+            "short" => Ok(RadiusAttributeValueType::Short),
             "vsa" => Ok(RadiusAttributeValueType::VSA),
             _ => Err(()),
         }
@@ -283,6 +285,10 @@ fn generate_attribute_code(
                 },
             }
         }
+        RadiusAttributeValueType::Short => match attr.has_tag {
+            true => unimplemented!("tagged-short"),
+            false => generate_short_attribute_code(w, &method_identifier, &type_identifier),
+        },
         RadiusAttributeValueType::VSA => generate_vsa_attribute_code(),
     }
 }
@@ -715,6 +721,32 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<({value_typ
         method_identifier = method_identifier,
         type_identifier = type_identifier,
         value_type = value_type,
+    );
+    w.write_all(code.as_bytes()).unwrap();
+}
+
+fn generate_short_attribute_code(
+    w: &mut BufWriter<File>,
+    method_identifier: &str,
+    type_identifier: &str,
+) {
+    let code = format!(
+        "pub fn add_{method_identifier}(packet: &mut Packet, value: u16) {{
+    packet.add(AVP::from_u16({type_identifier}, value));
+}}
+pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Result<u16, AVPError>> {{
+    packet.lookup({type_identifier}).map(|v| v.encode_u16())
+}}
+pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<u16>, AVPError> {{
+    let mut vec = Vec::new();
+    for avp in packet.lookup_all({type_identifier}) {{
+        vec.push(avp.encode_u16()?)
+    }}
+    Ok(vec)
+}}
+",
+        method_identifier = method_identifier,
+        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
