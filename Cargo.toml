@@ -8,4 +8,5 @@ members = [
   # Internal
   "code-generator",
   "examples",
+  "e2e-test"
 ]

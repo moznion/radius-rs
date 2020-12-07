@@ -1,0 +1,13 @@
+[package]
+name = "e2e-test"
+version = "0.1.0"
+edition = "2018"
+license-file = "../LICENSE"
+publish = false
+
+[dependencies]
+radius = { version = "0.1.0", path = "../radius" }
+radius-client = { version = "0.1.0", path = "../radius-client" }
+radius-server = { version = "0.1.0", path = "../radius-server" }
+tokio = { version = "0.3.4", features = ["signal", "net"] }
+async-trait = "0.1.42"

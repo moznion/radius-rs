@@ -12,7 +12,7 @@ use crate::client::ClientError::{
     FailedReceivingResponse, FailedSendingPacket, FailedUdpSocketBinding,
 };
 
-#[derive(Error, Debug)]
+#[derive(Error, PartialEq, Debug)]
 pub enum ClientError {
     #[error("failed to bind a UDP socket => `{0}`")]
     FailedUdpSocketBinding(String),
