@@ -8,9 +8,9 @@
 #
 #	$Id$
 #
-ATTRIBUTE	NAS-Ipv6-Address			95	ipv6addr
+ATTRIBUTE	NAS-IPV6-Address			95	ipv6addr
 ATTRIBUTE	Framed-Interface-Id			96	ifid
-ATTRIBUTE	Framed-Ipv6-Prefix			97	ipv6prefix
-ATTRIBUTE	Login-Ipv6-Host				98	ipv6addr
-ATTRIBUTE	Framed-Ipv6-Route			99	string
-ATTRIBUTE	Framed-Ipv6-Pool			100	string
+ATTRIBUTE	Framed-IPV6-Prefix			97	ipv6prefix
+ATTRIBUTE	Login-IPV6-Host				98	ipv6addr
+ATTRIBUTE	Framed-IPV6-Route			99	string
+ATTRIBUTE	Framed-IPV6-Pool			100	string

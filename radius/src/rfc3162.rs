@@ -5,21 +5,21 @@ use std::net::Ipv6Addr;
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
-pub const NAS_IPV_6_ADDRESS_TYPE: AVPType = 95;
-pub fn delete_nas_ipv_6_address(packet: &mut Packet) {
-    packet.delete(NAS_IPV_6_ADDRESS_TYPE);
+pub const NAS_IPV6_ADDRESS_TYPE: AVPType = 95;
+pub fn delete_nas_ipv6_address(packet: &mut Packet) {
+    packet.delete(NAS_IPV6_ADDRESS_TYPE);
 }
-pub fn add_nas_ipv_6_address(packet: &mut Packet, value: &Ipv6Addr) {
-    packet.add(AVP::from_ipv6(NAS_IPV_6_ADDRESS_TYPE, value));
+pub fn add_nas_ipv6_address(packet: &mut Packet, value: &Ipv6Addr) {
+    packet.add(AVP::from_ipv6(NAS_IPV6_ADDRESS_TYPE, value));
 }
-pub fn lookup_nas_ipv_6_address(packet: &Packet) -> Option<Result<Ipv6Addr, AVPError>> {
+pub fn lookup_nas_ipv6_address(packet: &Packet) -> Option<Result<Ipv6Addr, AVPError>> {
     packet
-        .lookup(NAS_IPV_6_ADDRESS_TYPE)
+        .lookup(NAS_IPV6_ADDRESS_TYPE)
         .map(|v| v.encode_ipv6())
 }
-pub fn lookup_all_nas_ipv_6_address(packet: &Packet) -> Result<Vec<Ipv6Addr>, AVPError> {
+pub fn lookup_all_nas_ipv6_address(packet: &Packet) -> Result<Vec<Ipv6Addr>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(NAS_IPV_6_ADDRESS_TYPE) {
+    for avp in packet.lookup_all(NAS_IPV6_ADDRESS_TYPE) {
         vec.push(avp.encode_ipv6()?)
     }
     Ok(vec)
@@ -49,82 +49,80 @@ pub fn lookup_all_framed_interface_id(packet: &Packet) -> Vec<Vec<u8>> {
     vec
 }
 
-pub const FRAMED_IPV_6_PREFIX_TYPE: AVPType = 97;
-pub fn delete_framed_ipv_6_prefix(packet: &mut Packet) {
-    packet.delete(FRAMED_IPV_6_PREFIX_TYPE);
+pub const FRAMED_IPV6_PREFIX_TYPE: AVPType = 97;
+pub fn delete_framed_ipv6_prefix(packet: &mut Packet) {
+    packet.delete(FRAMED_IPV6_PREFIX_TYPE);
 }
-pub fn add_framed_ipv_6_prefix(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
-    packet.add(AVP::from_ipv6_prefix(FRAMED_IPV_6_PREFIX_TYPE, value)?);
+pub fn add_framed_ipv6_prefix(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
+    packet.add(AVP::from_ipv6_prefix(FRAMED_IPV6_PREFIX_TYPE, value)?);
     Ok(())
 }
-pub fn lookup_framed_ipv_6_prefix(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {
+pub fn lookup_framed_ipv6_prefix(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {
     packet
-        .lookup(FRAMED_IPV_6_PREFIX_TYPE)
+        .lookup(FRAMED_IPV6_PREFIX_TYPE)
         .map(|v| v.encode_ipv6_prefix())
 }
-pub fn lookup_all_framed_ipv_6_prefix(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {
+pub fn lookup_all_framed_ipv6_prefix(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(FRAMED_IPV_6_PREFIX_TYPE) {
+    for avp in packet.lookup_all(FRAMED_IPV6_PREFIX_TYPE) {
         vec.push(avp.encode_ipv6_prefix()?)
     }
     Ok(vec)
 }
 
-pub const LOGIN_IPV_6_HOST_TYPE: AVPType = 98;
-pub fn delete_login_ipv_6_host(packet: &mut Packet) {
-    packet.delete(LOGIN_IPV_6_HOST_TYPE);
+pub const LOGIN_IPV6_HOST_TYPE: AVPType = 98;
+pub fn delete_login_ipv6_host(packet: &mut Packet) {
+    packet.delete(LOGIN_IPV6_HOST_TYPE);
 }
-pub fn add_login_ipv_6_host(packet: &mut Packet, value: &Ipv6Addr) {
-    packet.add(AVP::from_ipv6(LOGIN_IPV_6_HOST_TYPE, value));
+pub fn add_login_ipv6_host(packet: &mut Packet, value: &Ipv6Addr) {
+    packet.add(AVP::from_ipv6(LOGIN_IPV6_HOST_TYPE, value));
 }
-pub fn lookup_login_ipv_6_host(packet: &Packet) -> Option<Result<Ipv6Addr, AVPError>> {
-    packet
-        .lookup(LOGIN_IPV_6_HOST_TYPE)
-        .map(|v| v.encode_ipv6())
+pub fn lookup_login_ipv6_host(packet: &Packet) -> Option<Result<Ipv6Addr, AVPError>> {
+    packet.lookup(LOGIN_IPV6_HOST_TYPE).map(|v| v.encode_ipv6())
 }
-pub fn lookup_all_login_ipv_6_host(packet: &Packet) -> Result<Vec<Ipv6Addr>, AVPError> {
+pub fn lookup_all_login_ipv6_host(packet: &Packet) -> Result<Vec<Ipv6Addr>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(LOGIN_IPV_6_HOST_TYPE) {
+    for avp in packet.lookup_all(LOGIN_IPV6_HOST_TYPE) {
         vec.push(avp.encode_ipv6()?)
     }
     Ok(vec)
 }
 
-pub const FRAMED_IPV_6_ROUTE_TYPE: AVPType = 99;
-pub fn delete_framed_ipv_6_route(packet: &mut Packet) {
-    packet.delete(FRAMED_IPV_6_ROUTE_TYPE);
+pub const FRAMED_IPV6_ROUTE_TYPE: AVPType = 99;
+pub fn delete_framed_ipv6_route(packet: &mut Packet) {
+    packet.delete(FRAMED_IPV6_ROUTE_TYPE);
 }
-pub fn add_framed_ipv_6_route(packet: &mut Packet, value: &str) {
-    packet.add(AVP::from_string(FRAMED_IPV_6_ROUTE_TYPE, value));
+pub fn add_framed_ipv6_route(packet: &mut Packet, value: &str) {
+    packet.add(AVP::from_string(FRAMED_IPV6_ROUTE_TYPE, value));
 }
-pub fn lookup_framed_ipv_6_route(packet: &Packet) -> Option<Result<String, AVPError>> {
+pub fn lookup_framed_ipv6_route(packet: &Packet) -> Option<Result<String, AVPError>> {
     packet
-        .lookup(FRAMED_IPV_6_ROUTE_TYPE)
+        .lookup(FRAMED_IPV6_ROUTE_TYPE)
         .map(|v| v.encode_string())
 }
-pub fn lookup_all_framed_ipv_6_route(packet: &Packet) -> Result<Vec<String>, AVPError> {
+pub fn lookup_all_framed_ipv6_route(packet: &Packet) -> Result<Vec<String>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(FRAMED_IPV_6_ROUTE_TYPE) {
+    for avp in packet.lookup_all(FRAMED_IPV6_ROUTE_TYPE) {
         vec.push(avp.encode_string()?)
     }
     Ok(vec)
 }
 
-pub const FRAMED_IPV_6_POOL_TYPE: AVPType = 100;
-pub fn delete_framed_ipv_6_pool(packet: &mut Packet) {
-    packet.delete(FRAMED_IPV_6_POOL_TYPE);
+pub const FRAMED_IPV6_POOL_TYPE: AVPType = 100;
+pub fn delete_framed_ipv6_pool(packet: &mut Packet) {
+    packet.delete(FRAMED_IPV6_POOL_TYPE);
 }
-pub fn add_framed_ipv_6_pool(packet: &mut Packet, value: &str) {
-    packet.add(AVP::from_string(FRAMED_IPV_6_POOL_TYPE, value));
+pub fn add_framed_ipv6_pool(packet: &mut Packet, value: &str) {
+    packet.add(AVP::from_string(FRAMED_IPV6_POOL_TYPE, value));
 }
-pub fn lookup_framed_ipv_6_pool(packet: &Packet) -> Option<Result<String, AVPError>> {
+pub fn lookup_framed_ipv6_pool(packet: &Packet) -> Option<Result<String, AVPError>> {
     packet
-        .lookup(FRAMED_IPV_6_POOL_TYPE)
+        .lookup(FRAMED_IPV6_POOL_TYPE)
         .map(|v| v.encode_string())
 }
-pub fn lookup_all_framed_ipv_6_pool(packet: &Packet) -> Result<Vec<String>, AVPError> {
+pub fn lookup_all_framed_ipv6_pool(packet: &Packet) -> Result<Vec<String>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(FRAMED_IPV_6_POOL_TYPE) {
+    for avp in packet.lookup_all(FRAMED_IPV6_POOL_TYPE) {
         vec.push(avp.encode_string()?)
     }
     Ok(vec)

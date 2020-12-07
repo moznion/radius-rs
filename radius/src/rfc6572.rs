@@ -45,93 +45,89 @@ pub fn lookup_all_service_selection(packet: &Packet) -> Result<Vec<String>, AVPE
     Ok(vec)
 }
 
-pub const PMIP6_HOME_LMA_I_PV_6_ADDRESS_TYPE: AVPType = 147;
-pub fn delete_pmip6_home_lma_i_pv_6_address(packet: &mut Packet) {
-    packet.delete(PMIP6_HOME_LMA_I_PV_6_ADDRESS_TYPE);
+pub const PMIP6_HOME_LMA_IPV6_ADDRESS_TYPE: AVPType = 147;
+pub fn delete_pmip6_home_lma_ipv6_address(packet: &mut Packet) {
+    packet.delete(PMIP6_HOME_LMA_IPV6_ADDRESS_TYPE);
 }
-pub fn add_pmip6_home_lma_i_pv_6_address(packet: &mut Packet, value: &Ipv6Addr) {
-    packet.add(AVP::from_ipv6(PMIP6_HOME_LMA_I_PV_6_ADDRESS_TYPE, value));
+pub fn add_pmip6_home_lma_ipv6_address(packet: &mut Packet, value: &Ipv6Addr) {
+    packet.add(AVP::from_ipv6(PMIP6_HOME_LMA_IPV6_ADDRESS_TYPE, value));
 }
-pub fn lookup_pmip6_home_lma_i_pv_6_address(packet: &Packet) -> Option<Result<Ipv6Addr, AVPError>> {
+pub fn lookup_pmip6_home_lma_ipv6_address(packet: &Packet) -> Option<Result<Ipv6Addr, AVPError>> {
     packet
-        .lookup(PMIP6_HOME_LMA_I_PV_6_ADDRESS_TYPE)
+        .lookup(PMIP6_HOME_LMA_IPV6_ADDRESS_TYPE)
         .map(|v| v.encode_ipv6())
 }
-pub fn lookup_all_pmip6_home_lma_i_pv_6_address(
-    packet: &Packet,
-) -> Result<Vec<Ipv6Addr>, AVPError> {
+pub fn lookup_all_pmip6_home_lma_ipv6_address(packet: &Packet) -> Result<Vec<Ipv6Addr>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(PMIP6_HOME_LMA_I_PV_6_ADDRESS_TYPE) {
+    for avp in packet.lookup_all(PMIP6_HOME_LMA_IPV6_ADDRESS_TYPE) {
         vec.push(avp.encode_ipv6()?)
     }
     Ok(vec)
 }
 
-pub const PMIP6_VISITED_LMA_I_PV_6_ADDRESS_TYPE: AVPType = 148;
-pub fn delete_pmip6_visited_lma_i_pv_6_address(packet: &mut Packet) {
-    packet.delete(PMIP6_VISITED_LMA_I_PV_6_ADDRESS_TYPE);
+pub const PMIP6_VISITED_LMA_IPV6_ADDRESS_TYPE: AVPType = 148;
+pub fn delete_pmip6_visited_lma_ipv6_address(packet: &mut Packet) {
+    packet.delete(PMIP6_VISITED_LMA_IPV6_ADDRESS_TYPE);
 }
-pub fn add_pmip6_visited_lma_i_pv_6_address(packet: &mut Packet, value: &Ipv6Addr) {
-    packet.add(AVP::from_ipv6(PMIP6_VISITED_LMA_I_PV_6_ADDRESS_TYPE, value));
+pub fn add_pmip6_visited_lma_ipv6_address(packet: &mut Packet, value: &Ipv6Addr) {
+    packet.add(AVP::from_ipv6(PMIP6_VISITED_LMA_IPV6_ADDRESS_TYPE, value));
 }
-pub fn lookup_pmip6_visited_lma_i_pv_6_address(
+pub fn lookup_pmip6_visited_lma_ipv6_address(
     packet: &Packet,
 ) -> Option<Result<Ipv6Addr, AVPError>> {
     packet
-        .lookup(PMIP6_VISITED_LMA_I_PV_6_ADDRESS_TYPE)
+        .lookup(PMIP6_VISITED_LMA_IPV6_ADDRESS_TYPE)
         .map(|v| v.encode_ipv6())
 }
-pub fn lookup_all_pmip6_visited_lma_i_pv_6_address(
+pub fn lookup_all_pmip6_visited_lma_ipv6_address(
     packet: &Packet,
 ) -> Result<Vec<Ipv6Addr>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(PMIP6_VISITED_LMA_I_PV_6_ADDRESS_TYPE) {
+    for avp in packet.lookup_all(PMIP6_VISITED_LMA_IPV6_ADDRESS_TYPE) {
         vec.push(avp.encode_ipv6()?)
     }
     Ok(vec)
 }
 
-pub const PMIP6_HOME_LMA_I_PV_4_ADDRESS_TYPE: AVPType = 149;
-pub fn delete_pmip6_home_lma_i_pv_4_address(packet: &mut Packet) {
-    packet.delete(PMIP6_HOME_LMA_I_PV_4_ADDRESS_TYPE);
+pub const PMIP6_HOME_LMA_IPV4_ADDRESS_TYPE: AVPType = 149;
+pub fn delete_pmip6_home_lma_ipv4_address(packet: &mut Packet) {
+    packet.delete(PMIP6_HOME_LMA_IPV4_ADDRESS_TYPE);
 }
-pub fn add_pmip6_home_lma_i_pv_4_address(packet: &mut Packet, value: &Ipv4Addr) {
-    packet.add(AVP::from_ipv4(PMIP6_HOME_LMA_I_PV_4_ADDRESS_TYPE, value));
+pub fn add_pmip6_home_lma_ipv4_address(packet: &mut Packet, value: &Ipv4Addr) {
+    packet.add(AVP::from_ipv4(PMIP6_HOME_LMA_IPV4_ADDRESS_TYPE, value));
 }
-pub fn lookup_pmip6_home_lma_i_pv_4_address(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {
+pub fn lookup_pmip6_home_lma_ipv4_address(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {
     packet
-        .lookup(PMIP6_HOME_LMA_I_PV_4_ADDRESS_TYPE)
+        .lookup(PMIP6_HOME_LMA_IPV4_ADDRESS_TYPE)
         .map(|v| v.encode_ipv4())
 }
-pub fn lookup_all_pmip6_home_lma_i_pv_4_address(
-    packet: &Packet,
-) -> Result<Vec<Ipv4Addr>, AVPError> {
+pub fn lookup_all_pmip6_home_lma_ipv4_address(packet: &Packet) -> Result<Vec<Ipv4Addr>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(PMIP6_HOME_LMA_I_PV_4_ADDRESS_TYPE) {
+    for avp in packet.lookup_all(PMIP6_HOME_LMA_IPV4_ADDRESS_TYPE) {
         vec.push(avp.encode_ipv4()?)
     }
     Ok(vec)
 }
 
-pub const PMIP6_VISITED_LMA_I_PV_4_ADDRESS_TYPE: AVPType = 150;
-pub fn delete_pmip6_visited_lma_i_pv_4_address(packet: &mut Packet) {
-    packet.delete(PMIP6_VISITED_LMA_I_PV_4_ADDRESS_TYPE);
+pub const PMIP6_VISITED_LMA_IPV4_ADDRESS_TYPE: AVPType = 150;
+pub fn delete_pmip6_visited_lma_ipv4_address(packet: &mut Packet) {
+    packet.delete(PMIP6_VISITED_LMA_IPV4_ADDRESS_TYPE);
 }
-pub fn add_pmip6_visited_lma_i_pv_4_address(packet: &mut Packet, value: &Ipv4Addr) {
-    packet.add(AVP::from_ipv4(PMIP6_VISITED_LMA_I_PV_4_ADDRESS_TYPE, value));
+pub fn add_pmip6_visited_lma_ipv4_address(packet: &mut Packet, value: &Ipv4Addr) {
+    packet.add(AVP::from_ipv4(PMIP6_VISITED_LMA_IPV4_ADDRESS_TYPE, value));
 }
-pub fn lookup_pmip6_visited_lma_i_pv_4_address(
+pub fn lookup_pmip6_visited_lma_ipv4_address(
     packet: &Packet,
 ) -> Option<Result<Ipv4Addr, AVPError>> {
     packet
-        .lookup(PMIP6_VISITED_LMA_I_PV_4_ADDRESS_TYPE)
+        .lookup(PMIP6_VISITED_LMA_IPV4_ADDRESS_TYPE)
         .map(|v| v.encode_ipv4())
 }
-pub fn lookup_all_pmip6_visited_lma_i_pv_4_address(
+pub fn lookup_all_pmip6_visited_lma_ipv4_address(
     packet: &Packet,
 ) -> Result<Vec<Ipv4Addr>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(PMIP6_VISITED_LMA_I_PV_4_ADDRESS_TYPE) {
+    for avp in packet.lookup_all(PMIP6_VISITED_LMA_IPV4_ADDRESS_TYPE) {
         vec.push(avp.encode_ipv4()?)
     }
     Ok(vec)
@@ -227,46 +223,43 @@ pub fn lookup_all_pmip6_visited_interface_id(packet: &Packet) -> Vec<Vec<u8>> {
     vec
 }
 
-pub const PMIP6_HOME_I_PV_4_HO_A_TYPE: AVPType = 155;
-pub fn delete_pmip6_home_i_pv_4_ho_a(packet: &mut Packet) {
-    packet.delete(PMIP6_HOME_I_PV_4_HO_A_TYPE);
+pub const PMIP6_HOME_IPV4_HO_A_TYPE: AVPType = 155;
+pub fn delete_pmip6_home_ipv4_ho_a(packet: &mut Packet) {
+    packet.delete(PMIP6_HOME_IPV4_HO_A_TYPE);
 }
-pub fn add_pmip6_home_i_pv_4_ho_a(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
-    packet.add(AVP::from_ipv4_prefix(PMIP6_HOME_I_PV_4_HO_A_TYPE, value)?);
+pub fn add_pmip6_home_ipv4_ho_a(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
+    packet.add(AVP::from_ipv4_prefix(PMIP6_HOME_IPV4_HO_A_TYPE, value)?);
     Ok(())
 }
-pub fn lookup_pmip6_home_i_pv_4_ho_a(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {
+pub fn lookup_pmip6_home_ipv4_ho_a(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {
     packet
-        .lookup(PMIP6_HOME_I_PV_4_HO_A_TYPE)
+        .lookup(PMIP6_HOME_IPV4_HO_A_TYPE)
         .map(|v| v.encode_ipv4_prefix())
 }
-pub fn lookup_all_pmip6_home_i_pv_4_ho_a(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {
+pub fn lookup_all_pmip6_home_ipv4_ho_a(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(PMIP6_HOME_I_PV_4_HO_A_TYPE) {
+    for avp in packet.lookup_all(PMIP6_HOME_IPV4_HO_A_TYPE) {
         vec.push(avp.encode_ipv4_prefix()?)
     }
     Ok(vec)
 }
 
-pub const PMIP6_VISITED_I_PV_4_HO_A_TYPE: AVPType = 156;
-pub fn delete_pmip6_visited_i_pv_4_ho_a(packet: &mut Packet) {
-    packet.delete(PMIP6_VISITED_I_PV_4_HO_A_TYPE);
+pub const PMIP6_VISITED_IPV4_HO_A_TYPE: AVPType = 156;
+pub fn delete_pmip6_visited_ipv4_ho_a(packet: &mut Packet) {
+    packet.delete(PMIP6_VISITED_IPV4_HO_A_TYPE);
 }
-pub fn add_pmip6_visited_i_pv_4_ho_a(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
-    packet.add(AVP::from_ipv4_prefix(
-        PMIP6_VISITED_I_PV_4_HO_A_TYPE,
-        value,
-    )?);
+pub fn add_pmip6_visited_ipv4_ho_a(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
+    packet.add(AVP::from_ipv4_prefix(PMIP6_VISITED_IPV4_HO_A_TYPE, value)?);
     Ok(())
 }
-pub fn lookup_pmip6_visited_i_pv_4_ho_a(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {
+pub fn lookup_pmip6_visited_ipv4_ho_a(packet: &Packet) -> Option<Result<Vec<u8>, AVPError>> {
     packet
-        .lookup(PMIP6_VISITED_I_PV_4_HO_A_TYPE)
+        .lookup(PMIP6_VISITED_IPV4_HO_A_TYPE)
         .map(|v| v.encode_ipv4_prefix())
 }
-pub fn lookup_all_pmip6_visited_i_pv_4_ho_a(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {
+pub fn lookup_all_pmip6_visited_ipv4_ho_a(packet: &Packet) -> Result<Vec<Vec<u8>>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(PMIP6_VISITED_I_PV_4_HO_A_TYPE) {
+    for avp in packet.lookup_all(PMIP6_VISITED_IPV4_HO_A_TYPE) {
         vec.push(avp.encode_ipv4_prefix()?)
     }
     Ok(vec)
@@ -374,41 +367,41 @@ pub fn lookup_all_pmip6_visited_dhcp6_server_address(
     Ok(vec)
 }
 
-pub const PMIP6_HOME_I_PV_4_GATEWAY_TYPE: AVPType = 161;
-pub fn delete_pmip6_home_i_pv_4_gateway(packet: &mut Packet) {
-    packet.delete(PMIP6_HOME_I_PV_4_GATEWAY_TYPE);
+pub const PMIP6_HOME_IPV4_GATEWAY_TYPE: AVPType = 161;
+pub fn delete_pmip6_home_ipv4_gateway(packet: &mut Packet) {
+    packet.delete(PMIP6_HOME_IPV4_GATEWAY_TYPE);
 }
-pub fn add_pmip6_home_i_pv_4_gateway(packet: &mut Packet, value: &Ipv4Addr) {
-    packet.add(AVP::from_ipv4(PMIP6_HOME_I_PV_4_GATEWAY_TYPE, value));
+pub fn add_pmip6_home_ipv4_gateway(packet: &mut Packet, value: &Ipv4Addr) {
+    packet.add(AVP::from_ipv4(PMIP6_HOME_IPV4_GATEWAY_TYPE, value));
 }
-pub fn lookup_pmip6_home_i_pv_4_gateway(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {
+pub fn lookup_pmip6_home_ipv4_gateway(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {
     packet
-        .lookup(PMIP6_HOME_I_PV_4_GATEWAY_TYPE)
+        .lookup(PMIP6_HOME_IPV4_GATEWAY_TYPE)
         .map(|v| v.encode_ipv4())
 }
-pub fn lookup_all_pmip6_home_i_pv_4_gateway(packet: &Packet) -> Result<Vec<Ipv4Addr>, AVPError> {
+pub fn lookup_all_pmip6_home_ipv4_gateway(packet: &Packet) -> Result<Vec<Ipv4Addr>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(PMIP6_HOME_I_PV_4_GATEWAY_TYPE) {
+    for avp in packet.lookup_all(PMIP6_HOME_IPV4_GATEWAY_TYPE) {
         vec.push(avp.encode_ipv4()?)
     }
     Ok(vec)
 }
 
-pub const PMIP6_VISITED_I_PV_4_GATEWAY_TYPE: AVPType = 162;
-pub fn delete_pmip6_visited_i_pv_4_gateway(packet: &mut Packet) {
-    packet.delete(PMIP6_VISITED_I_PV_4_GATEWAY_TYPE);
+pub const PMIP6_VISITED_IPV4_GATEWAY_TYPE: AVPType = 162;
+pub fn delete_pmip6_visited_ipv4_gateway(packet: &mut Packet) {
+    packet.delete(PMIP6_VISITED_IPV4_GATEWAY_TYPE);
 }
-pub fn add_pmip6_visited_i_pv_4_gateway(packet: &mut Packet, value: &Ipv4Addr) {
-    packet.add(AVP::from_ipv4(PMIP6_VISITED_I_PV_4_GATEWAY_TYPE, value));
+pub fn add_pmip6_visited_ipv4_gateway(packet: &mut Packet, value: &Ipv4Addr) {
+    packet.add(AVP::from_ipv4(PMIP6_VISITED_IPV4_GATEWAY_TYPE, value));
 }
-pub fn lookup_pmip6_visited_i_pv_4_gateway(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {
+pub fn lookup_pmip6_visited_ipv4_gateway(packet: &Packet) -> Option<Result<Ipv4Addr, AVPError>> {
     packet
-        .lookup(PMIP6_VISITED_I_PV_4_GATEWAY_TYPE)
+        .lookup(PMIP6_VISITED_IPV4_GATEWAY_TYPE)
         .map(|v| v.encode_ipv4())
 }
-pub fn lookup_all_pmip6_visited_i_pv_4_gateway(packet: &Packet) -> Result<Vec<Ipv4Addr>, AVPError> {
+pub fn lookup_all_pmip6_visited_ipv4_gateway(packet: &Packet) -> Result<Vec<Ipv4Addr>, AVPError> {
     let mut vec = Vec::new();
-    for avp in packet.lookup_all(PMIP6_VISITED_I_PV_4_GATEWAY_TYPE) {
+    for avp in packet.lookup_all(PMIP6_VISITED_IPV4_GATEWAY_TYPE) {
         vec.push(avp.encode_ipv4()?)
     }
     Ok(vec)
