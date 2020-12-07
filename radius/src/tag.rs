@@ -1,5 +1,7 @@
 pub(crate) const UNUSED_TAG_VALUE: u8 = 0x00;
 
+/// Tag represents a tag of a RADIUS value.
+/// see also: http://www.ietf.org/rfc/rfc2868.html
 #[derive(Debug, PartialEq)]
 pub struct Tag {
     pub(crate) value: u8,

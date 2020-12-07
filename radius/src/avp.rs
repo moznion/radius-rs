@@ -34,6 +34,7 @@ pub type AVPType = u8;
 
 pub const TYPE_INVALID: AVPType = 255;
 
+/// This struct represents a attribute-value pair.
 #[derive(Debug, Clone, PartialEq)]
 pub struct AVP {
     pub(crate) typ: AVPType,
@@ -41,6 +42,7 @@ pub struct AVP {
 }
 
 impl AVP {
+    /// (This method is for dictionary developers) make an AVP from a u32 value.
     pub fn from_u32(typ: AVPType, value: u32) -> Self {
         AVP {
             typ,
@@ -48,6 +50,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from a u16 value.
     pub fn from_u16(typ: AVPType, value: u16) -> Self {
         AVP {
             typ,
@@ -55,6 +58,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from a tagged u32 value.
     pub fn from_tagged_u32(typ: AVPType, tag: Option<&Tag>, value: u32) -> Self {
         let tag = match tag {
             None => &Tag {
@@ -69,6 +73,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from a string value.
     pub fn from_string(typ: AVPType, value: &str) -> Self {
         AVP {
             typ,
@@ -76,6 +81,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from a tagged string value.
     pub fn from_tagged_string(typ: AVPType, tag: Option<&Tag>, value: &str) -> Self {
         match tag {
             None => AVP {
@@ -89,6 +95,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from bytes.
     pub fn from_bytes(typ: AVPType, value: &[u8]) -> Self {
         AVP {
             typ,
@@ -96,6 +103,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from a IPv4 value.
     pub fn from_ipv4(typ: AVPType, value: &Ipv4Addr) -> Self {
         AVP {
             typ,
@@ -103,6 +111,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from a IPv4-prefix value.
     pub fn from_ipv4_prefix(typ: AVPType, prefix: &[u8]) -> Result<Self, AVPError> {
         let prefix_len = prefix.len();
         if prefix_len != 4 {
@@ -115,6 +124,7 @@ impl AVP {
         })
     }
 
+    /// (This method is for dictionary developers) make an AVP from a IPv6 value.
     pub fn from_ipv6(typ: AVPType, value: &Ipv6Addr) -> Self {
         AVP {
             typ,
@@ -122,6 +132,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from a IPv6-prefix value.
     pub fn from_ipv6_prefix(typ: AVPType, prefix: &[u8]) -> Result<Self, AVPError> {
         let prefix_len = prefix.len();
         if prefix_len > 16 {
@@ -134,6 +145,8 @@ impl AVP {
         })
     }
 
+    /// (This method is for dictionary developers) make an AVP from a user-password value.
+    /// see also: https://tools.ietf.org/html/rfc2865#section-5.2
     pub fn from_user_password(
         typ: AVPType,
         plain_text: &[u8],
@@ -197,6 +210,7 @@ impl AVP {
         Ok(AVP { typ, value: enc })
     }
 
+    /// (This method is for dictionary developers) make an AVP from a date value.
     pub fn from_date(typ: AVPType, dt: &DateTime<Utc>) -> Self {
         AVP {
             typ,
@@ -204,6 +218,8 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) make an AVP from a tunne-password value.
+    /// see also: https://tools.ietf.org/html/rfc2868#section-3.5
     pub fn from_tunnel_password(
         typ: AVPType,
         tag: Option<&Tag>,
@@ -293,6 +309,7 @@ impl AVP {
         Ok(AVP { typ, value: enc })
     }
 
+    /// (This method is for dictionary developers) encode an AVP into a u32 value.
     pub fn encode_u32(&self) -> Result<u32, AVPError> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
@@ -306,6 +323,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into a u16 value.
     pub fn encode_u16(&self) -> Result<u16, AVPError> {
         const U16_SIZE: usize = std::mem::size_of::<u16>();
         if self.value.len() != U16_SIZE {
@@ -319,6 +337,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into a tag and u32 value.
     pub fn encode_tagged_u32(&self) -> Result<(u32, Tag), AVPError> {
         if self.value.is_empty() {
             return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
@@ -346,6 +365,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into a string value.
     pub fn encode_string(&self) -> Result<String, AVPError> {
         match String::from_utf8(self.value.to_vec()) {
             Ok(str) => Ok(str),
@@ -353,6 +373,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into a tag and string value.
     pub fn encode_tagged_string(&self) -> Result<(String, Option<Tag>), AVPError> {
         let string_vec = self.value.to_vec();
         if string_vec.is_empty() {
@@ -388,10 +409,12 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into bytes.
     pub fn encode_bytes(&self) -> Vec<u8> {
         self.value.to_vec()
     }
 
+    /// (This method is for dictionary developers) encode an AVP into Ipv4 value.
     pub fn encode_ipv4(&self) -> Result<Ipv4Addr, AVPError> {
         const IPV4_SIZE: usize = std::mem::size_of::<Ipv4Addr>();
         if self.value.len() != IPV4_SIZE {
@@ -405,6 +428,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into Ipv4-prefix value.
     pub fn encode_ipv4_prefix(&self) -> Result<Vec<u8>, AVPError> {
         match self.value.len() == 6 {
             true => Ok(self.value[2..].to_owned()),
@@ -412,6 +436,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into Ipv6 value.
     pub fn encode_ipv6(&self) -> Result<Ipv6Addr, AVPError> {
         const IPV6_SIZE: usize = std::mem::size_of::<Ipv6Addr>();
         if self.value.len() != IPV6_SIZE {
@@ -425,6 +450,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into Ipv6-prefix value.
     pub fn encode_ipv6_prefix(&self) -> Result<Vec<u8>, AVPError> {
         match self.value.len() >= 2 {
             true => Ok(self.value[2..].to_owned()),
@@ -432,6 +458,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into user-password value as bytes.
     pub fn encode_user_password(
         &self,
         secret: &[u8],
@@ -475,6 +502,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into date value.
     pub fn encode_date(&self) -> Result<DateTime<Utc>, AVPError> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
@@ -491,6 +519,7 @@ impl AVP {
         }
     }
 
+    /// (This method is for dictionary developers) encode an AVP into a tunnel-password value as bytes.
     pub fn encode_tunnel_password(
         &self,
         secret: &[u8],

@@ -26,6 +26,7 @@ pub enum PacketError {
     UnknownCodeError(String),
 }
 
+/// This struct represents a packet of RADIUS for request and response.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Packet {
     code: Code,
@@ -36,6 +37,7 @@ pub struct Packet {
 }
 
 impl Packet {
+    /// Constructor for a Packet.
     pub fn new(code: Code, secret: &[u8]) -> Self {
         let mut rng = rand::thread_rng();
         let authenticator = (0..16).map(|_| rng.gen()).collect::<Vec<u8>>();
@@ -64,6 +66,7 @@ impl Packet {
         &self.authenticator
     }
 
+    /// This decodes bytes into a Packet.
     pub fn decode(bs: &[u8], secret: &[u8]) -> Result<Self, PacketError> {
         if bs.len() < RADIUS_PACKET_HEADER_LENGTH {
             return Err(PacketError::InsufficientPacketLengthError(
@@ -93,6 +96,7 @@ impl Packet {
         })
     }
 
+    /// This method makes a response packet according to self (i.e. request packet).
     pub fn make_response_packet(&self, code: Code) -> Self {
         Packet {
             code,
@@ -103,6 +107,7 @@ impl Packet {
         }
     }
 
+    /// This method encodes the Packet into bytes.
     pub fn encode(&self) -> Result<Vec<u8>, PacketError> {
         let mut bs = match self.marshal_binary() {
             Ok(bs) => bs,
@@ -181,6 +186,7 @@ impl Packet {
         Ok(bs)
     }
 
+    /// Returns whether the Packet is authentic response or not.
     pub fn is_authentic_response(response: &[u8], request: &[u8], secret: &[u8]) -> bool {
         if response.len() < RADIUS_PACKET_HEADER_LENGTH
             || request.len() < RADIUS_PACKET_HEADER_LENGTH
@@ -202,6 +208,7 @@ impl Packet {
         .eq(&response[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
     }
 
+    /// Returns whether the Packet is authentic request or not.
     pub fn is_authentic_request(request: &[u8], secret: &[u8]) -> bool {
         if request.len() < RADIUS_PACKET_HEADER_LENGTH || secret.is_empty() {
             return false;
@@ -227,22 +234,27 @@ impl Packet {
         }
     }
 
+    /// Add an AVP to the list of AVPs.
     pub fn add(&mut self, avp: AVP) {
         self.attributes.add(avp);
     }
 
+    /// Add AVPs to the list of AVPs.
     pub fn extend(&mut self, avps: Vec<AVP>) {
         self.attributes.extend(avps)
     }
 
+    /// Delete all of AVPs from the list according to given AVP type.
     pub fn delete(&mut self, typ: AVPType) {
         self.attributes.del(typ);
     }
 
+    /// Returns an AVP that matches at first with the given AVP type. If there are not any matched ones, this returns `None`.
     pub fn lookup(&self, typ: AVPType) -> Option<&AVP> {
         self.attributes.lookup(typ)
     }
 
+    /// Returns AVPs that match with the given AVP type.
     pub fn lookup_all(&self, typ: AVPType) -> Vec<&AVP> {
         self.attributes.lookup_all(typ)
     }

@@ -32,6 +32,7 @@ pub enum ClientError {
     SocketTimeoutError(),
 }
 
+/// A basic implementation of the RADIUS client.
 pub struct Client {
     connection_timeout: Option<Duration>,
     socket_timeout: Option<Duration>,
@@ -40,6 +41,14 @@ pub struct Client {
 impl Client {
     const MAX_DATAGRAM_SIZE: usize = 65507;
 
+    /// A constructor for a client.
+    ///
+    /// # Arguments
+    ///
+    /// * `connection_timeout` - A duration of connection timeout. If the connection is not established in time, the `ConnectionTimeoutError` occurs.
+    ///                          If this value is `None`, it never timed-out.
+    /// * `socket_timeout` - A duration of socket timeout. If the response is not returned in time, the `SocketTimeoutError` occurs.
+    ///                      If this value is `None`, it never timed-out.
     pub fn new(connection_timeout: Option<Duration>, socket_timeout: Option<Duration>) -> Self {
         Client {
             connection_timeout,
@@ -47,13 +56,14 @@ impl Client {
         }
     }
 
+    /// This method sends a packet to the destination.
+    ///
+    /// This method doesn't support auto retransmission when something failed, so if you need such a feature you have to implement that.
     pub async fn send_packet(
         &self,
         remote_addr: &SocketAddr,
         request_packet: &Packet,
     ) -> Result<Packet, ClientError> {
-        // TODO retransmission
-
         let local_addr: SocketAddr = if remote_addr.is_ipv4() {
             "0.0.0.0:0"
         } else {

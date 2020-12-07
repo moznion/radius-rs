@@ -2,6 +2,7 @@ use std::net::SocketAddr;
 
 use crate::packet::Packet;
 
+/// RADIUS request object.
 pub struct Request {
     local_addr: SocketAddr,
     remote_addr: SocketAddr,

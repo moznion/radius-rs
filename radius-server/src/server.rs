@@ -13,9 +13,11 @@ use radius::packet::Packet;
 use radius::request::Request;
 use std::fmt::Debug;
 
+/// A basic implementation of the RADIUS server.
 pub struct Server {}
 
 impl Server {
+    /// Start listening a UDP socket to process the RAIDUS requests.
     pub async fn run<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider>(
         host: &str,
         port: u16,
