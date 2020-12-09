@@ -1,6 +1,6 @@
 # radius-rs
 
-A async/await native implementation of the RADIUS server and client for Rust.
+An async/await native implementation of the RADIUS server and client for Rust.
 
 ## Description
 
@@ -42,6 +42,31 @@ This supports the following RFC dictionaries at the moment:
 - [RFC7055](https://tools.ietf.org/html/rfc7055)
 - [RFC7155](https://tools.ietf.org/html/rfc7155)
 
+## Implementation guide for your RADIUS application
+
+### Common
+
+- `Packet` struct represents request packet and response one.
+  - This struct has a list of AVPs.
+  - You can get a specific AVP by RFC dictionary module.
+    - e.g. `rfc2865::lookup_user_name(packet)`
+      - This method returns `Some(Result<String, AVPError>)` if the packet contains `User-Name` attribute.
+      - On the other hand, if the package doesn't have that attribute, it returns `None`.
+  - You can construct a packet with RFC dictionary module.
+    - e.g. `rfc2865::add_user_name(&mut packet, "user")`
+      - This method adds a `User-Name` AVP to the packet.
+  - Please refer to the rustdoc for each RFC dictionary module in detail.
+
+### Server
+
+- Must implement `RequestHandler<T, E>` interface.
+  - This interface method is the core function of the server application what you need.
+- Please refer also to the example implementation: [server](./examples/server.rs)
+
+### Client
+
+- Please refer also to the example implementation: [client](./examples/client.rs)
+
 ## Roadmap
 
 - Support the following RFC dictionaries:
@@ -55,6 +80,19 @@ This supports the following RFC dictionaries at the moment:
   - rfc7930
   - rfc8045
   - rfc8559
+
+## Development guide for this library
+
+### How to generate code from dictionary
+
+```shell
+$ make gen
+```
+
+`code-generator` sub project has the responsibility to generate the Rust code according to
+given RFC dictionary files. The dictionary files are in `dicts` directory.
+
+The format of the dictionary files respect the [FreeRADIUS project's ones](https://github.com/FreeRADIUS/freeradius-server/tree/master/share/dictionary/radius).
 
 ## Note
 
