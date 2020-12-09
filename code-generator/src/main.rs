@@ -98,6 +98,12 @@ fn main() {
 
     let mut opts = Options::new();
     opts.optflag("h", "help", "print this help menu");
+    opts.optopt(
+        "o",
+        "out-dir",
+        "[mandatory] a directory to out the generated code",
+        "/path/to/out/",
+    );
     let matches = opts
         .parse(&args[1..])
         .unwrap_or_else(|f| panic!(f.to_string()));
@@ -106,23 +112,39 @@ fn main() {
         print_usage(&program, &opts);
     }
 
-    let dict_file_path = Path::new(&matches.free[0]);
-    if !dict_file_path.exists() {
-        panic!("no such dictionary file => {}", &matches.free[0]);
+    let out_dir_str = match matches.opt_str("o") {
+        Some(o) => o,
+        None => panic!("mandatory parameter `-o` (`--out-dir`) is missing"),
+    };
+    let out_dir = Path::new(&out_dir_str);
+
+    let dict_file_paths: Vec<&Path> = matches
+        .free
+        .iter()
+        .map(|file_path_str| Path::new(file_path_str))
+        .filter(|path| {
+            if !path.exists() || !path.is_file() {
+                panic!("no such dictionary file => {}", path.to_str().unwrap());
+            }
+            true
+        })
+        .collect();
+
+    for dict_file_path in dict_file_paths {
+        let (radius_attributes, radius_attribute_to_values_map) =
+            parse_dict_file(dict_file_path).unwrap();
+
+        let value_defined_attributes_set = radius_attribute_to_values_map
+            .keys()
+            .collect::<HashSet<&String>>();
+
+        let rfc_name = dict_file_path.extension().unwrap().to_str().unwrap();
+        let mut w = BufWriter::new(File::create(out_dir.join(format!("{}.rs", rfc_name))).unwrap());
+
+        generate_header(&mut w);
+        generate_values_code(&mut w, &radius_attribute_to_values_map);
+        generate_attributes_code(&mut w, &radius_attributes, &value_defined_attributes_set);
     }
-
-    let (radius_attributes, radius_attribute_to_values_map) =
-        parse_dict_file(dict_file_path).unwrap();
-
-    let value_defined_attributes_set = radius_attribute_to_values_map
-        .keys()
-        .collect::<HashSet<&String>>();
-
-    let mut w = BufWriter::new(File::create(&matches.free[1]).unwrap());
-
-    generate_header(&mut w);
-    generate_values_code(&mut w, &radius_attribute_to_values_map);
-    generate_attributes_code(&mut w, &radius_attributes, &value_defined_attributes_set);
 }
 
 fn generate_header(w: &mut BufWriter<File>) {
@@ -878,6 +900,8 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                         }
                     }
                 };
+
+                // TODO
 
                 radius_attributes.push(RadiusAttribute {
                     name: items[1].to_string(),
