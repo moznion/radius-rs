@@ -9,7 +9,7 @@ keywords = ["radius", "client"]
 
 [dependencies]
 radius = { path = "../radius" }
-tokio = { version = "0.3.4", features = ["full"] }
+tokio = { version = "0.3.5", features = ["full"] }
 log = "0.4.11"
 thiserror = "1.0"
 async-trait = "0.1.42"
