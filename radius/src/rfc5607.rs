@@ -3,6 +3,8 @@
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
+use crate::rfc2865;
+
 pub const FRAMED_MANAGEMENT_TYPE: AVPType = 133;
 pub fn delete_framed_management(packet: &mut Packet) {
     packet.delete(FRAMED_MANAGEMENT_TYPE);
@@ -109,5 +111,4 @@ pub const MANAGEMENT_TRANSPORT_PROTECTION_INTEGRITY_PROTECTION: ManagementTransp
 pub const MANAGEMENT_TRANSPORT_PROTECTION_INTEGRITY_CONFIDENTIALITY_PROTECTION:
     ManagementTransportProtection = 3;
 
-pub type ServiceType = u32;
-pub const SERVICE_TYPE_FRAMED_MANAGEMENT: ServiceType = 18;
+pub const SERVICE_TYPE_FRAMED_MANAGEMENT: rfc2865::ServiceType = 18;

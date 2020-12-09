@@ -3,6 +3,8 @@
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
+use crate::rfc2865;
+
 pub const ERROR_CAUSE_TYPE: AVPType = 101;
 pub fn delete_error_cause(packet: &mut Packet) {
     packet.delete(ERROR_CAUSE_TYPE);
@@ -40,5 +42,4 @@ pub const ERROR_CAUSE_PROXY_PROCESSING_ERROR: ErrorCause = 505;
 pub const ERROR_CAUSE_RESOURCES_UNAVAILABLE: ErrorCause = 506;
 pub const ERROR_CAUSE_REQUEST_INITIATED: ErrorCause = 507;
 
-pub type ServiceType = u32;
-pub const SERVICE_TYPE_AUTHORIZE_ONLY: ServiceType = 17;
+pub const SERVICE_TYPE_AUTHORIZE_ONLY: rfc2865::ServiceType = 17;
