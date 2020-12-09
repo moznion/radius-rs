@@ -1,4 +1,4 @@
-# radius-rs
+# radius-rs ![Check](https://github.com/moznion/radius-rs/workflows/Check/badge.svg)
 
 An async/await native implementation of the RADIUS server and client for Rust.
 

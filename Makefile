@@ -1,3 +1,5 @@
+check: test lint
+
 test:
 	cargo test
 
