@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufWriter, Write};
 use std::path::Path;
@@ -118,7 +118,7 @@ fn main() {
     };
     let out_dir = Path::new(&out_dir_str);
 
-    let dict_file_paths: Vec<&Path> = matches
+    let mut dict_file_paths: Vec<&Path> = matches
         .free
         .iter()
         .map(|file_path_str| Path::new(file_path_str))
@@ -129,21 +129,29 @@ fn main() {
             true
         })
         .collect();
+    dict_file_paths.sort();
+
+    let mut attribute_name_to_rfc_name: HashMap<String, String> = HashMap::new();
 
     for dict_file_path in dict_file_paths {
         let (radius_attributes, radius_attribute_to_values_map) =
             parse_dict_file(dict_file_path).unwrap();
 
+        let rfc_name = dict_file_path.extension().unwrap().to_str().unwrap();
+
+        for attr in &radius_attributes {
+            attribute_name_to_rfc_name.insert(attr.name.clone(), rfc_name.to_owned());
+        }
+
         let value_defined_attributes_set = radius_attribute_to_values_map
             .keys()
             .collect::<HashSet<&String>>();
 
-        let rfc_name = dict_file_path.extension().unwrap().to_str().unwrap();
         let mut w = BufWriter::new(File::create(out_dir.join(format!("{}.rs", rfc_name))).unwrap());
 
         generate_header(&mut w);
-        generate_values_code(&mut w, &radius_attribute_to_values_map);
         generate_attributes_code(&mut w, &radius_attributes, &value_defined_attributes_set);
+        generate_values_code(&mut w, &radius_attribute_to_values_map);
     }
 }
 

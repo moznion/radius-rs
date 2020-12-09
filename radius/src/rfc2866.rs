@@ -3,41 +3,6 @@
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
-pub type AcctAuthentic = u32;
-pub const ACCT_AUTHENTIC_RADIUS: AcctAuthentic = 1;
-pub const ACCT_AUTHENTIC_LOCAL: AcctAuthentic = 2;
-pub const ACCT_AUTHENTIC_REMOTE: AcctAuthentic = 3;
-pub const ACCT_AUTHENTIC_DIAMETER: AcctAuthentic = 4;
-
-pub type AcctStatusType = u32;
-pub const ACCT_STATUS_TYPE_START: AcctStatusType = 1;
-pub const ACCT_STATUS_TYPE_STOP: AcctStatusType = 2;
-pub const ACCT_STATUS_TYPE_ALIVE: AcctStatusType = 3;
-pub const ACCT_STATUS_TYPE_INTERIM_UPDATE: AcctStatusType = 3;
-pub const ACCT_STATUS_TYPE_ACCOUNTING_ON: AcctStatusType = 7;
-pub const ACCT_STATUS_TYPE_ACCOUNTING_OFF: AcctStatusType = 8;
-pub const ACCT_STATUS_TYPE_FAILED: AcctStatusType = 15;
-
-pub type AcctTerminateCause = u32;
-pub const ACCT_TERMINATE_CAUSE_USER_REQUEST: AcctTerminateCause = 1;
-pub const ACCT_TERMINATE_CAUSE_LOST_CARRIER: AcctTerminateCause = 2;
-pub const ACCT_TERMINATE_CAUSE_LOST_SERVICE: AcctTerminateCause = 3;
-pub const ACCT_TERMINATE_CAUSE_IDLE_TIMEOUT: AcctTerminateCause = 4;
-pub const ACCT_TERMINATE_CAUSE_SESSION_TIMEOUT: AcctTerminateCause = 5;
-pub const ACCT_TERMINATE_CAUSE_ADMIN_RESET: AcctTerminateCause = 6;
-pub const ACCT_TERMINATE_CAUSE_ADMIN_REBOOT: AcctTerminateCause = 7;
-pub const ACCT_TERMINATE_CAUSE_PORT_ERROR: AcctTerminateCause = 8;
-pub const ACCT_TERMINATE_CAUSE_NAS_ERROR: AcctTerminateCause = 9;
-pub const ACCT_TERMINATE_CAUSE_NAS_REQUEST: AcctTerminateCause = 10;
-pub const ACCT_TERMINATE_CAUSE_NAS_REBOOT: AcctTerminateCause = 11;
-pub const ACCT_TERMINATE_CAUSE_PORT_UNNEEDED: AcctTerminateCause = 12;
-pub const ACCT_TERMINATE_CAUSE_PORT_PREEMPTED: AcctTerminateCause = 13;
-pub const ACCT_TERMINATE_CAUSE_PORT_SUSPENDED: AcctTerminateCause = 14;
-pub const ACCT_TERMINATE_CAUSE_SERVICE_UNAVAILABLE: AcctTerminateCause = 15;
-pub const ACCT_TERMINATE_CAUSE_CALLBACK: AcctTerminateCause = 16;
-pub const ACCT_TERMINATE_CAUSE_USER_ERROR: AcctTerminateCause = 17;
-pub const ACCT_TERMINATE_CAUSE_HOST_REQUEST: AcctTerminateCause = 18;
-
 pub const ACCT_STATUS_TYPE_TYPE: AVPType = 40;
 pub fn delete_acct_status_type(packet: &mut Packet) {
     packet.delete(ACCT_STATUS_TYPE_TYPE);
@@ -277,3 +242,38 @@ pub fn lookup_all_acct_link_count(packet: &Packet) -> Result<Vec<u32>, AVPError>
     }
     Ok(vec)
 }
+
+pub type AcctAuthentic = u32;
+pub const ACCT_AUTHENTIC_RADIUS: AcctAuthentic = 1;
+pub const ACCT_AUTHENTIC_LOCAL: AcctAuthentic = 2;
+pub const ACCT_AUTHENTIC_REMOTE: AcctAuthentic = 3;
+pub const ACCT_AUTHENTIC_DIAMETER: AcctAuthentic = 4;
+
+pub type AcctStatusType = u32;
+pub const ACCT_STATUS_TYPE_START: AcctStatusType = 1;
+pub const ACCT_STATUS_TYPE_STOP: AcctStatusType = 2;
+pub const ACCT_STATUS_TYPE_ALIVE: AcctStatusType = 3;
+pub const ACCT_STATUS_TYPE_INTERIM_UPDATE: AcctStatusType = 3;
+pub const ACCT_STATUS_TYPE_ACCOUNTING_ON: AcctStatusType = 7;
+pub const ACCT_STATUS_TYPE_ACCOUNTING_OFF: AcctStatusType = 8;
+pub const ACCT_STATUS_TYPE_FAILED: AcctStatusType = 15;
+
+pub type AcctTerminateCause = u32;
+pub const ACCT_TERMINATE_CAUSE_USER_REQUEST: AcctTerminateCause = 1;
+pub const ACCT_TERMINATE_CAUSE_LOST_CARRIER: AcctTerminateCause = 2;
+pub const ACCT_TERMINATE_CAUSE_LOST_SERVICE: AcctTerminateCause = 3;
+pub const ACCT_TERMINATE_CAUSE_IDLE_TIMEOUT: AcctTerminateCause = 4;
+pub const ACCT_TERMINATE_CAUSE_SESSION_TIMEOUT: AcctTerminateCause = 5;
+pub const ACCT_TERMINATE_CAUSE_ADMIN_RESET: AcctTerminateCause = 6;
+pub const ACCT_TERMINATE_CAUSE_ADMIN_REBOOT: AcctTerminateCause = 7;
+pub const ACCT_TERMINATE_CAUSE_PORT_ERROR: AcctTerminateCause = 8;
+pub const ACCT_TERMINATE_CAUSE_NAS_ERROR: AcctTerminateCause = 9;
+pub const ACCT_TERMINATE_CAUSE_NAS_REQUEST: AcctTerminateCause = 10;
+pub const ACCT_TERMINATE_CAUSE_NAS_REBOOT: AcctTerminateCause = 11;
+pub const ACCT_TERMINATE_CAUSE_PORT_UNNEEDED: AcctTerminateCause = 12;
+pub const ACCT_TERMINATE_CAUSE_PORT_PREEMPTED: AcctTerminateCause = 13;
+pub const ACCT_TERMINATE_CAUSE_PORT_SUSPENDED: AcctTerminateCause = 14;
+pub const ACCT_TERMINATE_CAUSE_SERVICE_UNAVAILABLE: AcctTerminateCause = 15;
+pub const ACCT_TERMINATE_CAUSE_CALLBACK: AcctTerminateCause = 16;
+pub const ACCT_TERMINATE_CAUSE_USER_ERROR: AcctTerminateCause = 17;
+pub const ACCT_TERMINATE_CAUSE_HOST_REQUEST: AcctTerminateCause = 18;

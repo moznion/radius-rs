@@ -3,26 +3,6 @@
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
-pub type ErrorCause = u32;
-pub const ERROR_CAUSE_RESIDUAL_CONTEXT_REMOVED: ErrorCause = 201;
-pub const ERROR_CAUSE_INVALID_EAP_PACKET: ErrorCause = 202;
-pub const ERROR_CAUSE_UNSUPPORTED_ATTRIBUTE: ErrorCause = 401;
-pub const ERROR_CAUSE_MISSING_ATTRIBUTE: ErrorCause = 402;
-pub const ERROR_CAUSE_NAS_IDENTIFICATION_MISMATCH: ErrorCause = 403;
-pub const ERROR_CAUSE_INVALID_REQUEST: ErrorCause = 404;
-pub const ERROR_CAUSE_UNSUPPORTED_SERVICE: ErrorCause = 405;
-pub const ERROR_CAUSE_UNSUPPORTED_EXTENSION: ErrorCause = 406;
-pub const ERROR_CAUSE_ADMINISTRATIVELY_PROHIBITED: ErrorCause = 501;
-pub const ERROR_CAUSE_PROXY_REQUEST_NOT_ROUTABLE: ErrorCause = 502;
-pub const ERROR_CAUSE_SESSION_CONTEXT_NOT_FOUND: ErrorCause = 503;
-pub const ERROR_CAUSE_SESSION_CONTEXT_NOT_REMOVABLE: ErrorCause = 504;
-pub const ERROR_CAUSE_PROXY_PROCESSING_ERROR: ErrorCause = 505;
-pub const ERROR_CAUSE_RESOURCES_UNAVAILABLE: ErrorCause = 506;
-pub const ERROR_CAUSE_REQUEST_INITIATED: ErrorCause = 507;
-
-pub type ServiceType = u32;
-pub const SERVICE_TYPE_AUTHORIZE_ONLY: ServiceType = 17;
-
 pub const ERROR_CAUSE_TYPE: AVPType = 101;
 pub fn delete_error_cause(packet: &mut Packet) {
     packet.delete(ERROR_CAUSE_TYPE);
@@ -42,3 +22,23 @@ pub fn lookup_all_error_cause(packet: &Packet) -> Result<Vec<ErrorCause>, AVPErr
     }
     Ok(vec)
 }
+
+pub type ErrorCause = u32;
+pub const ERROR_CAUSE_RESIDUAL_CONTEXT_REMOVED: ErrorCause = 201;
+pub const ERROR_CAUSE_INVALID_EAP_PACKET: ErrorCause = 202;
+pub const ERROR_CAUSE_UNSUPPORTED_ATTRIBUTE: ErrorCause = 401;
+pub const ERROR_CAUSE_MISSING_ATTRIBUTE: ErrorCause = 402;
+pub const ERROR_CAUSE_NAS_IDENTIFICATION_MISMATCH: ErrorCause = 403;
+pub const ERROR_CAUSE_INVALID_REQUEST: ErrorCause = 404;
+pub const ERROR_CAUSE_UNSUPPORTED_SERVICE: ErrorCause = 405;
+pub const ERROR_CAUSE_UNSUPPORTED_EXTENSION: ErrorCause = 406;
+pub const ERROR_CAUSE_ADMINISTRATIVELY_PROHIBITED: ErrorCause = 501;
+pub const ERROR_CAUSE_PROXY_REQUEST_NOT_ROUTABLE: ErrorCause = 502;
+pub const ERROR_CAUSE_SESSION_CONTEXT_NOT_FOUND: ErrorCause = 503;
+pub const ERROR_CAUSE_SESSION_CONTEXT_NOT_REMOVABLE: ErrorCause = 504;
+pub const ERROR_CAUSE_PROXY_PROCESSING_ERROR: ErrorCause = 505;
+pub const ERROR_CAUSE_RESOURCES_UNAVAILABLE: ErrorCause = 506;
+pub const ERROR_CAUSE_REQUEST_INITIATED: ErrorCause = 507;
+
+pub type ServiceType = u32;
+pub const SERVICE_TYPE_AUTHORIZE_ONLY: ServiceType = 17;

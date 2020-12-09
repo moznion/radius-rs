@@ -3,10 +3,6 @@
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
-pub type IngressFilters = u32;
-pub const INGRESS_FILTERS_ENABLED: IngressFilters = 1;
-pub const INGRESS_FILTERS_DISABLED: IngressFilters = 2;
-
 pub const EGRESS_VLANID_TYPE: AVPType = 56;
 pub fn delete_egress_vlanid(packet: &mut Packet) {
     packet.delete(EGRESS_VLANID_TYPE);
@@ -84,3 +80,7 @@ pub fn lookup_all_user_priority_table(packet: &Packet) -> Vec<Vec<u8>> {
     }
     vec
 }
+
+pub type IngressFilters = u32;
+pub const INGRESS_FILTERS_ENABLED: IngressFilters = 1;
+pub const INGRESS_FILTERS_DISABLED: IngressFilters = 2;

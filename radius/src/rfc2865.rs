@@ -5,80 +5,6 @@ use std::net::Ipv4Addr;
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
-pub type FramedCompression = u32;
-pub const FRAMED_COMPRESSION_NONE: FramedCompression = 0;
-pub const FRAMED_COMPRESSION_VAN_JACOBSON_TCP_IP: FramedCompression = 1;
-pub const FRAMED_COMPRESSION_IPX_HEADER_COMPRESSION: FramedCompression = 2;
-pub const FRAMED_COMPRESSION_STAC_LZS: FramedCompression = 3;
-
-pub type FramedProtocol = u32;
-pub const FRAMED_PROTOCOL_PPP: FramedProtocol = 1;
-pub const FRAMED_PROTOCOL_SLIP: FramedProtocol = 2;
-pub const FRAMED_PROTOCOL_ARAP: FramedProtocol = 3;
-pub const FRAMED_PROTOCOL_GANDALF_SLML: FramedProtocol = 4;
-pub const FRAMED_PROTOCOL_XYLOGICS_IPX_SLIP: FramedProtocol = 5;
-pub const FRAMED_PROTOCOL_X_75_SYNCHRONOUS: FramedProtocol = 6;
-
-pub type FramedRouting = u32;
-pub const FRAMED_ROUTING_NONE: FramedRouting = 0;
-pub const FRAMED_ROUTING_BROADCAST: FramedRouting = 1;
-pub const FRAMED_ROUTING_LISTEN: FramedRouting = 2;
-pub const FRAMED_ROUTING_BROADCAST_LISTEN: FramedRouting = 3;
-
-pub type LoginService = u32;
-pub const LOGIN_SERVICE_TELNET: LoginService = 0;
-pub const LOGIN_SERVICE_RLOGIN: LoginService = 1;
-pub const LOGIN_SERVICE_TCP_CLEAR: LoginService = 2;
-pub const LOGIN_SERVICE_PORT_MASTER: LoginService = 3;
-pub const LOGIN_SERVICE_LAT: LoginService = 4;
-pub const LOGIN_SERVICE_X25_PAD: LoginService = 5;
-pub const LOGIN_SERVICE_X25_T3POS: LoginService = 6;
-pub const LOGIN_SERVICE_TCP_CLEAR_QUIET: LoginService = 8;
-
-pub type LoginTCPPort = u32;
-pub const LOGIN_TCP_PORT_TELNET: LoginTCPPort = 23;
-pub const LOGIN_TCP_PORT_RLOGIN: LoginTCPPort = 513;
-pub const LOGIN_TCP_PORT_RSH: LoginTCPPort = 514;
-
-pub type NasPortType = u32;
-pub const NAS_PORT_TYPE_ASYNC: NasPortType = 0;
-pub const NAS_PORT_TYPE_SYNC: NasPortType = 1;
-pub const NAS_PORT_TYPE_ISDN: NasPortType = 2;
-pub const NAS_PORT_TYPE_ISDN_V120: NasPortType = 3;
-pub const NAS_PORT_TYPE_ISDN_V110: NasPortType = 4;
-pub const NAS_PORT_TYPE_VIRTUAL: NasPortType = 5;
-pub const NAS_PORT_TYPE_PIAFS: NasPortType = 6;
-pub const NAS_PORT_TYPE_HDLC_CLEAR_CHANNEL: NasPortType = 7;
-pub const NAS_PORT_TYPE_X_25: NasPortType = 8;
-pub const NAS_PORT_TYPE_X_75: NasPortType = 9;
-pub const NAS_PORT_TYPE_G_3_FAX: NasPortType = 10;
-pub const NAS_PORT_TYPE_SDSL: NasPortType = 11;
-pub const NAS_PORT_TYPE_ADSL_CAP: NasPortType = 12;
-pub const NAS_PORT_TYPE_ADSL_DMT: NasPortType = 13;
-pub const NAS_PORT_TYPE_IDSL: NasPortType = 14;
-pub const NAS_PORT_TYPE_ETHERNET: NasPortType = 15;
-pub const NAS_PORT_TYPE_X_DSL: NasPortType = 16;
-pub const NAS_PORT_TYPE_CABLE: NasPortType = 17;
-pub const NAS_PORT_TYPE_WIRELESS_OTHER: NasPortType = 18;
-pub const NAS_PORT_TYPE_WIRELESS_802_11: NasPortType = 19;
-
-pub type ServiceType = u32;
-pub const SERVICE_TYPE_LOGIN_USER: ServiceType = 1;
-pub const SERVICE_TYPE_FRAMED_USER: ServiceType = 2;
-pub const SERVICE_TYPE_CALLBACK_LOGIN_USER: ServiceType = 3;
-pub const SERVICE_TYPE_CALLBACK_FRAMED_USER: ServiceType = 4;
-pub const SERVICE_TYPE_OUTBOUND_USER: ServiceType = 5;
-pub const SERVICE_TYPE_ADMINISTRATIVE_USER: ServiceType = 6;
-pub const SERVICE_TYPE_NAS_PROMPT_USER: ServiceType = 7;
-pub const SERVICE_TYPE_AUTHENTICATE_ONLY: ServiceType = 8;
-pub const SERVICE_TYPE_CALLBACK_NAS_PROMPT: ServiceType = 9;
-pub const SERVICE_TYPE_CALL_CHECK: ServiceType = 10;
-pub const SERVICE_TYPE_CALLBACK_ADMINISTRATIVE: ServiceType = 11;
-
-pub type TerminationAction = u32;
-pub const TERMINATION_ACTION_DEFAULT: TerminationAction = 0;
-pub const TERMINATION_ACTION_RADIUS_REQUEST: TerminationAction = 1;
-
 pub const USER_NAME_TYPE: AVPType = 1;
 pub fn delete_user_name(packet: &mut Packet) {
     packet.delete(USER_NAME_TYPE);
@@ -855,3 +781,77 @@ pub fn lookup_all_login_lat_port(packet: &Packet) -> Result<Vec<String>, AVPErro
     }
     Ok(vec)
 }
+
+pub type FramedCompression = u32;
+pub const FRAMED_COMPRESSION_NONE: FramedCompression = 0;
+pub const FRAMED_COMPRESSION_VAN_JACOBSON_TCP_IP: FramedCompression = 1;
+pub const FRAMED_COMPRESSION_IPX_HEADER_COMPRESSION: FramedCompression = 2;
+pub const FRAMED_COMPRESSION_STAC_LZS: FramedCompression = 3;
+
+pub type FramedProtocol = u32;
+pub const FRAMED_PROTOCOL_PPP: FramedProtocol = 1;
+pub const FRAMED_PROTOCOL_SLIP: FramedProtocol = 2;
+pub const FRAMED_PROTOCOL_ARAP: FramedProtocol = 3;
+pub const FRAMED_PROTOCOL_GANDALF_SLML: FramedProtocol = 4;
+pub const FRAMED_PROTOCOL_XYLOGICS_IPX_SLIP: FramedProtocol = 5;
+pub const FRAMED_PROTOCOL_X_75_SYNCHRONOUS: FramedProtocol = 6;
+
+pub type FramedRouting = u32;
+pub const FRAMED_ROUTING_NONE: FramedRouting = 0;
+pub const FRAMED_ROUTING_BROADCAST: FramedRouting = 1;
+pub const FRAMED_ROUTING_LISTEN: FramedRouting = 2;
+pub const FRAMED_ROUTING_BROADCAST_LISTEN: FramedRouting = 3;
+
+pub type LoginService = u32;
+pub const LOGIN_SERVICE_TELNET: LoginService = 0;
+pub const LOGIN_SERVICE_RLOGIN: LoginService = 1;
+pub const LOGIN_SERVICE_TCP_CLEAR: LoginService = 2;
+pub const LOGIN_SERVICE_PORT_MASTER: LoginService = 3;
+pub const LOGIN_SERVICE_LAT: LoginService = 4;
+pub const LOGIN_SERVICE_X25_PAD: LoginService = 5;
+pub const LOGIN_SERVICE_X25_T3POS: LoginService = 6;
+pub const LOGIN_SERVICE_TCP_CLEAR_QUIET: LoginService = 8;
+
+pub type LoginTCPPort = u32;
+pub const LOGIN_TCP_PORT_TELNET: LoginTCPPort = 23;
+pub const LOGIN_TCP_PORT_RLOGIN: LoginTCPPort = 513;
+pub const LOGIN_TCP_PORT_RSH: LoginTCPPort = 514;
+
+pub type NasPortType = u32;
+pub const NAS_PORT_TYPE_ASYNC: NasPortType = 0;
+pub const NAS_PORT_TYPE_SYNC: NasPortType = 1;
+pub const NAS_PORT_TYPE_ISDN: NasPortType = 2;
+pub const NAS_PORT_TYPE_ISDN_V120: NasPortType = 3;
+pub const NAS_PORT_TYPE_ISDN_V110: NasPortType = 4;
+pub const NAS_PORT_TYPE_VIRTUAL: NasPortType = 5;
+pub const NAS_PORT_TYPE_PIAFS: NasPortType = 6;
+pub const NAS_PORT_TYPE_HDLC_CLEAR_CHANNEL: NasPortType = 7;
+pub const NAS_PORT_TYPE_X_25: NasPortType = 8;
+pub const NAS_PORT_TYPE_X_75: NasPortType = 9;
+pub const NAS_PORT_TYPE_G_3_FAX: NasPortType = 10;
+pub const NAS_PORT_TYPE_SDSL: NasPortType = 11;
+pub const NAS_PORT_TYPE_ADSL_CAP: NasPortType = 12;
+pub const NAS_PORT_TYPE_ADSL_DMT: NasPortType = 13;
+pub const NAS_PORT_TYPE_IDSL: NasPortType = 14;
+pub const NAS_PORT_TYPE_ETHERNET: NasPortType = 15;
+pub const NAS_PORT_TYPE_X_DSL: NasPortType = 16;
+pub const NAS_PORT_TYPE_CABLE: NasPortType = 17;
+pub const NAS_PORT_TYPE_WIRELESS_OTHER: NasPortType = 18;
+pub const NAS_PORT_TYPE_WIRELESS_802_11: NasPortType = 19;
+
+pub type ServiceType = u32;
+pub const SERVICE_TYPE_LOGIN_USER: ServiceType = 1;
+pub const SERVICE_TYPE_FRAMED_USER: ServiceType = 2;
+pub const SERVICE_TYPE_CALLBACK_LOGIN_USER: ServiceType = 3;
+pub const SERVICE_TYPE_CALLBACK_FRAMED_USER: ServiceType = 4;
+pub const SERVICE_TYPE_OUTBOUND_USER: ServiceType = 5;
+pub const SERVICE_TYPE_ADMINISTRATIVE_USER: ServiceType = 6;
+pub const SERVICE_TYPE_NAS_PROMPT_USER: ServiceType = 7;
+pub const SERVICE_TYPE_AUTHENTICATE_ONLY: ServiceType = 8;
+pub const SERVICE_TYPE_CALLBACK_NAS_PROMPT: ServiceType = 9;
+pub const SERVICE_TYPE_CALL_CHECK: ServiceType = 10;
+pub const SERVICE_TYPE_CALLBACK_ADMINISTRATIVE: ServiceType = 11;
+
+pub type TerminationAction = u32;
+pub const TERMINATION_ACTION_DEFAULT: TerminationAction = 0;
+pub const TERMINATION_ACTION_RADIUS_REQUEST: TerminationAction = 1;

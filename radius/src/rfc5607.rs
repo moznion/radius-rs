@@ -3,25 +3,6 @@
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
-pub type FramedManagement = u32;
-pub const FRAMED_MANAGEMENT_SNMP: FramedManagement = 1;
-pub const FRAMED_MANAGEMENT_WEB_BASED: FramedManagement = 2;
-pub const FRAMED_MANAGEMENT_NETCONF: FramedManagement = 3;
-pub const FRAMED_MANAGEMENT_FTP: FramedManagement = 4;
-pub const FRAMED_MANAGEMENT_TFTP: FramedManagement = 5;
-pub const FRAMED_MANAGEMENT_SFTP: FramedManagement = 6;
-pub const FRAMED_MANAGEMENT_RCP: FramedManagement = 7;
-pub const FRAMED_MANAGEMENT_SCP: FramedManagement = 8;
-
-pub type ManagementTransportProtection = u32;
-pub const MANAGEMENT_TRANSPORT_PROTECTION_NO_PROTECTION: ManagementTransportProtection = 1;
-pub const MANAGEMENT_TRANSPORT_PROTECTION_INTEGRITY_PROTECTION: ManagementTransportProtection = 2;
-pub const MANAGEMENT_TRANSPORT_PROTECTION_INTEGRITY_CONFIDENTIALITY_PROTECTION:
-    ManagementTransportProtection = 3;
-
-pub type ServiceType = u32;
-pub const SERVICE_TYPE_FRAMED_MANAGEMENT: ServiceType = 18;
-
 pub const FRAMED_MANAGEMENT_TYPE: AVPType = 133;
 pub fn delete_framed_management(packet: &mut Packet) {
     packet.delete(FRAMED_MANAGEMENT_TYPE);
@@ -111,3 +92,22 @@ pub fn lookup_all_management_privilege_level(packet: &Packet) -> Result<Vec<u32>
     }
     Ok(vec)
 }
+
+pub type FramedManagement = u32;
+pub const FRAMED_MANAGEMENT_SNMP: FramedManagement = 1;
+pub const FRAMED_MANAGEMENT_WEB_BASED: FramedManagement = 2;
+pub const FRAMED_MANAGEMENT_NETCONF: FramedManagement = 3;
+pub const FRAMED_MANAGEMENT_FTP: FramedManagement = 4;
+pub const FRAMED_MANAGEMENT_TFTP: FramedManagement = 5;
+pub const FRAMED_MANAGEMENT_SFTP: FramedManagement = 6;
+pub const FRAMED_MANAGEMENT_RCP: FramedManagement = 7;
+pub const FRAMED_MANAGEMENT_SCP: FramedManagement = 8;
+
+pub type ManagementTransportProtection = u32;
+pub const MANAGEMENT_TRANSPORT_PROTECTION_NO_PROTECTION: ManagementTransportProtection = 1;
+pub const MANAGEMENT_TRANSPORT_PROTECTION_INTEGRITY_PROTECTION: ManagementTransportProtection = 2;
+pub const MANAGEMENT_TRANSPORT_PROTECTION_INTEGRITY_CONFIDENTIALITY_PROTECTION:
+    ManagementTransportProtection = 3;
+
+pub type ServiceType = u32;
+pub const SERVICE_TYPE_FRAMED_MANAGEMENT: ServiceType = 18;

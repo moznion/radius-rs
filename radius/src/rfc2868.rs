@@ -4,38 +4,6 @@ use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 use crate::tag::Tag;
 
-pub type TunnelMediumType = u32;
-pub const TUNNEL_MEDIUM_TYPE_IP: TunnelMediumType = 1;
-pub const TUNNEL_MEDIUM_TYPE_I_PV_4: TunnelMediumType = 1;
-pub const TUNNEL_MEDIUM_TYPE_I_PV_6: TunnelMediumType = 2;
-pub const TUNNEL_MEDIUM_TYPE_NSAP: TunnelMediumType = 3;
-pub const TUNNEL_MEDIUM_TYPE_HDLC: TunnelMediumType = 4;
-pub const TUNNEL_MEDIUM_TYPE_BBN_1822: TunnelMediumType = 5;
-pub const TUNNEL_MEDIUM_TYPE_IEEE_802: TunnelMediumType = 6;
-pub const TUNNEL_MEDIUM_TYPE_E_163: TunnelMediumType = 7;
-pub const TUNNEL_MEDIUM_TYPE_E_164: TunnelMediumType = 8;
-pub const TUNNEL_MEDIUM_TYPE_F_69: TunnelMediumType = 9;
-pub const TUNNEL_MEDIUM_TYPE_X_121: TunnelMediumType = 10;
-pub const TUNNEL_MEDIUM_TYPE_IPX: TunnelMediumType = 11;
-pub const TUNNEL_MEDIUM_TYPE_APPLETALK: TunnelMediumType = 12;
-pub const TUNNEL_MEDIUM_TYPE_DEC_NET_IV: TunnelMediumType = 13;
-pub const TUNNEL_MEDIUM_TYPE_BANYAN_VINES: TunnelMediumType = 14;
-pub const TUNNEL_MEDIUM_TYPE_E_164_NSAP: TunnelMediumType = 15;
-
-pub type TunnelType = u32;
-pub const TUNNEL_TYPE_PPTP: TunnelType = 1;
-pub const TUNNEL_TYPE_L2F: TunnelType = 2;
-pub const TUNNEL_TYPE_L2TP: TunnelType = 3;
-pub const TUNNEL_TYPE_ATMP: TunnelType = 4;
-pub const TUNNEL_TYPE_VTP: TunnelType = 5;
-pub const TUNNEL_TYPE_AH: TunnelType = 6;
-pub const TUNNEL_TYPE_IP: TunnelType = 7;
-pub const TUNNEL_TYPE_MIN_IP: TunnelType = 8;
-pub const TUNNEL_TYPE_ESP: TunnelType = 9;
-pub const TUNNEL_TYPE_GRE: TunnelType = 10;
-pub const TUNNEL_TYPE_DVS: TunnelType = 11;
-pub const TUNNEL_TYPE_IP_IN_IP: TunnelType = 12;
-
 pub const TUNNEL_TYPE_TYPE: AVPType = 64;
 pub fn delete_tunnel_type(packet: &mut Packet) {
     packet.delete(TUNNEL_TYPE_TYPE);
@@ -306,3 +274,35 @@ pub fn lookup_all_tunnel_server_auth_id(
     }
     Ok(vec)
 }
+
+pub type TunnelMediumType = u32;
+pub const TUNNEL_MEDIUM_TYPE_IP: TunnelMediumType = 1;
+pub const TUNNEL_MEDIUM_TYPE_I_PV_4: TunnelMediumType = 1;
+pub const TUNNEL_MEDIUM_TYPE_I_PV_6: TunnelMediumType = 2;
+pub const TUNNEL_MEDIUM_TYPE_NSAP: TunnelMediumType = 3;
+pub const TUNNEL_MEDIUM_TYPE_HDLC: TunnelMediumType = 4;
+pub const TUNNEL_MEDIUM_TYPE_BBN_1822: TunnelMediumType = 5;
+pub const TUNNEL_MEDIUM_TYPE_IEEE_802: TunnelMediumType = 6;
+pub const TUNNEL_MEDIUM_TYPE_E_163: TunnelMediumType = 7;
+pub const TUNNEL_MEDIUM_TYPE_E_164: TunnelMediumType = 8;
+pub const TUNNEL_MEDIUM_TYPE_F_69: TunnelMediumType = 9;
+pub const TUNNEL_MEDIUM_TYPE_X_121: TunnelMediumType = 10;
+pub const TUNNEL_MEDIUM_TYPE_IPX: TunnelMediumType = 11;
+pub const TUNNEL_MEDIUM_TYPE_APPLETALK: TunnelMediumType = 12;
+pub const TUNNEL_MEDIUM_TYPE_DEC_NET_IV: TunnelMediumType = 13;
+pub const TUNNEL_MEDIUM_TYPE_BANYAN_VINES: TunnelMediumType = 14;
+pub const TUNNEL_MEDIUM_TYPE_E_164_NSAP: TunnelMediumType = 15;
+
+pub type TunnelType = u32;
+pub const TUNNEL_TYPE_PPTP: TunnelType = 1;
+pub const TUNNEL_TYPE_L2F: TunnelType = 2;
+pub const TUNNEL_TYPE_L2TP: TunnelType = 3;
+pub const TUNNEL_TYPE_ATMP: TunnelType = 4;
+pub const TUNNEL_TYPE_VTP: TunnelType = 5;
+pub const TUNNEL_TYPE_AH: TunnelType = 6;
+pub const TUNNEL_TYPE_IP: TunnelType = 7;
+pub const TUNNEL_TYPE_MIN_IP: TunnelType = 8;
+pub const TUNNEL_TYPE_ESP: TunnelType = 9;
+pub const TUNNEL_TYPE_GRE: TunnelType = 10;
+pub const TUNNEL_TYPE_DVS: TunnelType = 11;
+pub const TUNNEL_TYPE_IP_IN_IP: TunnelType = 12;

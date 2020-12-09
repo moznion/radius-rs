@@ -3,14 +3,6 @@
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
-pub type AcctStatusType = u32;
-pub const ACCT_STATUS_TYPE_TUNNEL_START: AcctStatusType = 9;
-pub const ACCT_STATUS_TYPE_TUNNEL_STOP: AcctStatusType = 10;
-pub const ACCT_STATUS_TYPE_TUNNEL_REJECT: AcctStatusType = 11;
-pub const ACCT_STATUS_TYPE_TUNNEL_LINK_START: AcctStatusType = 12;
-pub const ACCT_STATUS_TYPE_TUNNEL_LINK_STOP: AcctStatusType = 13;
-pub const ACCT_STATUS_TYPE_TUNNEL_LINK_REJECT: AcctStatusType = 14;
-
 pub const ACCT_TUNNEL_CONNECTION_TYPE: AVPType = 68;
 pub fn delete_acct_tunnel_connection(packet: &mut Packet) {
     packet.delete(ACCT_TUNNEL_CONNECTION_TYPE);
@@ -50,3 +42,11 @@ pub fn lookup_all_acct_tunnel_packets_lost(packet: &Packet) -> Result<Vec<u32>, 
     }
     Ok(vec)
 }
+
+pub type AcctStatusType = u32;
+pub const ACCT_STATUS_TYPE_TUNNEL_START: AcctStatusType = 9;
+pub const ACCT_STATUS_TYPE_TUNNEL_STOP: AcctStatusType = 10;
+pub const ACCT_STATUS_TYPE_TUNNEL_REJECT: AcctStatusType = 11;
+pub const ACCT_STATUS_TYPE_TUNNEL_LINK_START: AcctStatusType = 12;
+pub const ACCT_STATUS_TYPE_TUNNEL_LINK_STOP: AcctStatusType = 13;
+pub const ACCT_STATUS_TYPE_TUNNEL_LINK_REJECT: AcctStatusType = 14;

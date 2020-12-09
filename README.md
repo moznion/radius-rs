@@ -44,7 +44,6 @@ This supports the following RFC dictionaries at the moment:
 
 ## Roadmap
 
-- retransmission feature on the client
 - Support the following RFC dictionaries:
   - rfc4679
   - rfc5447

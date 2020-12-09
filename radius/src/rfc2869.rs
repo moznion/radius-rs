@@ -5,15 +5,6 @@ use chrono::{DateTime, Utc};
 use crate::avp::{AVPError, AVPType, AVP};
 use crate::packet::Packet;
 
-pub type ArapZoneAccess = u32;
-pub const ARAP_ZONE_ACCESS_DEFAULT_ZONE: ArapZoneAccess = 1;
-pub const ARAP_ZONE_ACCESS_ZONE_FILTER_INCLUSIVE: ArapZoneAccess = 2;
-pub const ARAP_ZONE_ACCESS_ZONE_FILTER_EXCLUSIVE: ArapZoneAccess = 4;
-
-pub type Prompt = u32;
-pub const PROMPT_NO_ECHO: Prompt = 0;
-pub const PROMPT_ECHO: Prompt = 1;
-
 pub const ACCT_INPUT_GIGAWORDS_TYPE: AVPType = 52;
 pub fn delete_acct_input_gigawords(packet: &mut Packet) {
     packet.delete(ACCT_INPUT_GIGAWORDS_TYPE);
@@ -372,3 +363,12 @@ pub fn lookup_all_framed_pool(packet: &Packet) -> Result<Vec<String>, AVPError> 
     }
     Ok(vec)
 }
+
+pub type ArapZoneAccess = u32;
+pub const ARAP_ZONE_ACCESS_DEFAULT_ZONE: ArapZoneAccess = 1;
+pub const ARAP_ZONE_ACCESS_ZONE_FILTER_INCLUSIVE: ArapZoneAccess = 2;
+pub const ARAP_ZONE_ACCESS_ZONE_FILTER_EXCLUSIVE: ArapZoneAccess = 4;
+
+pub type Prompt = u32;
+pub const PROMPT_NO_ECHO: Prompt = 0;
+pub const PROMPT_ECHO: Prompt = 1;
