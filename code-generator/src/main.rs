@@ -925,18 +925,11 @@ fn parse_dict_file(dict_file_path: &Path) -> Result<DictParsed, String> {
                     }
                     Err(_) => {
                         // XXX ad-hoc
-                        let cap = fixed_length_octets_re.captures(items[3]);
-                        if cap.is_some() {
+                        let maybe_cap = fixed_length_octets_re.captures(items[3]);
+                        if let Some(cap) = maybe_cap {
                             (
                                 RadiusAttributeValueType::Octets,
-                                Some(
-                                    cap.unwrap()
-                                        .get(1)
-                                        .unwrap()
-                                        .as_str()
-                                        .parse::<usize>()
-                                        .unwrap(),
-                                ),
+                                Some(cap.get(1).unwrap().as_str().parse::<usize>().unwrap()),
                             )
                         } else {
                             return Err(format!("invalid type has come => {}", items[3]));
