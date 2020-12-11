@@ -219,7 +219,7 @@ impl AVP {
             let mut chunk_vec = chunk.to_vec();
             let l = chunk.len();
             if l < 16 {
-                chunk_vec.extend(vec![0 as u8; 16 - l]); // zero padding
+                chunk_vec.extend(vec![0; 16 - l]); // zero padding
             }
 
             let enc_block = md5::compute([secret, &buff[..]].concat()).to_vec();
@@ -319,7 +319,7 @@ impl AVP {
             let mut chunk_vec = chunk.to_vec();
             let l = chunk.len();
             if l < 16 {
-                chunk_vec.extend(vec![0 as u8; 16 - l]); // zero padding
+                chunk_vec.extend(vec![0; 16 - l]); // zero padding
             }
 
             let enc_block = md5::compute([secret, &buff[..]].concat()).to_vec();
