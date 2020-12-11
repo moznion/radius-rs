@@ -93,6 +93,7 @@ impl Server {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn process_request<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider>(
         conn: Arc<UdpSocket>,
         request_data: &[u8],
@@ -131,7 +132,7 @@ impl Server {
                     e
                 );
                 debug!("failed request data => {:?}", request_data);
-                // TODO error handler?
+                // TODO error handler support?
                 return;
             }
         };
