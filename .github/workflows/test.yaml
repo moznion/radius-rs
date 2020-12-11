@@ -14,6 +14,8 @@ jobs:
       with:
         rust-version: ${{ matrix.rust }}
     - uses: actions/checkout@v2
+    - name: install clippy
+      run: rustup component add clippy
     - name: Run checks
       run: make check
 
