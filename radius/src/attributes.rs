@@ -60,15 +60,7 @@ impl Attributes {
     }
 
     pub(crate) fn lookup_all(&self, typ: AVPType) -> Vec<&AVP> {
-        self.0
-            .iter()
-            .filter_map(|avp| {
-                if avp.typ == typ {
-                    return Some(avp);
-                }
-                None
-            })
-            .collect()
+        self.0.iter().filter(|&avp| avp.typ == typ).collect()
     }
 
     pub(crate) fn encode(&self) -> Result<Vec<u8>, String> {
