@@ -289,6 +289,10 @@ mod tests {
             "nemo"
         );
         assert_eq!(
+            rfc2865::lookup_all_user_name(&request_packet).unwrap(),
+            vec!["nemo"],
+        );
+        assert_eq!(
             rfc2865::lookup_user_password(&request_packet)
                 .unwrap()
                 .unwrap(),
@@ -320,6 +324,17 @@ mod tests {
         assert_eq!(
             Packet::is_authentic_response(&response, &request, &secret),
             true
+        );
+
+        // test removing a AVP
+        assert_eq!(
+            rfc2865::lookup_service_type(&response_packet).is_some(),
+            true
+        );
+        rfc2865::delete_service_type(&mut response_packet);
+        assert_eq!(
+            rfc2865::lookup_service_type(&response_packet).is_some(),
+            false
         );
 
         Ok(())
