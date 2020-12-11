@@ -9,7 +9,10 @@ pub fn delete_originating_line_info(packet: &mut Packet) {
 }
 pub fn add_originating_line_info(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
     if value.len() != 2 {
-        return Err(AVPError::InvalidAttributeLengthError(2));
+        return Err(AVPError::InvalidAttributeLengthError(
+            "2 bytes".to_owned(),
+            value.len(),
+        ));
     }
     packet.add(AVP::from_bytes(ORIGINATING_LINE_INFO_TYPE, value));
     Ok(())

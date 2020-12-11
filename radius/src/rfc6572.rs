@@ -181,7 +181,10 @@ pub fn delete_pmip6_home_interface_id(packet: &mut Packet) {
 }
 pub fn add_pmip6_home_interface_id(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
     if value.len() != 8 {
-        return Err(AVPError::InvalidAttributeLengthError(8));
+        return Err(AVPError::InvalidAttributeLengthError(
+            "8 bytes".to_owned(),
+            value.len(),
+        ));
     }
     packet.add(AVP::from_bytes(PMIP6_HOME_INTERFACE_ID_TYPE, value));
     Ok(())
@@ -205,7 +208,10 @@ pub fn delete_pmip6_visited_interface_id(packet: &mut Packet) {
 }
 pub fn add_pmip6_visited_interface_id(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
     if value.len() != 8 {
-        return Err(AVPError::InvalidAttributeLengthError(8));
+        return Err(AVPError::InvalidAttributeLengthError(
+            "8 bytes".to_owned(),
+            value.len(),
+        ));
     }
     packet.add(AVP::from_bytes(PMIP6_VISITED_INTERFACE_ID_TYPE, value));
     Ok(())

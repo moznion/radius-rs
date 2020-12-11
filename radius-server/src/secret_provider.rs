@@ -4,8 +4,12 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum SecretProviderError {
-    #[error("failed to fetch a secret value => `{0}`")]
-    FailedFetching(String),
+    /// An error that represents a failure to fetch a secret value from the provider.
+    #[error("failed to fetch a secret value: {0}")]
+    FailedFetchingError(String),
+    /// An error that represents a generic (i.e. unclassified) error that occurs on the secret value provider.
+    #[error("unexpected error: {0}")]
+    GenericError(String),
 }
 
 /// SecretProvider is a provider for secret value.

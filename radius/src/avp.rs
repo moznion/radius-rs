@@ -9,23 +9,39 @@ use crate::tag::{Tag, UNUSED_TAG_VALUE};
 
 #[derive(Error, PartialEq, Debug)]
 pub enum AVPError {
-    #[error(
-        "the maximum length of the plain text is 128, but the given value is longer than that"
-    )]
-    PlainTextMaximumLengthExceededError(),
-    #[error("secret hasn't be empty, but the given value is empty")]
-    SecretMissingError(),
-    #[error("request authenticator has to have 16-bytes payload, but the given value doesn't")]
+    /// This error is raised on the length of given plain text for user-password exceeds the maximum limit.
+    #[error("the maximum length of the plain text for user-password is 128, but the given value has {0} bytes")]
+    UserPasswordPlainTextMaximumLengthExceededError(usize),
+
+    /// This error is raised when the given secret value for a password is empty.
+    #[error("secret for password mustn't be empty, but the given value is empty")]
+    PasswordSecretMissingError(),
+
+    /// This error is raised when the given request-authenticator for the password doesn't have 16 bytes length exactly.
+    #[error("request authenticator for password has to have 16-bytes payload, but the given value doesn't")]
     InvalidRequestAuthenticatorLength(),
-    #[error("invalid attribute length: {0}")]
-    InvalidAttributeLengthError(usize),
-    // ^ TODO: more meaningful error message
-    #[error("unexpected decoding error: {0}")]
-    UnexpectedDecodingError(String),
+
+    /// This error is raised when attribute length is conflicted with the expected.
+    #[error("invalid attribute length: expected={0}, actual={1} bytes")]
+    InvalidAttributeLengthError(String, usize),
+
+    /// This error is raised when the tagged-value doesn't have a tag byte.
+    #[error("tag value is missing")]
+    TagMissingError(),
+
+    /// This error represents AVP decoding error.
+    #[error("decoding error: {0}")]
+    DecodingError(String),
+
+    /// This error is raised when the MSB of salt is invalid.
     #[error("invalid salt. the MSB has to be 1, but given value isn't: {0}")]
     InvalidSaltMSBError(u8),
+
+    /// This error is raised when a tag is invalid for the tagged-staring value.
     #[error("invalid tag for string value. this must not be zero")]
     InvalidTagForStringValueError(),
+
+    /// This error is raised when a tag is invalid for the tagged-integer value.
     #[error("invalid tag for integer value. this must be less than or equal 0x1f")]
     InvalidTagForIntegerValueError(),
 }
@@ -115,7 +131,10 @@ impl AVP {
     pub fn from_ipv4_prefix(typ: AVPType, prefix: &[u8]) -> Result<Self, AVPError> {
         let prefix_len = prefix.len();
         if prefix_len != 4 {
-            return Err(AVPError::InvalidAttributeLengthError(prefix_len));
+            return Err(AVPError::InvalidAttributeLengthError(
+                "4 bytes".to_owned(),
+                prefix_len,
+            ));
         }
 
         Ok(AVP {
@@ -136,7 +155,10 @@ impl AVP {
     pub fn from_ipv6_prefix(typ: AVPType, prefix: &[u8]) -> Result<Self, AVPError> {
         let prefix_len = prefix.len();
         if prefix_len > 16 {
-            return Err(AVPError::InvalidAttributeLengthError(prefix_len));
+            return Err(AVPError::InvalidAttributeLengthError(
+                "16 bytes".to_owned(),
+                prefix_len,
+            ));
         }
 
         Ok(AVP {
@@ -169,11 +191,13 @@ impl AVP {
         // ref: https://tools.ietf.org/html/rfc2865#section-5.2
 
         if plain_text.len() > 128 {
-            return Err(AVPError::PlainTextMaximumLengthExceededError());
+            return Err(AVPError::UserPasswordPlainTextMaximumLengthExceededError(
+                plain_text.len(),
+            ));
         }
 
         if secret.is_empty() {
-            return Err(AVPError::SecretMissingError());
+            return Err(AVPError::PasswordSecretMissingError());
         }
 
         if request_authenticator.len() != 16 {
@@ -251,6 +275,7 @@ impl AVP {
 
         if request_authenticator.len() > 240 {
             return Err(AVPError::InvalidAttributeLengthError(
+                "240 bytes".to_owned(),
                 request_authenticator.len(),
             ));
         }
@@ -259,7 +284,7 @@ impl AVP {
         let salt: [u8; 2] = [rng.gen::<u8>() | 0x80, rng.gen::<u8>()];
 
         if secret.is_empty() {
-            return Err(AVPError::SecretMissingError());
+            return Err(AVPError::PasswordSecretMissingError());
         }
 
         if request_authenticator.len() != 16 {
@@ -313,13 +338,16 @@ impl AVP {
     pub fn encode_u32(&self) -> Result<u32, AVPError> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+            return Err(AVPError::InvalidAttributeLengthError(
+                format!("{} bytes", U32_SIZE),
+                self.value.len(),
+            ));
         }
 
         let (int_bytes, _) = self.value.split_at(U32_SIZE);
         match int_bytes.try_into() {
             Ok(boxed_array) => Ok(u32::from_be_bytes(boxed_array)),
-            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
     }
 
@@ -327,20 +355,23 @@ impl AVP {
     pub fn encode_u16(&self) -> Result<u16, AVPError> {
         const U16_SIZE: usize = std::mem::size_of::<u16>();
         if self.value.len() != U16_SIZE {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+            return Err(AVPError::InvalidAttributeLengthError(
+                format!("{} bytes", U16_SIZE),
+                self.value.len(),
+            ));
         }
 
         let (int_bytes, _) = self.value.split_at(U16_SIZE);
         match int_bytes.try_into() {
             Ok(boxed_array) => Ok(u16::from_be_bytes(boxed_array)),
-            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
     }
 
     /// (This method is for dictionary developers) encode an AVP into a tag and u32 value.
     pub fn encode_tagged_u32(&self) -> Result<(u32, Tag), AVPError> {
         if self.value.is_empty() {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+            return Err(AVPError::TagMissingError());
         }
 
         let tag = Tag {
@@ -356,12 +387,15 @@ impl AVP {
 
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value[1..].len() != U32_SIZE {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+            return Err(AVPError::InvalidAttributeLengthError(
+                format!("{} bytes", U32_SIZE + 1),
+                self.value.len(),
+            ));
         }
         let (int_bytes, _) = self.value[1..].split_at(U32_SIZE);
         match int_bytes.try_into() {
             Ok(boxed_array) => Ok((u32::from_be_bytes(boxed_array), tag)),
-            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
     }
 
@@ -369,7 +403,7 @@ impl AVP {
     pub fn encode_string(&self) -> Result<String, AVPError> {
         match String::from_utf8(self.value.to_vec()) {
             Ok(str) => Ok(str),
-            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
     }
 
@@ -377,7 +411,7 @@ impl AVP {
     pub fn encode_tagged_string(&self) -> Result<(String, Option<Tag>), AVPError> {
         let string_vec = self.value.to_vec();
         if string_vec.is_empty() {
-            return Err(AVPError::InvalidAttributeLengthError(string_vec.len()));
+            return Err(AVPError::TagMissingError());
         }
 
         let tag = Tag {
@@ -392,7 +426,7 @@ impl AVP {
         if tag.is_valid_value() {
             return match String::from_utf8(string_vec[1..].to_vec()) {
                 Ok(str) => Ok((str, Some(tag))),
-                Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+                Err(e) => Err(AVPError::DecodingError(e.to_string())),
             };
         }
 
@@ -405,7 +439,7 @@ impl AVP {
         //   interpreted as the first byte of the following String field.
         match String::from_utf8(self.value.to_vec()) {
             Ok(str) => Ok((str, None)),
-            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
     }
 
@@ -418,13 +452,16 @@ impl AVP {
     pub fn encode_ipv4(&self) -> Result<Ipv4Addr, AVPError> {
         const IPV4_SIZE: usize = std::mem::size_of::<Ipv4Addr>();
         if self.value.len() != IPV4_SIZE {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+            return Err(AVPError::InvalidAttributeLengthError(
+                format!("{} bytes", IPV4_SIZE),
+                self.value.len(),
+            ));
         }
 
         let (int_bytes, _) = self.value.split_at(IPV4_SIZE);
         match int_bytes.try_into() {
             Ok::<[u8; IPV4_SIZE], _>(boxed_array) => Ok(Ipv4Addr::from(boxed_array)),
-            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
     }
 
@@ -432,7 +469,10 @@ impl AVP {
     pub fn encode_ipv4_prefix(&self) -> Result<Vec<u8>, AVPError> {
         match self.value.len() == 6 {
             true => Ok(self.value[2..].to_owned()),
-            false => Err(AVPError::InvalidAttributeLengthError(self.value.len())),
+            false => Err(AVPError::InvalidAttributeLengthError(
+                "6 bytes".to_owned(),
+                self.value.len(),
+            )),
         }
     }
 
@@ -440,13 +480,16 @@ impl AVP {
     pub fn encode_ipv6(&self) -> Result<Ipv6Addr, AVPError> {
         const IPV6_SIZE: usize = std::mem::size_of::<Ipv6Addr>();
         if self.value.len() != IPV6_SIZE {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+            return Err(AVPError::InvalidAttributeLengthError(
+                format!("{} bytes", IPV6_SIZE),
+                self.value.len(),
+            ));
         }
 
         let (int_bytes, _) = self.value.split_at(IPV6_SIZE);
         match int_bytes.try_into() {
             Ok::<[u8; IPV6_SIZE], _>(boxed_array) => Ok(Ipv6Addr::from(boxed_array)),
-            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
     }
 
@@ -454,7 +497,10 @@ impl AVP {
     pub fn encode_ipv6_prefix(&self) -> Result<Vec<u8>, AVPError> {
         match self.value.len() >= 2 {
             true => Ok(self.value[2..].to_owned()),
-            false => Err(AVPError::InvalidAttributeLengthError(self.value.len())),
+            false => Err(AVPError::InvalidAttributeLengthError(
+                "2+ bytes".to_owned(),
+                self.value.len(),
+            )),
         }
     }
 
@@ -465,11 +511,14 @@ impl AVP {
         request_authenticator: &[u8],
     ) -> Result<Vec<u8>, AVPError> {
         if self.value.len() < 16 || self.value.len() > 128 {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+            return Err(AVPError::InvalidAttributeLengthError(
+                "16 >= bytes && 128 <= bytes".to_owned(),
+                self.value.len(),
+            ));
         }
 
         if secret.is_empty() {
-            return Err(AVPError::SecretMissingError());
+            return Err(AVPError::PasswordSecretMissingError());
         }
 
         if request_authenticator.len() != 16 {
@@ -506,7 +555,10 @@ impl AVP {
     pub fn encode_date(&self) -> Result<DateTime<Utc>, AVPError> {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+            return Err(AVPError::InvalidAttributeLengthError(
+                format!("{}", U32_SIZE),
+                self.value.len(),
+            ));
         }
 
         let (int_bytes, _) = self.value.split_at(U32_SIZE);
@@ -515,7 +567,7 @@ impl AVP {
                 let timestamp = u32::from_be_bytes(boxed_array);
                 Ok(Utc.timestamp(timestamp as i64, 0))
             }
-            Err(e) => Err(AVPError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
     }
 
@@ -525,11 +577,11 @@ impl AVP {
         secret: &[u8],
         request_authenticator: &[u8],
     ) -> Result<(Vec<u8>, Tag), AVPError> {
-        if self.value.len() - 3 < 16
-            || self.value.len() - 3 > 240
-            || (self.value.len() - 3) % 16 != 0
-        {
-            return Err(AVPError::InvalidAttributeLengthError(self.value.len()));
+        if self.value.len() < 19 || self.value.len() > 243 || (self.value.len() - 3) % 16 != 0 {
+            return Err(AVPError::InvalidAttributeLengthError(
+                "19 <= bytes && bytes <= 242 && (bytes - 3) % 16 == 0".to_owned(),
+                self.value.len(),
+            ));
         }
 
         if self.value[1] & 0x80 != 0x80 {
@@ -538,7 +590,7 @@ impl AVP {
         }
 
         if secret.is_empty() {
-            return Err(AVPError::SecretMissingError());
+            return Err(AVPError::PasswordSecretMissingError());
         }
 
         if request_authenticator.len() != 16 {
@@ -804,10 +856,16 @@ mod tests {
     #[test]
     fn should_convert_ipv4_prefix_fail_because_of_invalid_prefix_length() {
         let avp = AVP::from_ipv4_prefix(1, &[0x01, 0x02, 0x03]);
-        assert_eq!(avp.unwrap_err(), AVPError::InvalidAttributeLengthError(3));
+        assert_eq!(
+            avp.unwrap_err(),
+            AVPError::InvalidAttributeLengthError("4 bytes".to_owned(), 3)
+        );
 
         let avp = AVP::from_ipv4_prefix(1, &[0x01, 0x02, 0x03, 0x04, 0x05]);
-        assert_eq!(avp.unwrap_err(), AVPError::InvalidAttributeLengthError(5));
+        assert_eq!(
+            avp.unwrap_err(),
+            AVPError::InvalidAttributeLengthError("4 bytes".to_owned(), 5)
+        );
 
         assert_eq!(
             AVP {
@@ -816,7 +874,7 @@ mod tests {
             }
             .encode_ipv4_prefix()
             .unwrap_err(),
-            AVPError::InvalidAttributeLengthError(0)
+            AVPError::InvalidAttributeLengthError("6 bytes".to_owned(), 0)
         );
     }
 
@@ -849,6 +907,9 @@ mod tests {
                 0x0e, 0x0f, 0x10,
             ],
         );
-        assert_eq!(avp.unwrap_err(), AVPError::InvalidAttributeLengthError(17));
+        assert_eq!(
+            avp.unwrap_err(),
+            AVPError::InvalidAttributeLengthError("16 bytes".to_owned(), 17)
+        );
     }
 }

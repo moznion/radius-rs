@@ -12,17 +12,28 @@ const RADIUS_PACKET_HEADER_LENGTH: usize = 20; // i.e. minimum packet length
 
 #[derive(Error, Debug, PartialEq)]
 pub enum PacketError {
-    #[error("radius packet doesn't have enough length of bytes; it has to be at least {0} bytes")]
-    InsufficientPacketLengthError(usize),
-    #[error("invalid radius packet length: {0}")]
-    InvalidPacketLengthError(usize),
-    #[error("unexpected decoding error: {0}")]
-    UnexpectedDecodingError(String),
+    /// An error indicates the entire length of the given packet has insufficient length.
+    #[error("RADIUS packet doesn't have enough length of bytes; it has to be at least {0} bytes, but actual length was {1}")]
+    InsufficientPacketPayloadLengthError(usize, usize),
+
+    /// An error indicates the length that is instructed by a header is insufficient.
+    #[error("RADIUS packet header indicates the length as {0} bytes, but this is insufficient; this must have {1} bytes at least")]
+    InsufficientHeaderDefinedPacketLengthError(usize, usize),
+
+    /// An error indicates the length that is instructed by a header exceeds the maximum length of the RADIUS packet.
+    #[error("RADIUS packet header indicates the length as {0} bytes, but this exceeds the maximum length {1} bytes")]
+    HeaderDefinedPacketLengthExceedsMaximumLimitError(usize, usize),
+
+    /// An error that is raised when an error has been occurred on decoding bytes for a packet.
     #[error("failed to decode the packet: {0}")]
     DecodingError(String),
+
+    /// An error that is raised when an error has been occurred on encoding a packet into bytes.
     #[error("failed to encode the packet: {0}")]
     EncodingError(String),
-    #[error("Unknown radius packet code: {0}")]
+
+    /// An error that is raised when it received unknown packet type code of RADIUS.
+    #[error("Unknown RADIUS packet type code: {0}")]
     UnknownCodeError(String),
 }
 
@@ -69,17 +80,35 @@ impl Packet {
     /// This decodes bytes into a Packet.
     pub fn decode(bs: &[u8], secret: &[u8]) -> Result<Self, PacketError> {
         if bs.len() < RADIUS_PACKET_HEADER_LENGTH {
-            return Err(PacketError::InsufficientPacketLengthError(
+            return Err(PacketError::InsufficientPacketPayloadLengthError(
                 RADIUS_PACKET_HEADER_LENGTH,
+                bs.len(),
             ));
         }
 
         let len = match bs[2..4].try_into() {
             Ok(v) => u16::from_be_bytes(v),
-            Err(e) => return Err(PacketError::UnexpectedDecodingError(e.to_string())),
+            Err(e) => return Err(PacketError::DecodingError(e.to_string())),
         } as usize;
-        if len < RADIUS_PACKET_HEADER_LENGTH || len > MAX_PACKET_LENGTH || bs.len() < len {
-            return Err(PacketError::InvalidPacketLengthError(len));
+        if len < RADIUS_PACKET_HEADER_LENGTH {
+            return Err(PacketError::InsufficientHeaderDefinedPacketLengthError(
+                len,
+                RADIUS_PACKET_HEADER_LENGTH,
+            ));
+        }
+        if len > MAX_PACKET_LENGTH {
+            return Err(
+                PacketError::HeaderDefinedPacketLengthExceedsMaximumLimitError(
+                    len,
+                    MAX_PACKET_LENGTH,
+                ),
+            );
+        }
+        if bs.len() < len {
+            return Err(PacketError::InsufficientPacketPayloadLengthError(
+                len,
+                bs.len(),
+            ));
         }
 
         let attributes = match Attributes::decode(&bs[RADIUS_PACKET_HEADER_LENGTH..len].to_vec()) {
@@ -266,7 +295,7 @@ mod tests {
 
     use crate::avp::AVP;
     use crate::code::Code;
-    use crate::packet::{Packet, PacketError};
+    use crate::packet::{Packet, PacketError, MAX_PACKET_LENGTH, RADIUS_PACKET_HEADER_LENGTH};
     use crate::rfc2865;
 
     #[test]
@@ -468,19 +497,19 @@ mod tests {
         let test_cases = &[
             TestCase {
                 plain_text: "\x01",
-                expected_error: PacketError::InsufficientPacketLengthError(20),
+                expected_error: PacketError::InsufficientPacketPayloadLengthError(RADIUS_PACKET_HEADER_LENGTH, 1),
             },
             TestCase {
                 plain_text: "\x01\x7f\x00\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01",
-                expected_error: PacketError::InvalidPacketLengthError(0),
+                expected_error: PacketError::InsufficientHeaderDefinedPacketLengthError(0, RADIUS_PACKET_HEADER_LENGTH),
             },
             TestCase {
                 plain_text: "\x01\x7f\x7f\x7f\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01",
-                expected_error: PacketError::InvalidPacketLengthError(32639),
+                expected_error: PacketError::HeaderDefinedPacketLengthExceedsMaximumLimitError(32639, MAX_PACKET_LENGTH),
             },
             TestCase {
                 plain_text: "\x00\x7f\x00\x16\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x00",
-                expected_error: PacketError::InvalidPacketLengthError(22),
+                expected_error: PacketError::InsufficientPacketPayloadLengthError(22, 21),
             },
             TestCase {
                 plain_text: "\x01\x01\x00\x16\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x00",

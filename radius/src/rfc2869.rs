@@ -69,7 +69,10 @@ pub fn delete_arap_password(packet: &mut Packet) {
 }
 pub fn add_arap_password(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
     if value.len() != 16 {
-        return Err(AVPError::InvalidAttributeLengthError(16));
+        return Err(AVPError::InvalidAttributeLengthError(
+            "16 bytes".to_owned(),
+            value.len(),
+        ));
     }
     packet.add(AVP::from_bytes(ARAP_PASSWORD_TYPE, value));
     Ok(())
@@ -91,7 +94,10 @@ pub fn delete_arap_features(packet: &mut Packet) {
 }
 pub fn add_arap_features(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
     if value.len() != 14 {
-        return Err(AVPError::InvalidAttributeLengthError(14));
+        return Err(AVPError::InvalidAttributeLengthError(
+            "14 bytes".to_owned(),
+            value.len(),
+        ));
     }
     packet.add(AVP::from_bytes(ARAP_FEATURES_TYPE, value));
     Ok(())
@@ -290,7 +296,10 @@ pub fn delete_arap_challenge_response(packet: &mut Packet) {
 }
 pub fn add_arap_challenge_response(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
     if value.len() != 8 {
-        return Err(AVPError::InvalidAttributeLengthError(8));
+        return Err(AVPError::InvalidAttributeLengthError(
+            "8 bytes".to_owned(),
+            value.len(),
+        ));
     }
     packet.add(AVP::from_bytes(ARAP_CHALLENGE_RESPONSE_TYPE, value));
     Ok(())

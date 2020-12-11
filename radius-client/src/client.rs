@@ -7,27 +7,39 @@ use tokio::time::timeout;
 
 use radius::packet::Packet;
 
-use crate::client::ClientError::{
-    FailedConnection, FailedParsingUDPResponse, FailedRadiusPacketEncoding,
-    FailedReceivingResponse, FailedSendingPacket, FailedUdpSocketBinding,
-};
-
 #[derive(Error, Debug)]
 pub enum ClientError {
-    #[error("failed to bind a UDP socket => `{0}`")]
-    FailedUdpSocketBinding(String),
-    #[error("failed to connect to `{0}` => `{1}`")]
-    FailedConnection(String, String),
-    #[error("failed to encode a RADIUS request => `{0}`")]
-    FailedRadiusPacketEncoding(String),
-    #[error("failed to send a UDP datagram to `{0}` => `{1}`")]
-    FailedSendingPacket(String, String),
-    #[error("failed to receive the UDP response from `{0}` => `{1}`")]
-    FailedReceivingResponse(String, String),
-    #[error("failed to parse a UDP response into a RADIUS packet => `{0}`")]
-    FailedParsingUDPResponse(String),
+    /// This error is occurred when UDP socket binding has been failed.
+    #[error("failed to bind a UDP socket; {0}")]
+    FailedUdpSocketBindingError(String),
+
+    /// This error is raised when it failed to establish the connection.
+    #[error("failed to establish a UDP connection to {0}; {1}")]
+    FailedEstablishingUdpConnectionError(String, String),
+
+    /// This error is raised when encoding RADIUS packet has been failed.
+    #[error("failed to encode a RADIUS request; {0}")]
+    FailedRadiusPacketEncodingError(String),
+
+    /// This error is raised when it fails to send a RADIUS packet.
+    #[error("failed to send a UDP datagram to {0}; {1}")]
+    FailedSendingRadiusPacketError(String, String),
+
+    /// This error is raised when it fails to receive a RADIUS response.
+    #[error("failed to receive the UDP response from {0}; {1}")]
+    FailedReceivingResponseError(String, String),
+
+    /// This error is raised when it fails to decode a RADIUS response packet.
+    #[error("failed to decode a RADIUS response packet; {0}")]
+    FailedDecodingRadiusResponseError(String),
+
+    /// This error is raised when it exceeds the connection timeout duration.
+    /// Connection timeout means it fails to establish a connection in time.
     #[error("connection timeout")]
     ConnectionTimeoutError(),
+
+    /// This error is raised when it exceeds the socket timeout duration.
+    /// Socket timeout means it fails to receive a response from the request target in time.
     #[error("socket timeout")]
     SocketTimeoutError(),
 }
@@ -74,7 +86,7 @@ impl Client {
 
         let conn = match UdpSocket::bind(local_addr).await {
             Ok(conn) => conn,
-            Err(e) => return Err(FailedUdpSocketBinding(e.to_string())),
+            Err(e) => return Err(ClientError::FailedUdpSocketBindingError(e.to_string())),
         };
 
         match self.connection_timeout {
@@ -89,7 +101,12 @@ impl Client {
 
         let request_data = match request_packet.encode() {
             Ok(encoded) => encoded,
-            Err(e) => return Err(FailedRadiusPacketEncoding(format!("{:?}", e))),
+            Err(e) => {
+                return Err(ClientError::FailedRadiusPacketEncodingError(format!(
+                    "{:?}",
+                    e
+                )))
+            }
         };
 
         let response = match self.socket_timeout {
@@ -109,14 +126,20 @@ impl Client {
 
         match Packet::decode(&response.to_vec(), request_packet.get_secret()) {
             Ok(response_packet) => Ok(response_packet),
-            Err(e) => Err(FailedParsingUDPResponse(format!("{:?}", e))),
+            Err(e) => Err(ClientError::FailedDecodingRadiusResponseError(format!(
+                "{:?}",
+                e
+            ))),
         }
     }
 
     async fn connect(&self, conn: &UdpSocket, remote_addr: &SocketAddr) -> Result<(), ClientError> {
         match conn.connect(remote_addr).await {
             Ok(_) => Ok(()),
-            Err(e) => Err(FailedConnection(remote_addr.to_string(), e.to_string())),
+            Err(e) => Err(ClientError::FailedEstablishingUdpConnectionError(
+                remote_addr.to_string(),
+                e.to_string(),
+            )),
         }
     }
 
@@ -128,13 +151,18 @@ impl Client {
     ) -> Result<Vec<u8>, ClientError> {
         match conn.send(request_data).await {
             Ok(_) => {}
-            Err(e) => return Err(FailedSendingPacket(remote_addr.to_string(), e.to_string())),
+            Err(e) => {
+                return Err(ClientError::FailedSendingRadiusPacketError(
+                    remote_addr.to_string(),
+                    e.to_string(),
+                ))
+            }
         };
 
         let mut buf = vec![0; Self::MAX_DATAGRAM_SIZE];
         match conn.recv(&mut buf).await {
             Ok(len) => Ok(buf[..len].to_vec()),
-            Err(e) => Err(FailedReceivingResponse(
+            Err(e) => Err(ClientError::FailedReceivingResponseError(
                 remote_addr.to_string(),
                 e.to_string(),
             )),

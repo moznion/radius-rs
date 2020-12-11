@@ -31,7 +31,10 @@ pub fn delete_framed_interface_id(packet: &mut Packet) {
 }
 pub fn add_framed_interface_id(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {
     if value.len() != 8 {
-        return Err(AVPError::InvalidAttributeLengthError(8));
+        return Err(AVPError::InvalidAttributeLengthError(
+            "8 bytes".to_owned(),
+            value.len(),
+        ));
     }
     packet.add(AVP::from_bytes(FRAMED_INTERFACE_ID_TYPE, value));
     Ok(())

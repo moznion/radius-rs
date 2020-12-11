@@ -556,7 +556,7 @@ fn generate_fixed_length_octets_attribute_code(
     let code = format!(
         "pub fn add_{method_identifier}(packet: &mut Packet, value: &[u8]) -> Result<(), AVPError> {{
     if value.len() != {fixed_octets_length} {{
-        return Err(AVPError::InvalidAttributeLengthError({fixed_octets_length}));
+        return Err(AVPError::InvalidAttributeLengthError(\"{fixed_octets_length} bytes\".to_owned(), value.len()));
     }}
     packet.add(AVP::from_bytes({type_identifier}, value));
     Ok(())
