@@ -158,7 +158,12 @@ mod tests {
         rfc2865::add_user_name(&mut req_packet, "admin");
         rfc2865::add_user_password(&mut req_packet, b"p@ssw0rd").unwrap();
         let res = client.send_packet(&remote_addr, &req_packet).await;
-        assert_eq!(res.unwrap_err(), ClientError::SocketTimeoutError());
+
+        let err = res.unwrap_err();
+        match err {
+            ClientError::SocketTimeoutError() => {}
+            _ => panic!("unexpected error: {}", err),
+        }
 
         sender.send(()).unwrap();
         server_proc.await.unwrap();
