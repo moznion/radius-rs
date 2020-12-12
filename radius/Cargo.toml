@@ -7,6 +7,8 @@ description = "An async/await native implementation of the RADIUS server and cli
 license = "MPL-2.0"
 readme = "../README.md"
 repository = "https://github.com/moznion/radius-rs"
+homepage = "https://github.com/moznion/radius-rs"
+documentation = "https://docs.rs/radius"
 categories =  ["network-programming"]
 keywords = ["radius", "async"]
 
