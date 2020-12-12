@@ -13,6 +13,13 @@ Simple example implementations are here:
 - [server](./examples/server.rs)
 - [client](./examples/client.rs)
 
+Those examples implement a quite simple `Access-Request` processor. You can try those with the following commands.
+
+```
+$ RUST_LOG=debug cargo run --example server
+$ RUST_LOG=debug cargo run --example client # in another shell
+```
+
 ## Supported Dictionaries
 
 This supports the following RFC dictionaries at the moment:
