@@ -1,11 +1,14 @@
 [package]
 name = "radius"
-version = "0.1.0"
+version = "0.0.1"
 authors = ["moznion <moznion@gmail.com>"]
 edition = "2018"
+description = "An async/await native implementation of the RADIUS server and client for Rust."
 license-file = "../LICENSE"
+readme = "../README.md"
 repository = "https://github.com/moznion/radius-rs"
-keywords = ["radius"]
+categories =  ["network-programming"]
+keywords = ["radius", "async"]
 
 [dependencies]
 md5 = "0.7.0"
@@ -13,3 +16,6 @@ chrono = "0.4"
 rand = "0.7.3"
 num_enum = "0.5.1"
 thiserror = "1.0"
+log = "0.4.11"
+tokio = { version = "0.3.5", features = ["full"] }
+async-trait = "0.1.42"
