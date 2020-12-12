@@ -6,11 +6,10 @@ use async_trait::async_trait;
 use tokio::net::UdpSocket;
 use tokio::time::sleep;
 
-use radius::code::Code;
-use radius::request::Request;
-use radius::rfc2865;
-use radius_server::request_handler::RequestHandler;
-use radius_server::secret_provider::{SecretProvider, SecretProviderError};
+use radius::core::code::Code;
+use radius::core::request::Request;
+use radius::core::rfc2865;
+use radius::server::{RequestHandler, SecretProvider, SecretProviderError};
 
 struct MyRequestHandler {}
 
@@ -75,11 +74,11 @@ mod tests {
 
     use tokio::sync::oneshot;
 
-    use radius::code::Code;
-    use radius::packet::Packet;
-    use radius::rfc2865;
-    use radius_client::client::{Client, ClientError};
-    use radius_server::server::Server;
+    use radius::client::{Client, ClientError};
+    use radius::core::code::Code;
+    use radius::core::packet::Packet;
+    use radius::core::rfc2865;
+    use radius::server::Server;
 
     use crate::test::{LongTimeTakingHandler, MyRequestHandler, MySecretProvider};
 

@@ -7,7 +7,5 @@ publish = false
 
 [dependencies]
 radius = { version = "0.1.0", path = "../radius" }
-radius-client = { version = "0.1.0", path = "../radius-client" }
-radius-server = { version = "0.1.0", path = "../radius-server" }
 tokio = { version = "0.3.5", features = ["signal", "net"] }
 async-trait = "0.1.42"

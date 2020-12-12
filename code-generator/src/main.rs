@@ -167,16 +167,16 @@ use std::net::{Ipv4Addr, Ipv6Addr};
 
 use chrono::{DateTime, Utc};
 
-use crate::avp::{AVP, AVPType, AVPError};
-use crate::packet::Packet;
-use crate::tag::Tag;
+use crate::core::avp::{AVP, AVPType, AVPError};
+use crate::core::packet::Packet;
+use crate::core::tag::Tag;
 
 ";
 
     w.write_all(code).unwrap();
 
     for rfc_name in rfc_names {
-        w.write_all(format!("use crate::{};\n", rfc_name).as_bytes())
+        w.write_all(format!("use crate::core::{};\n", rfc_name).as_bytes())
             .unwrap();
     }
 }

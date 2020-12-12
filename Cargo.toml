@@ -2,8 +2,6 @@
 
 members = [
   "radius",
-  "radius-server",
-  "radius-client",
 
   # Internal
   "code-generator",
