@@ -49,12 +49,29 @@ pub struct Packet {
 
 impl Packet {
     /// Constructor for a Packet.
+    ///
+    /// By default, this constructor makes an instance with a random identifier value.
+    /// If you'd like to set an arbitrary identifier, please use `new_with_identifier()` constructor instead or `set_identifier()` method for created instance.
     pub fn new(code: Code, secret: &[u8]) -> Self {
+        Self::_new(code, secret, None)
+    }
+
+    /// Constructor for a Packet with arbitrary identifier value.
+    ///
+    /// If you want to make an instance with a random identifier value, please consider using `new()`.
+    pub fn new_with_identifier(code: Code, secret: &[u8], identifier: u8) -> Self {
+        Self::_new(code, secret, Some(identifier))
+    }
+
+    fn _new(code: Code, secret: &[u8], maybe_identifier: Option<u8>) -> Self {
         let mut rng = rand::thread_rng();
         let authenticator = (0..16).map(|_| rng.gen()).collect::<Vec<u8>>();
         Packet {
             code: code.to_owned(),
-            identifier: rng.gen(),
+            identifier: match maybe_identifier {
+                Some(ident) => ident,
+                None => rng.gen(),
+            },
             authenticator,
             secret: secret.to_owned(),
             attributes: Attributes(vec![]),
@@ -75,6 +92,11 @@ impl Packet {
 
     pub fn get_authenticator(&self) -> &Vec<u8> {
         &self.authenticator
+    }
+
+    /// This sets an identifier value to an instance.
+    pub fn set_identifier(&mut self, identifier: u8) {
+        self.identifier = identifier;
     }
 
     /// This decodes bytes into a Packet.
@@ -548,5 +570,17 @@ mod tests {
             encoded.err().unwrap(),
             PacketError::EncodingError("attribute is too large".to_owned()),
         );
+    }
+
+    #[test]
+    fn test_with_arbitrary_identifier() {
+        let mut packet = Packet::new(Code::AccessRequest, b"12345");
+        let random_ident = packet.get_identifier();
+        let expected_ident = random_ident + 1;
+        packet.set_identifier(expected_ident);
+        assert_eq!(packet.get_identifier(), expected_ident);
+
+        packet = Packet::new_with_identifier(Code::AccessRequest, b"12345", expected_ident);
+        assert_eq!(packet.get_identifier(), expected_ident);
     }
 }
