@@ -1,6 +1,6 @@
 [package]
 name = "code-generator"
-version = "0.0.3"
+version = "0.1.0"
 edition = "2018"
 license-file = "../LICENSE"
 publish = false
