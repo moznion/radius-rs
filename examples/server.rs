@@ -1,8 +1,8 @@
 #[macro_use]
 extern crate log;
 
-use std::io;
 use std::net::SocketAddr;
+use std::{io, process};
 
 use async_trait::async_trait;
 use tokio::net::UdpSocket;
@@ -17,18 +17,30 @@ use radius::server::{RequestHandler, SecretProvider, SecretProviderError, Server
 async fn main() {
     env_logger::init();
 
-    let server_future = Server::run(
+    // start UDP listening
+    let mut server = Server::listen(
         "0.0.0.0",
         1812,
         1500,
-        true,
+        false,
         MyRequestHandler {},
         MySecretProvider {},
-        signal::ctrl_c(),
+    )
+    .await
+    .unwrap();
+
+    // once it has reached here, a RADIUS server is now ready
+    info!(
+        "serve is now ready: {}",
+        server.get_listen_address().unwrap()
     );
 
-    let result = server_future.await;
+    // start the loop to handle the RADIUS requests
+    let result = server.run(signal::ctrl_c()).await;
     info!("{:?}", result);
+    if result.is_err() {
+        process::exit(1);
+    }
 }
 
 struct MyRequestHandler {}

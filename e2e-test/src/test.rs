@@ -78,9 +78,9 @@ mod tests {
     use radius::core::code::Code;
     use radius::core::packet::Packet;
     use radius::core::rfc2865;
-    use radius::server::Server;
 
     use crate::test::{LongTimeTakingHandler, MyRequestHandler, MySecretProvider};
+    use radius::server::Server;
 
     #[tokio::test]
     async fn test_runner() {
@@ -93,18 +93,19 @@ mod tests {
 
         let port = 1812;
 
+        let mut server = Server::listen(
+            "0.0.0.0",
+            port,
+            1500,
+            true,
+            MyRequestHandler {},
+            MySecretProvider {},
+        )
+        .await
+        .unwrap();
+
         let server_proc = tokio::spawn(async move {
-            Server::run(
-                "0.0.0.0",
-                port,
-                1500,
-                true,
-                MyRequestHandler {},
-                MySecretProvider {},
-                receiver,
-            )
-            .await
-            .unwrap();
+            server.run(receiver).await.unwrap();
         });
 
         let remote_addr: SocketAddr = format!("127.0.0.1:{}", port).parse().unwrap();
@@ -136,18 +137,19 @@ mod tests {
 
         let port = 1812;
 
+        let mut server = Server::listen(
+            "0.0.0.0",
+            port,
+            1500,
+            true,
+            LongTimeTakingHandler {},
+            MySecretProvider {},
+        )
+        .await
+        .unwrap();
+
         let server_proc = tokio::spawn(async move {
-            Server::run(
-                "0.0.0.0",
-                port,
-                1500,
-                true,
-                LongTimeTakingHandler {},
-                MySecretProvider {},
-                receiver,
-            )
-            .await
-            .unwrap();
+            server.run(receiver).await.unwrap();
         });
 
         let remote_addr: SocketAddr = format!("127.0.0.1:{}", port).parse().unwrap();
