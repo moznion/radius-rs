@@ -1,3 +1,5 @@
+//! RADIUS core implementation for server, client and application.
+
 pub(crate) mod attributes;
 pub mod avp;
 pub mod code;
