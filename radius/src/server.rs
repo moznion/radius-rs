@@ -14,6 +14,9 @@ use crate::core::request::Request;
 use std::fmt::Debug;
 use std::marker::PhantomData;
 
+const DEFAULT_BUFFER_SIZE: usize = 1500;
+const DEFAULT_SKIP_AUTHENTICITY_VALIDATION: bool = false;
+
 /// A basic implementation of the RADIUS server.
 ///
 /// ## Example Usage
@@ -47,15 +50,11 @@ impl<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider> Server<X, E, T, U>
     ///
     /// - `host` - a host to listen (e.g. `0.0.0.0`)
     /// - `port` - a port number to listen (e.g. `1812`)
-    /// - `buf_size` - a buffer size for receiving the request payload (e.g. `1500`)
-    /// - `skip_authenticity_validation` - a flag to specify whether to skip the authenticity validation or not.
     /// - `request_handler` - a request handler for the RADIUS requests.
     /// - `secret_provider` - a provider for shared-secret value.
     pub async fn listen(
         host: &str,
         port: u16,
-        buf_size: usize,
-        skip_authenticity_validation: bool,
         request_handler: T,
         secret_provider: U,
     ) -> Result<Self, io::Error> {
@@ -68,8 +67,8 @@ impl<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider> Server<X, E, T, U>
         let conn_arc = Arc::new(conn);
 
         Ok(Server {
-            skip_authenticity_validation,
-            buf_size,
+            skip_authenticity_validation: DEFAULT_SKIP_AUTHENTICITY_VALIDATION,
+            buf_size: DEFAULT_BUFFER_SIZE,
             conn_arc,
             request_handler_arc,
             secret_provider_arc,
@@ -94,6 +93,16 @@ impl<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider> Server<X, E, T, U>
                 Ok(())
             }
         }
+    }
+
+    /// Set a buffer size for receiving the request payload (default: `1500`).
+    pub fn set_buffer_size(&mut self, buf_size: usize) {
+        self.buf_size = buf_size;
+    }
+
+    /// Set a flag to specify whether to skip the authenticity validation or not (default: `false`).
+    pub fn set_skip_authenticity_validation(&mut self, skip_authenticity_validation: bool) {
+        self.skip_authenticity_validation = skip_authenticity_validation;
     }
 
     /// Returns the listening address.

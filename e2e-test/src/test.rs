@@ -93,16 +93,9 @@ mod tests {
 
         let port = 1812;
 
-        let mut server = Server::listen(
-            "0.0.0.0",
-            port,
-            1500,
-            true,
-            MyRequestHandler {},
-            MySecretProvider {},
-        )
-        .await
-        .unwrap();
+        let mut server = Server::listen("0.0.0.0", port, MyRequestHandler {}, MySecretProvider {})
+            .await
+            .unwrap();
 
         let server_proc = tokio::spawn(async move {
             server.run(receiver).await.unwrap();
@@ -140,8 +133,6 @@ mod tests {
         let mut server = Server::listen(
             "0.0.0.0",
             port,
-            1500,
-            true,
             LongTimeTakingHandler {},
             MySecretProvider {},
         )

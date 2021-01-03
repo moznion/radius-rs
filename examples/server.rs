@@ -18,16 +18,11 @@ async fn main() {
     env_logger::init();
 
     // start UDP listening
-    let mut server = Server::listen(
-        "0.0.0.0",
-        1812,
-        1500,
-        false,
-        MyRequestHandler {},
-        MySecretProvider {},
-    )
-    .await
-    .unwrap();
+    let mut server = Server::listen("0.0.0.0", 1812, MyRequestHandler {}, MySecretProvider {})
+        .await
+        .unwrap();
+    server.set_buffer_size(1500); // default value: 1500
+    server.set_skip_authenticity_validation(false); // default value: false
 
     // once it has reached here, a RADIUS server is now ready
     info!(
