@@ -15,7 +15,7 @@ keywords = ["radius", "async"]
 [dependencies]
 md5 = "0.7.0"
 chrono = "0.4"
-rand = "0.8.1"
+rand = "0.8.2"
 num_enum = "0.5.1"
 thiserror = "1.0"
 log = "0.4.11"
