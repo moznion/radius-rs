@@ -11,3 +11,9 @@ lint:
 
 gen:
 	bash ./scripts/generate-code.sh
+	$(MAKE) fix
+
+fix:
+	cargo fix --allow-dirty --allow-staged
+	cargo fmt
+

@@ -22,6 +22,3 @@ done
 # shellcheck disable=SC2068
 cargo run --bin code-generator -- --out-dir="${SRC_DIR}/core/" ${DICT_FILES[@]}
 
-cargo fix --allow-dirty --allow-staged
-cargo fmt
-
