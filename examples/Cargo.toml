@@ -1,13 +1,13 @@
 [package]
 name = "examples"
-version = "0.1.1"
+version = "0.2.0"
 publish = false
 edition = "2018"
 license-file = "../LICENSE"
 repository = "https://github.com/moznion/radius-rs"
 
 [dev-dependencies]
-radius = { version = "0.1.1", path = "../radius" }
+radius = { version = "0.2.0", path = "../radius" }
 log = "0.4.11"
 env_logger = "0.8.2"
 tokio = { version = "1.0.1", features = ["signal", "net"] }
