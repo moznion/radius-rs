@@ -170,6 +170,7 @@ impl Packet {
             Code::AccessAccept
             | Code::AccessReject
             | Code::AccountingRequest
+            | Code::AccountingResponse
             | Code::AccessChallenge
             | Code::DisconnectRequest
             | Code::DisconnectACK
