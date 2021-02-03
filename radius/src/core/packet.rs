@@ -180,7 +180,10 @@ impl Packet {
             | Code::CoANAK => {
                 let mut buf: Vec<u8> = bs[..4].to_vec();
                 match self.code {
-                    Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => {
+                    Code::AccountingRequest // see "Request Authenticator" in https://tools.ietf.org/html/rfc2866#section-3
+                    | Code::DisconnectRequest // same as "RFC2866"; https://tools.ietf.org/html/rfc5176#section-2.3
+                    | Code::CoARequest // same as "RFC2866"; https://tools.ietf.org/html/rfc5176#section-2.3
+                    => {
                         buf.extend(vec![
                             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
                             0x00, 0x00, 0x00, 0x00,
