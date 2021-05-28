@@ -7,5 +7,5 @@ publish = false
 
 [dependencies]
 radius = { version = "0.2.0", path = "../radius" }
-tokio = { version = "1.2.0", features = ["signal", "net"] }
+tokio = { version = "1.6.1", features = ["signal", "net"] }
 async-trait = "0.1.50"
