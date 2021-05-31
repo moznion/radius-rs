@@ -959,7 +959,7 @@ fn parse_dict_file(
     dict_file_path: &Path,
 ) -> Result<(DictParsed, io::Lines<io::BufReader<File>>), String> {
     let line_filter_re = Regex::new(r"^(?:#.*|)$").unwrap();
-    let tabs_re = Regex::new(r"\t+").unwrap();
+    let ws_re = Regex::new(r"\s+").unwrap();
     let trailing_comment_re = Regex::new(r"\s*?#.+?$").unwrap();
     let fixed_length_octets_re = Regex::new(r"^octets\[(\d+)]$").unwrap();
 
@@ -974,7 +974,7 @@ fn parse_dict_file(
             continue;
         }
 
-        let items = tabs_re.split(line.as_str()).collect::<Vec<&str>>();
+        let items = ws_re.split(line.as_str()).collect::<Vec<&str>>();
 
         if items.len() < 4 {
             return Err("the number of items is lacked in a line".to_owned());

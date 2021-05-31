@@ -9,13 +9,13 @@
 //! # This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
 //! # Version $Id$
 //! #
-//! #	Attributes and values defined in RFC 6519.
-//! #	http://www.ietf.org/rfc/rfc6519.txt
+//! #    Attributes and values defined in RFC 6519.
+//! #    http://www.ietf.org/rfc/rfc6519.txt
 //! #
-//! #	$Id$
+//! #    $Id$
 //! #
 //!
-//! ATTRIBUTE	DS-Lite-Tunnel-Name			144	string
+//! ATTRIBUTE    DS-Lite-Tunnel-Name            144    string
 //! ```
 
 use crate::core::avp::{AVPError, AVPType, AVP};

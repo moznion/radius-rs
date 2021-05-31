@@ -9,13 +9,13 @@
 //! # This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
 //! # Version $Id$
 //! #
-//! #	Attributes and values defined in RFC 4072
-//! #	http://www.ietf.org/rfc/rfc4072.txt
+//! #    Attributes and values defined in RFC 4072
+//! #    http://www.ietf.org/rfc/rfc4072.txt
 //! #
-//! #	$Id$
+//! #    $Id$
 //! #
 //!
-//! ATTRIBUTE	EAP-Key-Name				102	octets
+//! ATTRIBUTE    EAP-Key-Name                102    octets
 //! ```
 
 use crate::core::avp::{AVPType, AVP};

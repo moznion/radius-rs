@@ -9,12 +9,12 @@
 //! # This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
 //! # Version $Id$
 //! #
-//! #	Attributes and values defined in RFC 4849.
-//! #	http://www.ietf.org/rfc/rfc4849.txt
+//! #    Attributes and values defined in RFC 4849.
+//! #    http://www.ietf.org/rfc/rfc4849.txt
 //! #
-//! #	$Id$
+//! #    $Id$
 //! #
-//! ATTRIBUTE	NAS-Filter-Rule				92	string
+//! ATTRIBUTE    NAS-Filter-Rule                92    string
 //! ```
 
 use crate::core::avp::{AVPError, AVPType, AVP};

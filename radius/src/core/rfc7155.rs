@@ -16,7 +16,7 @@
 //! # The Value field contains two octets (00 - 99).  ANSI T1.113 and
 //! # BELLCORE 394 can be used for additional information about these
 //! # values and their use.
-//! ATTRIBUTE	Originating-Line-Info			94	octets[2]
+//! ATTRIBUTE    Originating-Line-Info            94    octets[2]
 //! ```
 
 use crate::core::avp::{AVPError, AVPType, AVP};

@@ -9,15 +9,15 @@
 //! # This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
 //! # Version $Id$
 //! #
-//! #	Attributes and values defined in RFC 6911
-//! #	http://www.ietf.org/rfc/rfc6911.txt
+//! #    Attributes and values defined in RFC 6911
+//! #    http://www.ietf.org/rfc/rfc6911.txt
 //! #
 //!
-//! ATTRIBUTE	Framed-IPV6-Address			168	ipv6addr
-//! ATTRIBUTE	DNS-Server-IPV6-Address			169	ipv6addr
-//! ATTRIBUTE	Route-IPV6-Information			170	ipv6prefix
-//! ATTRIBUTE	Delegated-IPV6-Prefix-Pool		171	string
-//! ATTRIBUTE	Stateful-IPV6-Address-Pool		172	string
+//! ATTRIBUTE    Framed-IPV6-Address            168    ipv6addr
+//! ATTRIBUTE    DNS-Server-IPV6-Address            169    ipv6addr
+//! ATTRIBUTE    Route-IPV6-Information            170    ipv6prefix
+//! ATTRIBUTE    Delegated-IPV6-Prefix-Pool        171    string
+//! ATTRIBUTE    Stateful-IPV6-Address-Pool        172    string
 //! ```
 
 use std::net::Ipv6Addr;

@@ -10,14 +10,14 @@
 //! # Version $Id$
 //! ##############################################################################
 //! #
-//! #	Attributes and values defined in RFC 4818.
-//! #	http://www.ietf.org/rfc/rfc4818.txt
+//! #    Attributes and values defined in RFC 4818.
+//! #    http://www.ietf.org/rfc/rfc4818.txt
 //! #
-//! #	$Id$
+//! #    $Id$
 //! #
 //! ##############################################################################
 //!
-//! ATTRIBUTE	Delegated-IPV6-Prefix			123	ipv6prefix
+//! ATTRIBUTE    Delegated-IPV6-Prefix            123    ipv6prefix
 //! ```
 
 use crate::core::avp::{AVPError, AVPType, AVP};

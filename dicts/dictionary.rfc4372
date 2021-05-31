@@ -3,9 +3,9 @@
 # This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
 # Version $Id$
 #
-#	Attributes and values defined in RFC 4372.
-#	http://www.ietf.org/rfc/rfc4372.txt
+#    Attributes and values defined in RFC 4372.
+#    http://www.ietf.org/rfc/rfc4372.txt
 #
-#	$Id$
+#    $Id$
 #
-ATTRIBUTE	Chargeable-User-Identity		89	octets
+ATTRIBUTE    Chargeable-User-Identity        89    octets

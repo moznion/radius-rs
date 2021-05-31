@@ -9,30 +9,30 @@
 //! # This work is licensed under CC-BY version 4.0 https://creativecommons.org/licenses/by/4.0
 //! # Version $Id$
 //! #
-//! #	Attributes and values defined in RFC 6572.
-//! #	http://www.ietf.org/rfc/rfc6572.txt
+//! #    Attributes and values defined in RFC 6572.
+//! #    http://www.ietf.org/rfc/rfc6572.txt
 //! #
-//! #	$Id$
+//! #    $Id$
 //! #
 //!
-//! ATTRIBUTE	Mobile-Node-Identifier			145	octets
-//! ATTRIBUTE	Service-Selection			146	string
-//! ATTRIBUTE	PMIP6-Home-LMA-IPV6-Address		147	ipv6addr
-//! ATTRIBUTE	PMIP6-Visited-LMA-IPV6-Address		148	ipv6addr
-//! ATTRIBUTE	PMIP6-Home-LMA-IPV4-Address		149	ipaddr
-//! ATTRIBUTE	PMIP6-Visited-LMA-IPV4-Address		150	ipaddr
-//! ATTRIBUTE	PMIP6-Home-HN-Prefix			151	ipv6prefix
-//! ATTRIBUTE	PMIP6-Visited-HN-Prefix			152	ipv6prefix
-//! ATTRIBUTE	PMIP6-Home-Interface-ID			153	ifid
-//! ATTRIBUTE	PMIP6-Visited-Interface-ID		154	ifid
-//! ATTRIBUTE	PMIP6-Home-IPV4-HoA			155	ipv4prefix
-//! ATTRIBUTE	PMIP6-Visited-IPV4-HoA			156	ipv4prefix
-//! ATTRIBUTE	PMIP6-Home-DHCP4-Server-Address		157	ipaddr
-//! ATTRIBUTE	PMIP6-Visited-DHCP4-Server-Address	158	ipaddr
-//! ATTRIBUTE	PMIP6-Home-DHCP6-Server-Address		159	ipv6addr
-//! ATTRIBUTE	PMIP6-Visited-DHCP6-Server-Address	160	ipv6addr
-//! ATTRIBUTE	PMIP6-Home-IPV4-Gateway			161	ipaddr
-//! ATTRIBUTE	PMIP6-Visited-IPV4-Gateway		162	ipaddr
+//! ATTRIBUTE    Mobile-Node-Identifier            145    octets
+//! ATTRIBUTE    Service-Selection            146    string
+//! ATTRIBUTE    PMIP6-Home-LMA-IPV6-Address        147    ipv6addr
+//! ATTRIBUTE    PMIP6-Visited-LMA-IPV6-Address        148    ipv6addr
+//! ATTRIBUTE    PMIP6-Home-LMA-IPV4-Address        149    ipaddr
+//! ATTRIBUTE    PMIP6-Visited-LMA-IPV4-Address        150    ipaddr
+//! ATTRIBUTE    PMIP6-Home-HN-Prefix            151    ipv6prefix
+//! ATTRIBUTE    PMIP6-Visited-HN-Prefix            152    ipv6prefix
+//! ATTRIBUTE    PMIP6-Home-Interface-ID            153    ifid
+//! ATTRIBUTE    PMIP6-Visited-Interface-ID        154    ifid
+//! ATTRIBUTE    PMIP6-Home-IPV4-HoA            155    ipv4prefix
+//! ATTRIBUTE    PMIP6-Visited-IPV4-HoA            156    ipv4prefix
+//! ATTRIBUTE    PMIP6-Home-DHCP4-Server-Address        157    ipaddr
+//! ATTRIBUTE    PMIP6-Visited-DHCP4-Server-Address    158    ipaddr
+//! ATTRIBUTE    PMIP6-Home-DHCP6-Server-Address        159    ipv6addr
+//! ATTRIBUTE    PMIP6-Visited-DHCP6-Server-Address    160    ipv6addr
+//! ATTRIBUTE    PMIP6-Home-IPV4-Gateway            161    ipaddr
+//! ATTRIBUTE    PMIP6-Visited-IPV4-Gateway        162    ipaddr
 //! ```
 
 use std::net::{Ipv4Addr, Ipv6Addr};
