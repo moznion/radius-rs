@@ -1,6 +1,6 @@
 [package]
 name = "radius"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["moznion <moznion@gmail.com>"]
 edition = "2018"
 description = "An async/await native implementation of the RADIUS server and client for Rust."
