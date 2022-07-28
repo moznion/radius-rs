@@ -19,8 +19,11 @@ use radius::server::{RequestHandler, SecretProvider, SecretProviderError, Server
 async fn main() {
     env_logger::init();
 
+    let req_handler = MyRequestHandler {
+        secret_provider: MySecretProvider {}
+    };
     // start UDP listening
-    let mut server = Server::listen("0.0.0.0", 1812, MyRequestHandler {}, MySecretProvider {})
+    let mut server = Server::listen("0.0.0.0", 1812, req_handler, MySecretProvider {})
         .await
         .unwrap();
     server.set_buffer_size(1500); // default value: 1500
@@ -40,7 +43,9 @@ async fn main() {
     }
 }
 
-struct MyRequestHandler {}
+struct MyRequestHandler {
+    secret_provider: MySecretProvider
+}
 
 #[async_trait]
 impl RequestHandler<(), io::Error> for MyRequestHandler {
@@ -65,10 +70,14 @@ impl RequestHandler<(), io::Error> for MyRequestHandler {
         };
         println!("EAP Message: {}", &eap_message);
         let maybe_message_authenticator = rfc2869::lookup_message_authenticator(req_packet);
-        match maybe_message_authenticator {
-            Some(m) => println!("Found authenticator:\n{:#?}\n",m),
-            None => println!("No authenticator found")
-        }
+        let message_authenticator = match maybe_message_authenticator {
+            Some(m) => m.to_vec(),
+            None => {
+                println!("No authenticator found");
+                vec![0u8;16]
+            }
+        };
+        println!("Message Authenticator: {:#?}", &message_authenticator);
 
         let user_name = maybe_user_name_attr.unwrap().unwrap();
         let user_password = match maybe_user_password_attr {

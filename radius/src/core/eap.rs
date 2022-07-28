@@ -1,6 +1,7 @@
 use std::fmt;
 use std::convert::TryFrom;
 use num_enum::TryFromPrimitive;
+
 ///! From https://datatracker.ietf.org/doc/html/rfc2284
 /// 
 // A summary of the Request and Response packet format is shown below.
@@ -45,50 +46,25 @@ use num_enum::TryFromPrimitive;
 //    The Type-Data field varies with the Type of Request and the
 //    associated Response.
 ///!
-///!
-///! From https://datatracker.ietf.org/doc/html/rfc3579#page-14
-//    Where the NAS sends an EAP-Request/Identity as the initial packet,
-//    the exchange appears as follows:
-// Authenticating peer     NAS                    RADIUS server
-// -------------------     ---                    -------------
-//                         <- EAP-Request/
-//                         Identity
-// EAP-Response/
-// Identity (MyID) ->
-//                         RADIUS Access-Request/
-//                         EAP-Message/EAP-Response/
-//                         (MyID) ->
-//                                                <- RADIUS
-//                                                Access-Challenge/
-//                                                EAP-Message/EAP-Request
-//                                                OTP/OTP Challenge
-//                         <- EAP-Request/
-//                         OTP/OTP Challenge
-// EAP-Response/
-// OTP, OTPpw ->
-//                         RADIUS Access-Request/
-//                         EAP-Message/EAP-Response/
-//                         OTP, OTPpw ->
-//                                                 <- RADIUS
-//                                                 Access-Accept/
-//                                                 EAP-Message/EAP-Success
-//                                                 (other attributes)
-//                         <- EAP-Success
-///!
+
 #[derive(Debug, Copy, Clone, PartialEq, TryFromPrimitive)]
 #[repr(u8)]
 pub enum EAPCode {
-    Request = 1,
+    Request  = 1,
     Response = 2,
-    Invalid = 0,
+    Success  = 3,
+    Failure  = 4,
+    Invalid  = 0,
 }
 
 impl EAPCode {
     pub fn string(&self) -> &'static str {
         match self {
-            EAPCode::Request => "EAP-Request",
+            EAPCode::Request  => "EAP-Request",
             EAPCode::Response => "EAP-Response",
-            EAPCode::Invalid => "EAP-Invalid"
+            EAPCode::Success  => "EAP-Success",
+            EAPCode::Failure  => "EAP-Failure",
+            EAPCode::Invalid  => "EAP-Invalid",
         }
     }
     pub fn from(value: u8) -> Self {
@@ -160,6 +136,7 @@ pub struct EAP {
 }
 
 impl EAP {
+    /// Create an (invalid) EAP message structure
     pub fn new() -> Self {
         EAP {
             code: EAPCode::from(0),
@@ -169,16 +146,36 @@ impl EAP {
             data: vec![]
         }
     }
+    /// Create an EAP message structure from a slice of bytes
     pub fn from_bytes(eap_bytes: &[u8]) -> Self {
         let code = EAPCode::from(eap_bytes[0]);
         let id   = eap_bytes[1].to_owned();
         let len  = Self::len_from_bytes(&eap_bytes[2..4]);
-        let typ = EAPType::from(eap_bytes[4]);
-        let data = eap_bytes[5..len as usize].to_owned();
+        println!("{}", len);
+        let typ  = EAPType::from(eap_bytes[4]);
+        let data = eap_bytes[5..(len as usize)].to_owned();
         EAP { code, id, len, typ, data }
     }
+
+    /// Create wire-level byte structure from EAP message
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::<u8>::new();
+        bytes.push(self.code as u8);
+        bytes.push(self.id);
+        bytes.extend(Self::len_to_bytes(self.len));
+        bytes.push(self.typ as u8);
+        bytes.extend(self.data.clone());
+        return bytes
+    }
+
+    /// Create a response message of the requested type from current state
     fn len_from_bytes(bytes: &[u8]) -> u16 {
         ((bytes[0] as u16) << 8) | bytes[1] as u16
+    }
+
+    /// Format the raw pair of bytes in an EAP message buffer into an appropriate u16
+    fn len_to_bytes(len: u16) -> [u8; 2] {
+        [(len >> 8) as u8, len as u8]
     }
 }
 
@@ -189,5 +186,40 @@ impl fmt::Display for EAP {
             "Code: {}, ID: {}, Length: {}, Type: {}, Data Length: {}",
             self.code.string(), self.id, self.len, self.typ.string(), self.data.len()
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use hex;
+    use crate::core::eap::*;
+
+    #[test]
+    fn it_should_decode_eap_id() -> Result<(), ()> {
+        let eap_bytes = hex::decode("027200090174657374").unwrap();
+        let eap = EAP::from_bytes(&eap_bytes[..]);
+        assert_eq!(114, eap.id);
+        Ok(())
+    }
+    #[test]
+    fn it_should_decode_eap_type() -> Result<(), ()> {
+        let eap_bytes = hex::decode("027200090174657374").unwrap();
+        let eap = EAP::from_bytes(&eap_bytes[..]);
+        assert_eq!(EAPType::Identity, eap.typ);
+        Ok(())
+    }
+    #[test]
+    fn it_should_decode_eap_code() -> Result<(), ()> {
+        let eap_bytes = hex::decode("027200090174657374").unwrap();
+        let eap = EAP::from_bytes(&eap_bytes[..]);
+        assert_eq!(EAPCode::Response, eap.code);
+        Ok(())
+    }
+    #[test]
+    fn it_should_decode_eap_data() -> Result<(), ()> {
+        let eap_bytes = hex::decode("027200090174657374").unwrap();
+        let eap = EAP::from_bytes(&eap_bytes[..]);
+        assert_eq!("test".to_owned(), String::from_utf8(eap.data).unwrap());
+        Ok(())
     }
 }
