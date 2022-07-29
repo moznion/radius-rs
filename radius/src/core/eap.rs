@@ -141,7 +141,7 @@ impl EAP {
         EAP {
             code: EAPCode::from(0),
             id: 0,
-            len: 0,
+            len: 5, // min size of fields with empty data
             typ: EAPType::from(0),
             data: vec![]
         }
@@ -151,12 +151,10 @@ impl EAP {
         let code = EAPCode::from(eap_bytes[0]);
         let id   = eap_bytes[1].to_owned();
         let len  = Self::len_from_bytes(&eap_bytes[2..4]);
-        println!("{}", len);
         let typ  = EAPType::from(eap_bytes[4]);
         let data = eap_bytes[5..(len as usize)].to_owned();
         EAP { code, id, len, typ, data }
     }
-
     /// Create wire-level byte structure from EAP message
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::<u8>::new();
@@ -167,12 +165,14 @@ impl EAP {
         bytes.extend(self.data.clone());
         return bytes
     }
-
+    /// Provide updated value for length field based on current data
+    pub fn recalc_len(&self) -> u16 {
+        (5 + self.data.len()) as u16
+    }
     /// Create a response message of the requested type from current state
     fn len_from_bytes(bytes: &[u8]) -> u16 {
         ((bytes[0] as u16) << 8) | bytes[1] as u16
     }
-
     /// Format the raw pair of bytes in an EAP message buffer into an appropriate u16
     fn len_to_bytes(len: u16) -> [u8; 2] {
         [(len >> 8) as u8, len as u8]
@@ -220,6 +220,13 @@ mod tests {
         let eap_bytes = hex::decode("027200090174657374").unwrap();
         let eap = EAP::from_bytes(&eap_bytes[..]);
         assert_eq!("test".to_owned(), String::from_utf8(eap.data).unwrap());
+        Ok(())
+    }
+
+    fn it_should_marshal_eap_correctly() -> Result<(),()> {
+        let eap_bytes = hex::decode("027200090174657374").unwrap();
+        let eap = EAP::from_bytes(&eap_bytes[..]);
+        assert_eq!(eap_bytes, eap.to_bytes());
         Ok(())
     }
 }
