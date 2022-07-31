@@ -148,9 +148,12 @@ impl EAP {
     }
     /// Create an EAP message structure from a slice of bytes
     pub fn from_bytes(eap_bytes: &[u8]) -> Self {
+        let mut len_bytes = [0u8; 2];
+        len_bytes[0] = eap_bytes[2];
+        len_bytes[1] = eap_bytes[3];
         let code = EAPCode::from(eap_bytes[0]);
         let id   = eap_bytes[1].to_owned();
-        let len  = Self::len_from_bytes(&eap_bytes[2..4]);
+        let len  = u16::from_be_bytes(len_bytes);
         let typ  = EAPType::from(eap_bytes[4]);
         let data = eap_bytes[5..(len as usize)].to_owned();
         EAP { code, id, len, typ, data }
@@ -160,7 +163,7 @@ impl EAP {
         let mut bytes = Vec::<u8>::new();
         bytes.push(self.code as u8);
         bytes.push(self.id);
-        bytes.extend(Self::len_to_bytes(self.len));
+        bytes.extend(u16::to_be_bytes(self.len));
         bytes.push(self.typ as u8);
         bytes.extend(self.data.clone());
         return bytes
@@ -168,14 +171,6 @@ impl EAP {
     /// Provide updated value for length field based on current data
     pub fn recalc_len(&self) -> u16 {
         (5 + self.data.len()) as u16
-    }
-    /// Create a response message of the requested type from current state
-    fn len_from_bytes(bytes: &[u8]) -> u16 {
-        ((bytes[0] as u16) << 8) | bytes[1] as u16
-    }
-    /// Format the raw pair of bytes in an EAP message buffer into an appropriate u16
-    fn len_to_bytes(len: u16) -> [u8; 2] {
-        [(len >> 8) as u8, len as u8]
     }
 }
 
@@ -216,13 +211,20 @@ mod tests {
         Ok(())
     }
     #[test]
+    fn it_should_decode_eap_length() -> Result<(), ()> {
+        let eap_bytes = hex::decode("027200090174657374").unwrap();
+        let eap = EAP::from_bytes(&eap_bytes[..]);
+        assert_eq!(eap.len, 9u16);
+        Ok(())
+    }
+    #[test]
     fn it_should_decode_eap_data() -> Result<(), ()> {
         let eap_bytes = hex::decode("027200090174657374").unwrap();
         let eap = EAP::from_bytes(&eap_bytes[..]);
         assert_eq!("test".to_owned(), String::from_utf8(eap.data).unwrap());
         Ok(())
     }
-
+    #[test]
     fn it_should_marshal_eap_correctly() -> Result<(),()> {
         let eap_bytes = hex::decode("027200090174657374").unwrap();
         let eap = EAP::from_bytes(&eap_bytes[..]);

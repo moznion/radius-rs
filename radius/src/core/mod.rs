@@ -31,3 +31,4 @@ pub mod rfc7055;
 pub mod rfc7155;
 pub mod tag;
 pub mod eap;
+pub mod message_authenticator;
