@@ -70,7 +70,9 @@ impl MyRequestHandler {
 //                                                 EAP-Message/EAP-Success
 //                                                 (other attributes)
 //                         <- EAP-Success
-    pub async fn handle_eap_identity(&self, req_packet: &Packet, conn: &UdpSocket, req: &Request, ieap: &EAP ) -> Result<usize, io::Error> {
+    pub async fn handle_eap_identity(&self, conn: &UdpSocket, req: &Request, ieap: &EAP ) -> Result<usize, io::Error> {
+        // Verify Message-Authenticator from Identity Access-Request
+        let req_packet = req.get_packet();
         let incoming = match rfc2869::lookup_message_authenticator(&req_packet) {
             Some(m) => MessageAuthenticator::from_bytes(&m),
             None => {
@@ -78,18 +80,21 @@ impl MyRequestHandler {
                 MessageAuthenticator::new()
             }
         };
-        // let validator = MessageAuthenticator::from_access_request(&req_packet);
-        // assert_eq!(validator, incoming);
+        let validator = MessageAuthenticator::from_access_request(&req_packet);
+        assert_eq!(validator, incoming);
+        // Create response structure
         let mut ac_packet = req_packet.make_response_packet(Code::AccessChallenge);
-        rfc2869::add_message_authenticator(&mut ac_packet, &incoming.value[..]);
-        // let mut eap = EAP::new();
-        let mut eap = ieap.clone();
+        let mut eap = EAP::new();
+        // let mut eap = ieap.clone();
         eap.code = EAPCode::Request;
         eap.typ  = EAPType::MD5Challenge;
-        // eap.id   = ieap.id;
+        eap.id   = ieap.id;
+        // eap.data = b"challengeval".to_vec();
         eap.len  = eap.recalc_len();
         rfc2869::add_eap_message(&mut ac_packet, &eap.to_bytes()[..]);
-        let outgoing = MessageAuthenticator::from_packet(&ac_packet);
+        // Calculate final Message-Authenticator
+        let outgoing = MessageAuthenticator::for_response(&ac_packet);
+        // Apply final Message-Authenticator to outgoing buffer
         ac_packet = outgoing.authenticate_packet(&ac_packet).unwrap();
         println!("Response EAP: {}", &eap);
         println!("Respose Message-Authenticator: {}", &outgoing);
@@ -118,7 +123,7 @@ impl RequestHandler<(), io::Error> for MyRequestHandler {
                 println!("EAP Message: {}", &ieap);
                 match ieap.typ {
                     EAPType::Identity => {
-                        let result = self.handle_eap_identity(&req_packet, conn, req, &ieap).await.unwrap();
+                        let result = self.handle_eap_identity(conn, req, &ieap).await.unwrap();
                         println!("Sent challenge-response {} bytes", &result);
                     }
                     _ => {
@@ -167,7 +172,7 @@ struct MySecretProvider {}
 
 impl SecretProvider for MySecretProvider {
     fn fetch_secret(&self, _remote_addr: SocketAddr) -> Result<Vec<u8>, SecretProviderError> {
-        let bs = b"secret".to_vec();
+        let bs = b"somesecretval".to_vec();
         Ok(bs)
     }
 }

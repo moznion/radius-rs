@@ -60,7 +60,6 @@ pub struct MessageAuthenticator {
 }
 
 impl MessageAuthenticator {
-
     /// Create a new Message-Authenticator from a 16-byte slice
     pub fn from_bytes(bytes: &[u8]) -> Self {
         assert_eq!(bytes.len(), 16);
@@ -90,26 +89,46 @@ impl MessageAuthenticator {
             &Self::new().authenticate_packet(&pkt).unwrap()
         )
     }
+    //       the Message-Authenticator is calculated as follows, using the
+    //       Request-Authenticator from the Access-Request this packet is in
+    //       reply to:
+    //          Message-Authenticator = HMAC-MD5 (Type, Identifier, Length,
+    //          Request Authenticator, Attributes)
+    // TODO: this is producing broken responses
+    pub fn for_response(pkt: &Packet) -> Self {
+        Self::from_packet(
+            // Use th RADIUS Request-Authenticator as the input
+            &Self::from_bytes(pkt.get_authenticator())
+                .authenticate_packet(&pkt).unwrap()
+        )
+    }
     /// Attempt to create new Packet with signature buffer from this MessageAuthenticator's
     /// value field.
     pub fn authenticate_packet(&self, pkt: &Packet) -> Result<Packet, std::io::Error> {
-        let mut req_bytes = pkt.encode().unwrap();
-        let secret = pkt.get_secret();
-        let req_ma_bytes = rfc2869::lookup_message_authenticator(&pkt).unwrap();
-        Self::replace_slice(&mut req_bytes, &req_ma_bytes, &self.value[..]);
-        let res = Packet::decode(&req_bytes, secret).unwrap();
+        let res = match rfc2869::lookup_message_authenticator(&pkt) {
+            Some(req_ma_bytes) => {
+                let mut req_bytes = pkt.encode().unwrap();
+                let _ = Self::replace_slice(&mut req_bytes, &req_ma_bytes, &self.value[..]);
+                Packet::decode(&req_bytes, pkt.get_secret()).unwrap()
+            },
+            None => {
+                let mut res = pkt.clone();
+                rfc2869::add_message_authenticator(&mut res, &self.value);
+                res
+            }
+        };
         Ok(res)
-    } 
+    }
     // From https://stackoverflow.com/questions/54150353/how-to-find-and-replace-every-matching-slice-of-bytes-with-another-slice
-    fn replace_slice<T>(buf: &mut [T], from: &[T], to: &[T])
-    where
-        T: Clone + PartialEq,
-    {
+    fn replace_slice(buf: &mut Vec<u8>, from: &Vec<u8>, to: &[u8]) -> bool {
+        let mut found = false;
         for i in 0..=buf.len() - from.len() {
             if buf[i..].starts_with(from) {
                 buf[i..(i + from.len())].clone_from_slice(to);
+                found = true;
             }
         }
+        found
     }
 }
 
@@ -141,7 +160,7 @@ mod tests {
     }
     #[test]
     fn it_should_authenticate_other_access_request() -> Result<(), ()> {
-        let msg_bytes = hex::decode("013200497d39e88ba3783fc183b54d486c629e8501067465737404067f000101050600000001501208c9801fb78909a8b24ad4dc261b2d470706000000014f0b020200090174657374").unwrap();
+        let msg_bytes = hex::decode("019800436b2bbaa41b9081834827599838d2822001067465737404067f00010105060000000150127524cccba729c4ee2fa9f48c645a15294f0b022a00090174657374").unwrap();
         let secret = b"somesecretval";
         let req_packet = Packet::decode(&msg_bytes, &secret[..]).unwrap();
         assert_eq!(req_packet.encode().unwrap(), msg_bytes);
