@@ -21,3 +21,8 @@ thiserror = "1.0"
 log = "0.4.14"
 tokio = { version = "1.6.1", features = ["full"] }
 async-trait = "0.1.50"
+hmac = "0.12"
+hmac_md5 = { package = "md-5", version = "0.10"}
+
+[dev-dependencies]
+hex = "0.4"

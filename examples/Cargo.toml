@@ -21,3 +21,7 @@ path = "server.rs"
 name = "client"
 path = "client.rs"
 
+[[example]]
+name = "eap_server"
+path = "eap_server.rs"
+

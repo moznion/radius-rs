@@ -241,15 +241,7 @@ impl Packet {
         Ok(bs)
     }
 
-    /// Returns whether the Packet is authentic response or not.
-    pub fn is_authentic_response(response: &[u8], request: &[u8], secret: &[u8]) -> bool {
-        if response.len() < RADIUS_PACKET_HEADER_LENGTH
-            || request.len() < RADIUS_PACKET_HEADER_LENGTH
-            || secret.is_empty()
-        {
-            return false;
-        }
-
+    pub fn create_respose_authenticator(response: &[u8], request: &[u8], secret: &[u8]) -> Vec<u8> {
         md5::compute(
             [
                 &response[..4],
@@ -260,7 +252,34 @@ impl Packet {
             .concat(),
         )
         .to_vec()
-        .eq(&response[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
+    }
+
+    /// Returns whether the Packet is authentic response or not.
+    pub fn is_authentic_response(response: &[u8], request: &[u8], secret: &[u8]) -> bool {
+        if response.len() < RADIUS_PACKET_HEADER_LENGTH
+            || request.len() < RADIUS_PACKET_HEADER_LENGTH
+            || secret.is_empty()
+        {
+            return false;
+        }
+        Self::create_respose_authenticator(response, request,secret)
+            .eq(&response[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
+    }
+
+    pub fn create_request_authenticator(request: &[u8], secret: &[u8]) -> Vec<u8> {
+        md5::compute(
+            [
+                &request[..4],
+                &[
+                    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                    0x00, 0x00, 0x00, 0x00,
+                ],
+                &request[RADIUS_PACKET_HEADER_LENGTH..],
+                &secret,
+            ]
+            .concat(),
+        )
+        .to_vec()
     }
 
     /// Returns whether the Packet is authentic request or not.
@@ -271,20 +290,8 @@ impl Packet {
 
         match Code::from(request[0]) {
             Code::AccessRequest | Code::StatusServer => true,
-            Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => md5::compute(
-                [
-                    &request[..4],
-                    &[
-                        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-                        0x00, 0x00, 0x00, 0x00,
-                    ],
-                    &request[RADIUS_PACKET_HEADER_LENGTH..],
-                    &secret,
-                ]
-                .concat(),
-            )
-            .to_vec()
-            .eq(&request[4..RADIUS_PACKET_HEADER_LENGTH].to_vec()),
+            Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => Self::create_request_authenticator(request, secret)
+                .eq(&request[4..RADIUS_PACKET_HEADER_LENGTH].to_vec()),
             _ => false,
         }
     }
