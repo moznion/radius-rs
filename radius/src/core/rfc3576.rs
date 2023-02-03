@@ -51,7 +51,7 @@ pub fn delete_error_cause(packet: &mut Packet) {
 }
 /// Add `error_cause` value-defined integer value to a packet.
 pub fn add_error_cause(packet: &mut Packet, value: ErrorCause) {
-    packet.add(AVP::from_u32(ERROR_CAUSE_TYPE, value as u32));
+    packet.add(AVP::from_u32(ERROR_CAUSE_TYPE, value));
 }
 /// Lookup a `error_cause` value-defined integer value from a packet.
 ///

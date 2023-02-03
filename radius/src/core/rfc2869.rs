@@ -198,7 +198,7 @@ pub fn delete_arap_zone_access(packet: &mut Packet) {
 }
 /// Add `arap_zone_access` value-defined integer value to a packet.
 pub fn add_arap_zone_access(packet: &mut Packet, value: ArapZoneAccess) {
-    packet.add(AVP::from_u32(ARAP_ZONE_ACCESS_TYPE, value as u32));
+    packet.add(AVP::from_u32(ARAP_ZONE_ACCESS_TYPE, value));
 }
 /// Lookup a `arap_zone_access` value-defined integer value from a packet.
 ///
@@ -298,7 +298,7 @@ pub fn delete_prompt(packet: &mut Packet) {
 }
 /// Add `prompt` value-defined integer value to a packet.
 pub fn add_prompt(packet: &mut Packet, value: Prompt) {
-    packet.add(AVP::from_u32(PROMPT_TYPE, value as u32));
+    packet.add(AVP::from_u32(PROMPT_TYPE, value));
 }
 /// Lookup a `prompt` value-defined integer value from a packet.
 ///

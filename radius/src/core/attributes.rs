@@ -14,7 +14,7 @@ impl Attributes {
             }
 
             let length = bs[i + 1] as usize;
-            if length > bs[i..].len() || length < 2 || length > 255 {
+            if length > bs[i..].len() || !(2..=255).contains(&length) {
                 return Err("invalid attribute length".to_owned());
             }
 
@@ -42,21 +42,11 @@ impl Attributes {
     }
 
     pub(crate) fn del(&mut self, typ: AVPType) {
-        self.0 = self
-            .0
-            .iter()
-            .filter(|&avp| avp.typ != typ)
-            .cloned()
-            .collect();
+        self.0.retain(|avp| avp.typ != typ);
     }
 
     pub(crate) fn lookup(&self, typ: AVPType) -> Option<&AVP> {
-        self.0.iter().find_map(|avp| {
-            if avp.typ == typ {
-                return Some(avp);
-            }
-            None
-        })
+        self.0.iter().find(|avp| avp.typ == typ)
     }
 
     pub(crate) fn lookup_all(&self, typ: AVPType) -> Vec<&AVP> {

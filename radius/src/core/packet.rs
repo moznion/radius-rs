@@ -133,7 +133,7 @@ impl Packet {
             ));
         }
 
-        let attributes = match Attributes::decode(&bs[RADIUS_PACKET_HEADER_LENGTH..len].to_vec()) {
+        let attributes = match Attributes::decode(&bs[RADIUS_PACKET_HEADER_LENGTH..len]) {
             Ok(attributes) => attributes,
             Err(e) => return Err(PacketError::DecodingError(e)),
         };
@@ -255,7 +255,7 @@ impl Packet {
                 &response[..4],
                 &request[4..RADIUS_PACKET_HEADER_LENGTH],
                 &response[RADIUS_PACKET_HEADER_LENGTH..],
-                &secret,
+                secret,
             ]
             .concat(),
         )
@@ -279,7 +279,7 @@ impl Packet {
                         0x00, 0x00, 0x00, 0x00,
                     ],
                     &request[RADIUS_PACKET_HEADER_LENGTH..],
-                    &secret,
+                    secret,
                 ]
                 .concat(),
             )
@@ -366,7 +366,7 @@ mod tests {
             3
         );
         assert_eq!(request_packet.encode().unwrap(), request);
-        assert_eq!(Packet::is_authentic_request(&request, &secret), true);
+        assert!(Packet::is_authentic_request(&request, &secret));
 
         let response: Vec<u8> = vec![
             0x02, 0x00, 0x00, 0x26, 0x86, 0xfe, 0x22, 0x0e, 0x76, 0x24, 0xba, 0x2a, 0x10, 0x05,
@@ -378,21 +378,12 @@ mod tests {
         rfc2865::add_login_service(&mut response_packet, rfc2865::LOGIN_SERVICE_TELNET);
         rfc2865::add_login_ip_host(&mut response_packet, &Ipv4Addr::from([192, 168, 1, 3]));
         assert_eq!(response_packet.encode().unwrap(), response);
-        assert_eq!(
-            Packet::is_authentic_response(&response, &request, &secret),
-            true
-        );
+        assert!(Packet::is_authentic_response(&response, &request, &secret));
 
         // test removing a AVP
-        assert_eq!(
-            rfc2865::lookup_service_type(&response_packet).is_some(),
-            true
-        );
+        assert!(rfc2865::lookup_service_type(&response_packet).is_some());
         rfc2865::delete_service_type(&mut response_packet);
-        assert_eq!(
-            rfc2865::lookup_service_type(&response_packet).is_some(),
-            false
-        );
+        assert!(rfc2865::lookup_service_type(&response_packet).is_none());
 
         Ok(())
     }
@@ -520,7 +511,7 @@ mod tests {
         struct TestCase<'a> {
             plain_text: &'a str,
             expected_error: PacketError,
-        };
+        }
 
         let test_cases = &[
             TestCase {
@@ -548,7 +539,7 @@ mod tests {
         let secret = b"12345";
         for test_case in test_cases {
             let result = Packet::decode(test_case.plain_text.as_bytes(), secret);
-            assert_eq!(result.is_err(), true);
+            assert!(result.is_err());
             assert_eq!(result.err().unwrap(), test_case.expected_error);
         }
     }
@@ -561,7 +552,7 @@ mod tests {
             value: vec![1; 253],
         });
         let encoded = packet.encode();
-        assert_eq!(encoded.is_err(), false);
+        assert!(encoded.is_ok());
 
         let mut packet = Packet::new(Code::AccessRequest, b"12345");
         packet.add(AVP {
@@ -569,7 +560,7 @@ mod tests {
             value: vec![1; 254],
         });
         let encoded = packet.encode();
-        assert_eq!(encoded.is_err(), true);
+        assert!(encoded.is_err());
         assert_eq!(
             encoded.err().unwrap(),
             PacketError::EncodingError("attribute is too large".to_owned()),

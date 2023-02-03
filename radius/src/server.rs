@@ -64,7 +64,7 @@ impl<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider> Server<X, E, T, U>
         let request_handler_arc = Arc::new(request_handler);
         let secret_provider_arc = Arc::new(secret_provider);
 
-        let address = format!("{}:{}", host, port);
+        let address = format!("{host}:{port}");
         let conn = UdpSocket::bind(address).await?;
         let conn_arc = Arc::new(conn);
 
@@ -221,7 +221,7 @@ impl<X, E: Debug, T: RequestHandler<X, E>, U: SecretProvider> Server<X, E, T, U>
         {
             Ok(_) => {}
             Err(e) => {
-                println!("{:?}", e);
+                println!("{e:?}");
             }
         }
 

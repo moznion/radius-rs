@@ -76,7 +76,7 @@ pub fn delete_acct_status_type(packet: &mut Packet) {
 }
 /// Add `acct_status_type` value-defined integer value to a packet.
 pub fn add_acct_status_type(packet: &mut Packet, value: AcctStatusType) {
-    packet.add(AVP::from_u32(ACCT_STATUS_TYPE_TYPE, value as u32));
+    packet.add(AVP::from_u32(ACCT_STATUS_TYPE_TYPE, value));
 }
 /// Lookup a `acct_status_type` value-defined integer value from a packet.
 ///
@@ -204,7 +204,7 @@ pub fn delete_acct_authentic(packet: &mut Packet) {
 }
 /// Add `acct_authentic` value-defined integer value to a packet.
 pub fn add_acct_authentic(packet: &mut Packet, value: AcctAuthentic) {
-    packet.add(AVP::from_u32(ACCT_AUTHENTIC_TYPE, value as u32));
+    packet.add(AVP::from_u32(ACCT_AUTHENTIC_TYPE, value));
 }
 /// Lookup a `acct_authentic` value-defined integer value from a packet.
 ///
@@ -308,7 +308,7 @@ pub fn delete_acct_terminate_cause(packet: &mut Packet) {
 }
 /// Add `acct_terminate_cause` value-defined integer value to a packet.
 pub fn add_acct_terminate_cause(packet: &mut Packet, value: AcctTerminateCause) {
-    packet.add(AVP::from_u32(ACCT_TERMINATE_CAUSE_TYPE, value as u32));
+    packet.add(AVP::from_u32(ACCT_TERMINATE_CAUSE_TYPE, value));
 }
 /// Lookup a `acct_terminate_cause` value-defined integer value from a packet.
 ///
