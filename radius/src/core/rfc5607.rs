@@ -51,7 +51,7 @@ pub fn delete_framed_management(packet: &mut Packet) {
 }
 /// Add `framed_management` value-defined integer value to a packet.
 pub fn add_framed_management(packet: &mut Packet, value: FramedManagement) {
-    packet.add(AVP::from_u32(FRAMED_MANAGEMENT_TYPE, value as u32));
+    packet.add(AVP::from_u32(FRAMED_MANAGEMENT_TYPE, value));
 }
 /// Lookup a `framed_management` value-defined integer value from a packet.
 ///
@@ -80,10 +80,7 @@ pub fn add_management_transport_protection(
     packet: &mut Packet,
     value: ManagementTransportProtection,
 ) {
-    packet.add(AVP::from_u32(
-        MANAGEMENT_TRANSPORT_PROTECTION_TYPE,
-        value as u32,
-    ));
+    packet.add(AVP::from_u32(MANAGEMENT_TRANSPORT_PROTECTION_TYPE, value));
 }
 /// Lookup a `management_transport_protection` value-defined integer value from a packet.
 ///

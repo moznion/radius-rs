@@ -71,7 +71,7 @@ pub fn delete_ingress_filters(packet: &mut Packet) {
 }
 /// Add `ingress_filters` value-defined integer value to a packet.
 pub fn add_ingress_filters(packet: &mut Packet, value: IngressFilters) {
-    packet.add(AVP::from_u32(INGRESS_FILTERS_TYPE, value as u32));
+    packet.add(AVP::from_u32(INGRESS_FILTERS_TYPE, value));
 }
 /// Lookup a `ingress_filters` value-defined integer value from a packet.
 ///

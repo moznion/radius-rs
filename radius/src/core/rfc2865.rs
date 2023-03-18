@@ -286,7 +286,7 @@ pub fn delete_service_type(packet: &mut Packet) {
 }
 /// Add `service_type` value-defined integer value to a packet.
 pub fn add_service_type(packet: &mut Packet, value: ServiceType) {
-    packet.add(AVP::from_u32(SERVICE_TYPE_TYPE, value as u32));
+    packet.add(AVP::from_u32(SERVICE_TYPE_TYPE, value));
 }
 /// Lookup a `service_type` value-defined integer value from a packet.
 ///
@@ -312,7 +312,7 @@ pub fn delete_framed_protocol(packet: &mut Packet) {
 }
 /// Add `framed_protocol` value-defined integer value to a packet.
 pub fn add_framed_protocol(packet: &mut Packet, value: FramedProtocol) {
-    packet.add(AVP::from_u32(FRAMED_PROTOCOL_TYPE, value as u32));
+    packet.add(AVP::from_u32(FRAMED_PROTOCOL_TYPE, value));
 }
 /// Lookup a `framed_protocol` value-defined integer value from a packet.
 ///
@@ -390,7 +390,7 @@ pub fn delete_framed_routing(packet: &mut Packet) {
 }
 /// Add `framed_routing` value-defined integer value to a packet.
 pub fn add_framed_routing(packet: &mut Packet, value: FramedRouting) {
-    packet.add(AVP::from_u32(FRAMED_ROUTING_TYPE, value as u32));
+    packet.add(AVP::from_u32(FRAMED_ROUTING_TYPE, value));
 }
 /// Lookup a `framed_routing` value-defined integer value from a packet.
 ///
@@ -464,7 +464,7 @@ pub fn delete_framed_compression(packet: &mut Packet) {
 }
 /// Add `framed_compression` value-defined integer value to a packet.
 pub fn add_framed_compression(packet: &mut Packet, value: FramedCompression) {
-    packet.add(AVP::from_u32(FRAMED_COMPRESSION_TYPE, value as u32));
+    packet.add(AVP::from_u32(FRAMED_COMPRESSION_TYPE, value));
 }
 /// Lookup a `framed_compression` value-defined integer value from a packet.
 ///
@@ -514,7 +514,7 @@ pub fn delete_login_service(packet: &mut Packet) {
 }
 /// Add `login_service` value-defined integer value to a packet.
 pub fn add_login_service(packet: &mut Packet, value: LoginService) {
-    packet.add(AVP::from_u32(LOGIN_SERVICE_TYPE, value as u32));
+    packet.add(AVP::from_u32(LOGIN_SERVICE_TYPE, value));
 }
 /// Lookup a `login_service` value-defined integer value from a packet.
 ///
@@ -540,7 +540,7 @@ pub fn delete_login_tcp_port(packet: &mut Packet) {
 }
 /// Add `login_tcp_port` value-defined integer value to a packet.
 pub fn add_login_tcp_port(packet: &mut Packet, value: LoginTCPPort) {
-    packet.add(AVP::from_u32(LOGIN_TCP_PORT_TYPE, value as u32));
+    packet.add(AVP::from_u32(LOGIN_TCP_PORT_TYPE, value));
 }
 /// Lookup a `login_tcp_port` value-defined integer value from a packet.
 ///
@@ -792,7 +792,7 @@ pub fn delete_termination_action(packet: &mut Packet) {
 }
 /// Add `termination_action` value-defined integer value to a packet.
 pub fn add_termination_action(packet: &mut Packet, value: TerminationAction) {
-    packet.add(AVP::from_u32(TERMINATION_ACTION_TYPE, value as u32));
+    packet.add(AVP::from_u32(TERMINATION_ACTION_TYPE, value));
 }
 /// Lookup a `termination_action` value-defined integer value from a packet.
 ///
@@ -1100,7 +1100,7 @@ pub fn delete_nas_port_type(packet: &mut Packet) {
 }
 /// Add `nas_port_type` value-defined integer value to a packet.
 pub fn add_nas_port_type(packet: &mut Packet, value: NasPortType) {
-    packet.add(AVP::from_u32(NAS_PORT_TYPE_TYPE, value as u32));
+    packet.add(AVP::from_u32(NAS_PORT_TYPE_TYPE, value));
 }
 /// Lookup a `nas_port_type` value-defined integer value from a packet.
 ///

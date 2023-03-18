@@ -41,6 +41,7 @@ struct RadiusValue {
     value: u16,
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, PartialEq)]
 enum RadiusAttributeValueType {
     String,
@@ -79,7 +80,7 @@ impl FromStr for RadiusAttributeValueType {
 }
 
 fn print_usage(program: &str, opts: &Options) {
-    let brief = format!("Usage: {} [options] DICT_FILE OUT_FILE", program);
+    let brief = format!("Usage: {program} [options] DICT_FILE OUT_FILE");
     print!("{}", opts.usage(&brief));
     process::exit(0);
 }
@@ -104,9 +105,7 @@ fn main() {
         "[mandatory] a directory to out the generated code",
         "/path/to/out/",
     );
-    let matches = opts
-        .parse(&args[1..])
-        .unwrap_or_else(|f| panic!(f.to_string()));
+    let matches = opts.parse(&args[1..]).unwrap_or_else(|f| panic!("{}", f));
 
     if matches.opt_present("h") {
         print_usage(&program, &opts);
@@ -121,7 +120,7 @@ fn main() {
     let mut dict_file_paths: Vec<&Path> = matches
         .free
         .iter()
-        .map(|file_path_str| Path::new(file_path_str))
+        .map(Path::new)
         .filter(|path| {
             if !path.exists() || !path.is_file() {
                 panic!("no such dictionary file => {}", path.to_str().unwrap());
@@ -143,7 +142,7 @@ fn main() {
             .collect::<HashSet<&String>>();
 
         let rfc_name = dict_file_path.extension().unwrap().to_str().unwrap();
-        let mut w = BufWriter::new(File::create(out_dir.join(format!("{}.rs", rfc_name))).unwrap());
+        let mut w = BufWriter::new(File::create(out_dir.join(format!("{rfc_name}.rs"))).unwrap());
 
         generate_header(&mut w, &rfc_names, rfc_name, dict_file_lines);
         generate_attributes_code(&mut w, &radius_attributes, &value_defined_attributes_set);
@@ -195,7 +194,7 @@ use crate::core::tag::Tag;
     w.write_all(code.as_bytes()).unwrap();
 
     for rfc_name in rfc_names {
-        w.write_all(format!("use crate::core::{};\n", rfc_name).as_bytes())
+        w.write_all(format!("use crate::core::{rfc_name};\n").as_bytes())
             .unwrap();
     }
 }
@@ -219,15 +218,8 @@ fn generate_values_for_attribute_code(
     let type_name = attr.to_pascal_case();
 
     if maybe_rfc_name.is_none() {
-        w.write_all(
-            format!(
-                "\npub type {type_name} = {radius_value_type};\n",
-                type_name = type_name,
-                radius_value_type = RADIUS_VALUE_TYPE
-            )
-            .as_bytes(),
-        )
-        .unwrap();
+        w.write_all(format!("\npub type {type_name} = {RADIUS_VALUE_TYPE};\n").as_bytes())
+            .unwrap();
     }
 
     for v in values {
@@ -267,7 +259,7 @@ fn generate_attributes_code(
     value_defined_attributes_set: &HashSet<&String>,
 ) {
     for attr in attrs {
-        generate_attribute_code(w, attr, &value_defined_attributes_set);
+        generate_attribute_code(w, attr, value_defined_attributes_set);
     }
 }
 
@@ -429,8 +421,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<String>, AV
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -460,8 +450,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(String, Op
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -491,10 +479,7 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Vec<u8>>, A
     }}
     Ok(vec)
 }}
-",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
-    );
+");
     w.write_all(code.as_bytes()).unwrap();
 }
 
@@ -523,10 +508,7 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(Vec<u8>, T
     }}
     Ok(vec)
 }}
-",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
-    );
+");
     w.write_all(code.as_bytes()).unwrap();
 }
 
@@ -554,10 +536,7 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<Vec<u8>> {{
     }}
     vec
 }}
-",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
-    );
+");
     w.write_all(code.as_bytes()).unwrap();
 }
 
@@ -585,9 +564,7 @@ pub fn lookup_{method_identifier}(packet: &Packet) -> Option<Vec<u8>> {{
         }})),
     }}
 }}
-",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
+"
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -621,10 +598,7 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Vec<Vec<u8>> {{
     }}
     vec
 }}
-",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
-        fixed_octets_length = fixed_octets_length,
+"
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -653,9 +627,7 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Ipv4Addr>, 
     }}
     Ok(vec)
 }}
-",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
+"
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -686,8 +658,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Vec<u8>>, A
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -717,8 +687,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Ipv6Addr>, 
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -749,8 +717,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<Vec<u8>>, A
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -780,8 +746,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<DateTime<Ut
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -811,8 +775,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<u32>, AVPEr
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -842,8 +804,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<(u32, Tag)>
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -857,7 +817,7 @@ fn generate_value_defined_integer_attribute_code(
     let code = format!(
         "/// Add `{method_identifier}` value-defined integer value to a packet.
 pub fn add_{method_identifier}(packet: &mut Packet, value: {value_type}) {{
-    packet.add(AVP::from_u32({type_identifier}, value as u32));
+    packet.add(AVP::from_u32({type_identifier}, value));
 }}
 /// Lookup a `{method_identifier}` value-defined integer value from a packet.
 ///
@@ -874,9 +834,6 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<{value_type
     Ok(vec)
 }}
 ",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
-        value_type = value_type,
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -890,7 +847,7 @@ fn generate_tagged_value_defined_integer_attribute_code(
     let code = format!(
         "/// Add `{method_identifier}` tagged value-defined integer value to a packet.
 pub fn add_{method_identifier}(packet: &mut Packet, tag: Option<&Tag>, value: {value_type}) {{
-    packet.add(AVP::from_tagged_u32({type_identifier}, tag, value as u32));
+    packet.add(AVP::from_tagged_u32({type_identifier}, tag, value));
 }}
 /// Lookup a `{method_identifier}` tagged value-defined integer value from a packet.
 ///
@@ -910,10 +867,7 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<({value_typ
     }}
     Ok(vec)
 }}
-",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
-        value_type = value_type,
+"
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -942,9 +896,7 @@ pub fn lookup_all_{method_identifier}(packet: &Packet) -> Result<Vec<u16>, AVPEr
     }}
     Ok(vec)
 }}
-",
-        method_identifier = method_identifier,
-        type_identifier = type_identifier,
+"
     );
     w.write_all(code.as_bytes()).unwrap();
 }
@@ -1068,7 +1020,7 @@ fn parse_dict_file(
                     }
                 };
             }
-            _ => return Err(format!("unexpected kind has come => {}", kind)),
+            _ => return Err(format!("unexpected kind has come => {kind}")),
         }
     }
 

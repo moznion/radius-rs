@@ -103,12 +103,7 @@ impl Client {
 
         let request_data = match request_packet.encode() {
             Ok(encoded) => encoded,
-            Err(e) => {
-                return Err(ClientError::FailedRadiusPacketEncodingError(format!(
-                    "{:?}",
-                    e
-                )))
-            }
+            Err(e) => return Err(ClientError::FailedRadiusPacketEncodingError(format!("{e}"))),
         };
 
         let response = match self.socket_timeout {
@@ -129,8 +124,7 @@ impl Client {
         match Packet::decode(&response.to_vec(), request_packet.get_secret()) {
             Ok(response_packet) => Ok(response_packet),
             Err(e) => Err(ClientError::FailedDecodingRadiusResponseError(format!(
-                "{:?}",
-                e
+                "{e}"
             ))),
         }
     }

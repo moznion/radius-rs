@@ -36,7 +36,7 @@ pub fn delete_eap_lower_layer(packet: &mut Packet) {
 }
 /// Add `eap_lower_layer` value-defined integer value to a packet.
 pub fn add_eap_lower_layer(packet: &mut Packet, value: EapLowerLayer) {
-    packet.add(AVP::from_u32(EAP_LOWER_LAYER_TYPE, value as u32));
+    packet.add(AVP::from_u32(EAP_LOWER_LAYER_TYPE, value));
 }
 /// Lookup a `eap_lower_layer` value-defined integer value from a packet.
 ///

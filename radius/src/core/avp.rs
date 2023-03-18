@@ -339,7 +339,7 @@ impl AVP {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(
-                format!("{} bytes", U32_SIZE),
+                format!("{U32_SIZE} bytes"),
                 self.value.len(),
             ));
         }
@@ -356,7 +356,7 @@ impl AVP {
         const U16_SIZE: usize = std::mem::size_of::<u16>();
         if self.value.len() != U16_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(
-                format!("{} bytes", U16_SIZE),
+                format!("{U16_SIZE} bytes"),
                 self.value.len(),
             ));
         }
@@ -453,7 +453,7 @@ impl AVP {
         const IPV4_SIZE: usize = std::mem::size_of::<Ipv4Addr>();
         if self.value.len() != IPV4_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(
-                format!("{} bytes", IPV4_SIZE),
+                format!("{IPV4_SIZE} bytes"),
                 self.value.len(),
             ));
         }
@@ -481,7 +481,7 @@ impl AVP {
         const IPV6_SIZE: usize = std::mem::size_of::<Ipv6Addr>();
         if self.value.len() != IPV6_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(
-                format!("{} bytes", IPV6_SIZE),
+                format!("{IPV6_SIZE} bytes"),
                 self.value.len(),
             ));
         }
@@ -556,7 +556,7 @@ impl AVP {
         const U32_SIZE: usize = std::mem::size_of::<u32>();
         if self.value.len() != U32_SIZE {
             return Err(AVPError::InvalidAttributeLengthError(
-                format!("{}", U32_SIZE),
+                format!("{U32_SIZE}"),
                 self.value.len(),
             ));
         }
@@ -565,7 +565,7 @@ impl AVP {
         match int_bytes.try_into() {
             Ok(boxed_array) => {
                 let timestamp = u32::from_be_bytes(boxed_array);
-                Ok(Utc.timestamp(timestamp as i64, 0))
+                Ok(Utc.timestamp_opt(timestamp as i64, 0).unwrap())
             }
             Err(e) => Err(AVPError::DecodingError(e.to_string())),
         }
@@ -725,7 +725,7 @@ mod tests {
         struct TestCase<'a> {
             plain_text: &'a str,
             expected_encoded_len: usize,
-        };
+        }
 
         let test_cases = &[
             TestCase {
@@ -791,7 +791,7 @@ mod tests {
         struct TestCase<'a> {
             plain_text: &'a str,
             expected_encoded_len: usize,
-        };
+        }
 
         let test_cases = &[
             TestCase {
