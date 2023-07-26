@@ -1,4 +1,5 @@
 use std::convert::TryInto;
+use std::fmt::Debug;
 
 use rand::Rng;
 use thiserror::Error;
@@ -38,7 +39,7 @@ pub enum PacketError {
 }
 
 /// This struct represents a packet of RADIUS for request and response.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct Packet {
     code: Code,
     identifier: u8,
@@ -312,6 +313,18 @@ impl Packet {
     /// Returns AVPs that match with the given AVP type.
     pub fn lookup_all(&self, typ: AVPType) -> Vec<&AVP> {
         self.attributes.lookup_all(typ)
+    }
+}
+
+impl Debug for Packet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Packet")
+            .field("code", &self.code)
+            .field("identifier", &self.identifier)
+            .field("authenticator", &self.authenticator)
+            .field("secret", &"*redacted*")
+            .field("attributes", &self.attributes)
+            .finish()
     }
 }
 
