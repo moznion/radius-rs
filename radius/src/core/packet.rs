@@ -348,10 +348,10 @@ impl Packet {
             ]
             .concat(),
         );
-        let enc = if let Err(_) = hash_val {
-            return false;
-        } else {
+        let enc = if let Ok(..) = hash_val {
             hash_val.unwrap()
+        } else {
+            return false;
         };
         enc.to_vec()
             .eq(&response[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
@@ -407,10 +407,10 @@ impl Packet {
                     ]
                     .concat(),
                 );
-                let enc = if let Err(_) = hash_val {
-                    return false;
-                } else {
+                let enc = if let Ok(..) = hash_val {
                     hash_val.unwrap()
+                } else {
+                    return false;
                 };
 
                 enc.to_vec()

@@ -7,9 +7,6 @@ use thiserror::Error;
 
 use crate::core::tag::{Tag, UNUSED_TAG_VALUE};
 
-#[cfg(all(feature = "md5", feature = "openssl"))]
-compile_error!("feature \"md5\" and feature \"openssl\" cannot be enabled at the same time");
-
 #[cfg(feature = "md5")]
 use md5::compute;
 
