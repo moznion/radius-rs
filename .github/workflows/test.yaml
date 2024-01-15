@@ -10,10 +10,10 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         rust: [stable, nightly]
     steps:
-    - uses: hecrj/setup-rust-action@v1
+    - uses: hecrj/setup-rust-action@v2
       with:
         rust-version: ${{ matrix.rust }}
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: install clippy
       run: rustup component add clippy
     - name: Run checks
