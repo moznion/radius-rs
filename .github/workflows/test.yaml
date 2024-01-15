@@ -34,8 +34,5 @@ jobs:
     - name: install clippy
       run: rustup component add clippy
     - name: Run checks
-      run: make check
-    - name: Run explicit openssl checks
-      run: make check_openssl
-    - name: Run explicit md5 checks
-      run: make check_md5
+      run: make check_all
+
