@@ -16,7 +16,7 @@ impl VSA {
             vendor_id: vendor_id.to_be_bytes().to_vec(),
             type_id,
             length: (SINGLE_FIELDS_COUNT + value.len()) as u8,
-            tag: tag,
+            tag,
             value: value.as_bytes().to_vec(),
         }
     }
@@ -26,10 +26,43 @@ impl VSA {
     }
 
     pub fn message(&self) -> Vec<u8> {
-        let mut msg = vec![self.type_id, self.length, self.tag];
-        msg.splice(0..0, self.vendor_id.iter().cloned());
-        msg.append(&mut self.value.clone());
+        let total_length: usize = SINGLE_FIELDS_COUNT + &self.vendor_id.len() + &self.value.len();
+        let mut result = Vec::with_capacity(total_length);
 
-        msg
+        result.extend(&self.vendor_id);
+        result.extend(vec![self.type_id, self.length, self.tag]);
+        result.extend(&self.value);
+
+        result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::core::vsa::VSA;
+
+    #[test]
+    fn it_should_get_len_successfully() {
+        let vendor_id = 4874;
+        let vsa_type = 65;
+        let tag = 5;
+        let value = "bar(1000,5441)";
+        let vsa = VSA::new(vendor_id, vsa_type, tag, value);
+
+        assert_eq!(vsa.len(), 17);
+    }
+
+    #[test]
+    fn it_should_get_message_successfully() {
+        let vendor_id = 4874;
+        let vsa_type = 65;
+        let tag = 5;
+        let value = "bar(1000,5441)";
+        let vsa = VSA::new(vendor_id, vsa_type, tag, value);
+
+        assert_eq!(
+            vsa.message(),
+            [0, 0, 19, 10, 65, 17, 5, 98, 97, 114, 40, 49, 48, 48, 48, 44, 53, 52, 52, 49, 41]
+        )
     }
 }
