@@ -30,3 +30,4 @@ pub mod rfc6911;
 pub mod rfc7055;
 pub mod rfc7155;
 pub mod tag;
+pub mod vsa;
