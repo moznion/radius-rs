@@ -49,6 +49,18 @@ This supports the following RFC dictionaries at the moment:
 - [RFC7055](https://tools.ietf.org/html/rfc7055)
 - [RFC7155](https://tools.ietf.org/html/rfc7155)
 
+## Cryptography method feature option
+
+By default, this library uses MD5 for authentication.
+Starting from version v0.4.0, it also supports [OpenSSL](https://www.openssl.org/).
+
+If you prefer to use OpenSSL, please add the following lines to your Cargo.toml:
+
+```toml
+[dependencies]
+radius = { version = "__version__", default-features = false, features = ["openssl"] }
+```
+
 ## Implementation guide for your RADIUS application
 
 ### Common
