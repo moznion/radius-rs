@@ -16,7 +16,7 @@ keywords = ["radius", "async"]
 md5 = { version = "0.7.0", optional = true}
 openssl = { version = "0.10", optional = true }
 chrono = "0.4"
-rand = "0.8.3"
+rand = "0.8.5"
 num_enum = "0.5.1"
 thiserror = "1.0"
 log = "0.4.17"
