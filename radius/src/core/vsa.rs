@@ -10,7 +10,7 @@ pub trait VSA {
 #[derive(Debug, Clone, PartialEq)]
 pub struct StringVSA {
     vendor_id: Vec<u8>,
-    type_id: u8,
+    vendor_type: u8,
     length: u8,
     value: Vec<u8>,
 }
@@ -18,10 +18,10 @@ pub struct StringVSA {
 impl StringVSA {
     const BYTE_SIZE_OFFSET: usize = 2;
 
-    pub fn new(vendor_id: i32, type_id: u8, value: &str) -> StringVSA {
+    pub fn new(vendor_id: i32, vendor_type: u8, value: &str) -> StringVSA {
         StringVSA {
             vendor_id: vendor_id.to_be_bytes().to_vec(),
-            type_id,
+            vendor_type,
             /*
              * Ref: RFC 4679 - https://datatracker.ietf.org/doc/html/rfc4679
              * > Vendor-Length
@@ -61,7 +61,7 @@ impl VSA for StringVSA {
         let mut result = Vec::with_capacity(total_length);
 
         result.extend(&self.vendor_id);
-        result.extend(vec![self.type_id, self.length]);
+        result.extend(vec![self.vendor_type, self.length]);
         result.extend(&self.value);
 
         result
@@ -72,7 +72,7 @@ impl VSA for StringVSA {
 #[derive(Debug, Clone, PartialEq)]
 pub struct TaggedStringVSA {
     vendor_id: Vec<u8>,
-    type_id: u8,
+    vendor_type: u8,
     length: u8,
     tag: u8,
     value: Vec<u8>,
@@ -81,10 +81,10 @@ pub struct TaggedStringVSA {
 impl TaggedStringVSA {
     const BYTE_SIZE_OFFSET: usize = 3;
 
-    pub fn new(vendor_id: i32, type_id: u8, tag: u8, value: &str) -> TaggedStringVSA {
+    pub fn new(vendor_id: i32, vendor_type: u8, tag: u8, value: &str) -> TaggedStringVSA {
         TaggedStringVSA {
             vendor_id: vendor_id.to_be_bytes().to_vec(),
-            type_id,
+            vendor_type,
             /*
              * Ref: RFC 4679 - https://datatracker.ietf.org/doc/html/rfc4679
              * > Vendor-Length
@@ -125,7 +125,7 @@ impl VSA for TaggedStringVSA {
         let mut result = Vec::with_capacity(total_length);
 
         result.extend(&self.vendor_id);
-        result.extend(vec![self.type_id, self.length, self.tag]);
+        result.extend(vec![self.vendor_type, self.length, self.tag]);
         result.extend(&self.value);
 
         result
