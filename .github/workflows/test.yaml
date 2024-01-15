@@ -10,10 +10,27 @@ jobs:
         os: [ubuntu-latest, macOS-latest, windows-latest]
         rust: [stable, nightly]
     steps:
-    - uses: hecrj/setup-rust-action@v1
+    - uses: hecrj/setup-rust-action@v2
       with:
         rust-version: ${{ matrix.rust }}
-    - uses: actions/checkout@v2
+    # install openssl {{{
+    - name: Install OpenSSL on Ubuntu
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libssl-dev
+    - name: Install OpenSSL on macOS
+      if: matrix.os == 'macOS-latest'
+      run: |
+        brew update
+        brew install openssl
+    - name: Install OpenSSL on Windows
+      if: matrix.os == 'windows-latest'
+      run: |
+        echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append
+        vcpkg install openssl:x64-windows-static-md
+    # }}}
+    - uses: actions/checkout@v4
     - name: install clippy
       run: rustup component add clippy
     - name: Run checks
