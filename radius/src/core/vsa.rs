@@ -1,7 +1,16 @@
 /// VSA trait represents the general vendor-specific struct related methods.
 pub trait VSA {
     /// len returns the length of sub-attribute of vendor-specific.
+    ///
+    /// Ref: RFC 4679 - https://datatracker.ietf.org/doc/html/rfc4679
+    /// > Vendor-Length
+    /// >
+    /// >   The Vendor-Length field is one octet and indicates the length of
+    /// >   the entire sub-attribute, including the Vendor-Type,
+    /// >   Vendor-Length, and Value fields.
     fn len(&self) -> usize;
+    /// is_empty returns whether the VSA is empty or not.
+    fn is_empty(&self) -> bool;
     /// message returns the serialized vendor-specific message for AVP.
     fn message(&self) -> Vec<u8>;
 }
@@ -41,6 +50,10 @@ impl VSA for StringVSA {
         self.length as usize
     }
 
+    fn is_empty(&self) -> bool {
+        self.length == 0
+    }
+
     /// message returns the serialized vendor-specific message for AVP.
     ///
     /// Format:
@@ -56,8 +69,7 @@ impl VSA for StringVSA {
     ///
     /// See also: RFC 2865 - https://datatracker.ietf.org/doc/html/rfc2865
     fn message(&self) -> Vec<u8> {
-        let total_length: usize =
-            Self::BYTE_SIZE_OFFSET + &self.vendor_id.len() + &self.value.len();
+        let total_length: usize = Self::BYTE_SIZE_OFFSET + self.vendor_id.len() + self.value.len();
         let mut result = Vec::with_capacity(total_length);
 
         result.extend(&self.vendor_id);
@@ -105,6 +117,10 @@ impl VSA for TaggedStringVSA {
         self.length as usize
     }
 
+    fn is_empty(&self) -> bool {
+        self.length == 0
+    }
+
     /// message returns the serialized vendor-specific message for AVP.
     ///
     /// Format:
@@ -120,8 +136,7 @@ impl VSA for TaggedStringVSA {
     ///
     /// See also: CISCO RADIUS Attributes Configuration Guide - https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/sec_usr_radatt/configuration/xe-16/sec-usr-radatt-xe-16-book.pdf
     fn message(&self) -> Vec<u8> {
-        let total_length: usize =
-            Self::BYTE_SIZE_OFFSET + &self.vendor_id.len() + &self.value.len();
+        let total_length: usize = Self::BYTE_SIZE_OFFSET + self.vendor_id.len() + self.value.len();
         let mut result = Vec::with_capacity(total_length);
 
         result.extend(&self.vendor_id);
