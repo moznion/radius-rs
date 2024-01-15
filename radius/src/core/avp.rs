@@ -287,14 +287,18 @@ impl AVP {
 
         if plain_text.is_empty() {
             let hash_val = hash(MessageDigest::md5(), &[secret, &buff[..]].concat());
-        let enc_block = if let Err(_err) = hash_val {
-            return Err(AVPError::HashComputationFailed(_err.to_string()))
-        } else {
-            hash_val.unwrap()
-        };
+            let enc_block = if let Err(_err) = hash_val {
+                return Err(AVPError::HashComputationFailed(_err.to_string()));
+            } else {
+                hash_val.unwrap()
+            };
             return Ok(AVP {
                 typ,
-                value: enc_block.iter().zip(vec![0; 16]).map(|(d, p)| d ^ p).collect(),
+                value: enc_block
+                    .iter()
+                    .zip(vec![0; 16])
+                    .map(|(d, p)| d ^ p)
+                    .collect(),
             });
         }
 
@@ -779,7 +783,7 @@ impl AVP {
             let chunk_vec = chunk.to_vec();
             let hash_val = hash(MessageDigest::md5(), &[secret, &buff[..]].concat());
             let dec_block = if let Err(_err) = hash_val {
-                return Err(AVPError::HashComputationFailed(_err.to_string()))
+                return Err(AVPError::HashComputationFailed(_err.to_string()));
             } else {
                 hash_val.unwrap()
             };
@@ -912,7 +916,7 @@ impl AVP {
             let chunk_vec = chunk.to_vec();
             let hash_val = hash(MessageDigest::md5(), &[secret, &buff[..]].concat());
             let dec_block = if let Err(_err) = hash_val {
-                return Err(AVPError::HashComputationFailed(_err.to_string()))
+                return Err(AVPError::HashComputationFailed(_err.to_string()));
             } else {
                 hash_val.unwrap()
             };

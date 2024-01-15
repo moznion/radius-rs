@@ -348,7 +348,7 @@ impl Packet {
             ]
             .concat(),
         );
-        let enc =  hash_val.expect("Hash computation failed using openssl md5 digest algorithm");
+        let enc = hash_val.expect("Hash computation failed using openssl md5 digest algorithm");
         enc.to_vec()
             .eq(&response[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
     }
@@ -403,7 +403,8 @@ impl Packet {
                     ]
                     .concat(),
                 );
-                let enc =  hash_val.expect("Hash computation failed using openssl md5 digest algorithm");
+                let enc =
+                    hash_val.expect("Hash computation failed using openssl md5 digest algorithm");
 
                 enc.to_vec()
                     .eq(&request[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
