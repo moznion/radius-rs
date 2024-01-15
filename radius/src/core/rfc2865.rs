@@ -359,7 +359,7 @@ pub fn lookup_all_framed_ip_address(packet: &Packet) -> Result<Vec<Ipv4Addr>, AV
 }
 
 /// Add `vsa_attribute` vsa value to a packet.
-pub fn add_vsa_attribute(packet: &mut Packet, value: &VSA) {
+pub fn add_vsa_attribute(packet: &mut Packet, value: &dyn VSA) {
     packet.add(AVP::from_bytes(VENDOR_SPECIFIC_TYPE, &value.message()));
 }
 
