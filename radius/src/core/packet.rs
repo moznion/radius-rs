@@ -8,6 +8,12 @@ use crate::core::attributes::Attributes;
 use crate::core::avp::{AVPType, AVP};
 use crate::core::code::Code;
 
+#[cfg(feature = "md5")]
+use md5::compute;
+
+#[cfg(feature = "openssl")]
+use openssl::hash::{hash, MessageDigest};
+
 const MAX_PACKET_LENGTH: usize = 4096;
 const RADIUS_PACKET_HEADER_LENGTH: usize = 20; // i.e. minimum packet length
 
@@ -36,6 +42,10 @@ pub enum PacketError {
     /// An error that is raised when it received unknown packet type code of RADIUS.
     #[error("Unknown RADIUS packet type code: {0}")]
     UnknownCodeError(String),
+
+    /// This error is raised when computation of hash fails using openssl hash
+    #[error("computation of hash failed: {0}")]
+    HashComputationFailed(String),
 }
 
 /// This struct represents a packet of RADIUS for request and response.
@@ -159,6 +169,7 @@ impl Packet {
         }
     }
 
+    #[cfg(feature = "md5")]
     /// This method encodes the Packet into bytes.
     pub fn encode(&self) -> Result<Vec<u8>, PacketError> {
         let mut bs = match self.marshal_binary() {
@@ -196,7 +207,59 @@ impl Packet {
                 }
                 buf.extend(bs[RADIUS_PACKET_HEADER_LENGTH..].to_vec());
                 buf.extend(&self.secret);
-                bs.splice(4..20, md5::compute(&buf).to_vec());
+                bs.splice(4..20, compute(&buf).to_vec());
+
+                Ok(bs)
+            }
+            _ => Err(PacketError::UnknownCodeError(format!("{:?}", self.code))),
+        }
+    }
+
+    #[cfg(feature = "openssl")]
+    /// This method encodes the Packet into bytes.
+    pub fn encode(&self) -> Result<Vec<u8>, PacketError> {
+        let mut bs = match self.marshal_binary() {
+            Ok(bs) => bs,
+            Err(e) => return Err(PacketError::EncodingError(e)),
+        };
+
+        match self.code {
+            Code::AccessRequest | Code::StatusServer => Ok(bs),
+            Code::AccessAccept
+            | Code::AccessReject
+            | Code::AccountingRequest
+            | Code::AccountingResponse
+            | Code::AccessChallenge
+            | Code::DisconnectRequest
+            | Code::DisconnectACK
+            | Code::DisconnectNAK
+            | Code::CoARequest
+            | Code::CoAACK
+            | Code::CoANAK => {
+                let mut buf: Vec<u8> = bs[..4].to_vec();
+                match self.code {
+                    Code::AccountingRequest // see "Request Authenticator" in https://tools.ietf.org/html/rfc2866#section-3
+                    | Code::DisconnectRequest // same as "RFC2866"; https://tools.ietf.org/html/rfc5176#section-2.3
+                    | Code::CoARequest // same as "RFC2866"; https://tools.ietf.org/html/rfc5176#section-2.3
+                    => {
+                        buf.extend(vec![
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                        ]);
+                    }
+                    _ => {
+                        buf.extend(self.authenticator.clone()); // TODO take from `bs`?
+                    }
+                }
+                buf.extend(bs[RADIUS_PACKET_HEADER_LENGTH..].to_vec());
+                buf.extend(&self.secret);
+                let hash_val = hash(MessageDigest::md5(), &buf);
+                let enc = if let Err(_err) = hash_val {
+                    return Err(PacketError::HashComputationFailed(_err.to_string()));
+                } else {
+                    hash_val.unwrap()
+                };
+                bs.splice(4..20, enc.to_vec());
 
                 Ok(bs)
             }
@@ -242,6 +305,7 @@ impl Packet {
         Ok(bs)
     }
 
+    #[cfg(feature = "md5")]
     /// Returns whether the Packet is authentic response or not.
     pub fn is_authentic_response(response: &[u8], request: &[u8], secret: &[u8]) -> bool {
         if response.len() < RADIUS_PACKET_HEADER_LENGTH
@@ -251,7 +315,7 @@ impl Packet {
             return false;
         }
 
-        md5::compute(
+        compute(
             [
                 &response[..4],
                 &request[4..RADIUS_PACKET_HEADER_LENGTH],
@@ -264,6 +328,32 @@ impl Packet {
         .eq(&response[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
     }
 
+    #[cfg(feature = "openssl")]
+    /// Returns whether the Packet is authentic response or not.
+    pub fn is_authentic_response(response: &[u8], request: &[u8], secret: &[u8]) -> bool {
+        if response.len() < RADIUS_PACKET_HEADER_LENGTH
+            || request.len() < RADIUS_PACKET_HEADER_LENGTH
+            || secret.is_empty()
+        {
+            return false;
+        }
+
+        let hash_val = hash(
+            MessageDigest::md5(),
+            &[
+                &response[..4],
+                &request[4..RADIUS_PACKET_HEADER_LENGTH],
+                &response[RADIUS_PACKET_HEADER_LENGTH..],
+                secret,
+            ]
+            .concat(),
+        );
+        let enc =  hash_val.expect("Hash computation failed using openssl md5 digest algorithm");
+        enc.to_vec()
+            .eq(&response[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
+    }
+
+    #[cfg(feature = "md5")]
     /// Returns whether the Packet is authentic request or not.
     pub fn is_authentic_request(request: &[u8], secret: &[u8]) -> bool {
         if request.len() < RADIUS_PACKET_HEADER_LENGTH || secret.is_empty() {
@@ -272,7 +362,7 @@ impl Packet {
 
         match Code::from(request[0]) {
             Code::AccessRequest | Code::StatusServer => true,
-            Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => md5::compute(
+            Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => compute(
                 [
                     &request[..4],
                     &[
@@ -286,6 +376,38 @@ impl Packet {
             )
             .to_vec()
             .eq(&request[4..RADIUS_PACKET_HEADER_LENGTH].to_vec()),
+            _ => false,
+        }
+    }
+
+    #[cfg(feature = "openssl")]
+    /// Returns whether the Packet is authentic request or not.
+    pub fn is_authentic_request(request: &[u8], secret: &[u8]) -> bool {
+        if request.len() < RADIUS_PACKET_HEADER_LENGTH || secret.is_empty() {
+            return false;
+        }
+
+        match Code::from(request[0]) {
+            Code::AccessRequest | Code::StatusServer => true,
+            Code::AccountingRequest | Code::DisconnectRequest | Code::CoARequest => {
+                let hash_val = hash(
+                    MessageDigest::md5(),
+                    &[
+                        &request[..4],
+                        &[
+                            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+                            0x00, 0x00, 0x00, 0x00,
+                        ],
+                        &request[RADIUS_PACKET_HEADER_LENGTH..],
+                        secret,
+                    ]
+                    .concat(),
+                );
+                let enc =  hash_val.expect("Hash computation failed using openssl md5 digest algorithm");
+
+                enc.to_vec()
+                    .eq(&request[4..RADIUS_PACKET_HEADER_LENGTH].to_vec())
+            }
             _ => false,
         }
     }
