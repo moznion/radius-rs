@@ -19,7 +19,7 @@ chrono = "0.4"
 rand = "0.8.5"
 num_enum = "0.7.2"
 thiserror = "1.0"
-log = "0.4.20"
+log = "0.4.21"
 tokio = { version = "1.35.1", features = ["full"] }
 async-trait = "0.1.77"
 
