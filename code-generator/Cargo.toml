@@ -8,4 +8,4 @@ publish = false
 [dependencies]
 regex = "1"
 getopts = "0.2"
-Inflector = "0.11"
+Inflector = "0.11.4"
