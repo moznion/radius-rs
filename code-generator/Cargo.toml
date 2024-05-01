@@ -6,6 +6,6 @@ license-file = "../LICENSE"
 publish = false
 
 [dependencies]
-regex = "1"
+regex = "1.10.4"
 getopts = "0.2"
 Inflector = "0.11"
