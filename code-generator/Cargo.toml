@@ -7,5 +7,5 @@ publish = false
 
 [dependencies]
 regex = "1"
-getopts = "0.2"
+getopts = "0.2.21"
 Inflector = "0.11"
