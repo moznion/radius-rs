@@ -43,6 +43,45 @@ impl StringVSA {
             value: value.as_bytes().to_vec(),
         }
     }
+
+    /// Decode from AVP bytes
+    pub fn from_message(b: &[u8]) -> Option<StringVSA> {
+      if b.len()<6 {
+        None
+      } else {
+        let vendor_id = b[0..4].to_vec();
+        let vendor_type = b[4];
+        let length = b[5];
+        let value = b[6..].to_vec();
+        Some(StringVSA{vendor_id,vendor_type,length,value})
+      }
+    }
+
+    /// Vendor ID slice
+    pub fn vendor_id(&self) -> &[u8] {
+      &self.vendor_id
+    }
+
+    /// Vendor ID as i32 or 0
+    pub fn vendor_id_i32(&self) -> i32 {
+      if self.vendor_id.len()==4 {
+        let mut b = [0u8;4];
+        b.clone_from_slice(&self.vendor_id[0..4]);
+        i32::from_be_bytes(b)
+      } else {
+        0
+      }
+    }
+
+    /// Vendor type
+    pub fn vendor_type(&self) -> u8 {
+      self.vendor_type
+    }
+
+    /// Value as bytes
+    pub fn as_bytes(&self) -> &[u8] {
+      &self.value
+    }
 }
 
 impl VSA for StringVSA {
@@ -110,6 +149,52 @@ impl TaggedStringVSA {
             value: value.as_bytes().to_vec(),
         }
     }
+
+    /// Decode from AVP bytes
+    pub fn from_message(b: &[u8]) -> Option<TaggedStringVSA> {
+      if b.len()<7 {
+        None
+      } else {
+        let vendor_id = b[0..4].to_vec();
+        let vendor_type = b[4];
+        let length = b[5];
+        let tag = b[6];
+        let value = b[7..].to_vec();
+        Some(TaggedStringVSA{vendor_id,vendor_type,length,tag,value})
+      }
+    }
+
+    /// Vendor ID slice
+    pub fn vendor_id(&self) -> &[u8] {
+      &self.vendor_id
+    }
+
+    /// Vendor ID as i32 or 0
+    pub fn vendor_id_i32(&self) -> i32 {
+      if self.vendor_id.len()==4 {
+        let mut b = [0u8;4];
+        b.clone_from_slice(&self.vendor_id[0..4]);
+        i32::from_be_bytes(b)
+      } else {
+        0
+      }
+    }
+
+    /// Vendor type
+    pub fn vendor_type(&self) -> u8 {
+      self.vendor_type
+    }
+
+    /// Tag
+    pub fn tag(&self) -> u8 {
+      self.tag
+    }
+
+    /// Value as bytes
+    pub fn as_bytes(&self) -> &[u8] {
+      &self.value
+    }
+
 }
 
 impl VSA for TaggedStringVSA {
@@ -173,6 +258,13 @@ mod string_vsa_tests {
             [0, 0, 19, 10, 65, 16, 98, 97, 114, 40, 49, 48, 48, 48, 44, 53, 52, 52, 49, 41]
         )
     }
+
+    #[test]
+    fn decode_encode() {
+        let vsa = StringVSA::new(1,2,"test");
+        let vsa2 = StringVSA::from_message(&vsa.message()).unwrap();
+        assert_eq!(vsa,vsa2);
+    }
 }
 
 #[cfg(test)]
@@ -202,5 +294,12 @@ mod tagged_string_vsa_tests {
             vsa.message(),
             [0, 0, 19, 10, 65, 17, 5, 98, 97, 114, 40, 49, 48, 48, 48, 44, 53, 52, 52, 49, 41]
         )
+    }
+
+    #[test]
+    fn decode_encode() {
+        let vsa = TaggedStringVSA::new(1,2,3,"test");
+        let vsa2 = TaggedStringVSA::from_message(&vsa.message()).unwrap();
+        assert_eq!(vsa,vsa2);
     }
 }

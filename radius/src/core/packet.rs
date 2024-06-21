@@ -437,6 +437,11 @@ impl Packet {
     pub fn lookup_all(&self, typ: AVPType) -> Vec<&AVP> {
         self.attributes.lookup_all(typ)
     }
+
+    /// Returns all attributes
+    pub fn attributes(&self) -> Vec<&AVP> {
+        self.attributes.0.iter().collect()
+    }
 }
 
 impl Debug for Packet {
